@@ -1,0 +1,16 @@
+.search {
+  &-form {
+    display: flex;
+  }
+
+  &-container {
+    flex: 1;
+  }
+  
+  &-button-container {
+    padding-top: 4px;
+    > button {
+      margin-left: 12px; 
+    }
+  }
+}

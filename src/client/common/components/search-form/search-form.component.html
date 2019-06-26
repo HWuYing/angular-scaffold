@@ -1,0 +1,23 @@
+
+<div class="search-form">
+  <div class="search-container">
+    <app-dynamic
+      #dynamicForm
+      nzLayout="inline"
+      [layout]="layout"
+      [config]="config"
+      [fieldStore]="fieldStore"
+      (valueChanges)="valueChanges.emit($event)"
+      (dynamicSubmit)="searchSubmit.emit($event)">
+    </app-dynamic>
+  </div>
+  <div class="search-button-container">
+    <button nz-button nzType="primary" (click)="dynamicForm.submit()">查询</button>
+    <ng-content></ng-content>
+  </div>
+</div>
+  
+  
+  
+  
+  
