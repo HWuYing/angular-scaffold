@@ -11,7 +11,7 @@ import {
   ComponentRef,
   ViewContainerRef,
 } from '@angular/core';
-import { DynamicFormService } from './providers/dynamic-form/dynamic-form.service';
+import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.service';
 
 @Component({
   selector: 'app-dynamic',

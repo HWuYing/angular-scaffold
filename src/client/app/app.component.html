@@ -1,17 +1,2 @@
 <!--The content below is only a placeholder and can be replaced.-->
-<div class="text-center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-  <button nz-button nzType="primary">测试按钮</button>
-</div>
-<section class="search-form-container">
-  <app-search-form
-    #dynamicForm
-    [layout]="{ labelStyle: 'width: 80px;' }"
-    [config]="entryConfig"
-  >
-    <button nz-button (click)="dynamicForm.reset()">重置</button>
-  </app-search-form>
-</section>
 <router-outlet></router-outlet>

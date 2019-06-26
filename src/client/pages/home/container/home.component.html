@@ -1,0 +1,7 @@
+<app-search-form
+    #dynamicForm
+    [layout]="{ labelStyle: 'width: 80px;' }"
+    [config]="entryConfig"
+  >
+    <button nz-button (click)="dynamicForm.reset()">重置</button>
+  </app-search-form>

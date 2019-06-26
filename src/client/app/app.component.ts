@@ -8,11 +8,9 @@ import { HomeConfigService } from './services/home-config.service';
   providers: [ HomeConfigService ],
 })
 export class AppComponent implements OnInit {
-  title = 'app';
-  public entryConfig: any = this.homeConfigService.searchForm;
-  constructor(private homeConfigService: HomeConfigService) { }
+  public title = 'app';
+  constructor() { }
 
   ngOnInit() {
-    console.log(this.entryConfig);
   }
 }

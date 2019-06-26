@@ -1,6 +1,5 @@
 const path = require('path');
 const { AngularCompilerPlugin } = require('@ngtools/webpack');
-const ContextElementDependency = require('webpack/lib/dependencies/ContextElementDependency');
 const stylesDir = path.join(__dirname, 'src/styles');
 const clientDir = path.join(__dirname, 'src/client');
 
@@ -70,7 +69,6 @@ module.exports = (jsRules, cssRules, isDebug) => {
         mainPath: path.join(__dirname, 'src/client/main.ts'),
         entryModule: path.join(__dirname, 'src/client/app/app.module#AppModule'),
         tsConfigPath: path.join(__dirname, 'ts.client.json'),
-        // contextElementDependencyConstructor: ContextElementDependency,
         skipCodeGeneration: true,
         sourceMap: isDebug,
         nameLazyFiles: true,

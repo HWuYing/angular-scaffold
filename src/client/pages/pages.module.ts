@@ -1,13 +1,17 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgZorroAntdModule } from 'ng-zorro-antd';
 
 import { PagesRoutingModule } from './pages-routing.module';
-import { IndexComponent } from './index/index.component';
+import { BaseComponentsModule } from '../common/components/base-components.module';
+import { HomeComponent } from './home/container/home.component';
 
 @NgModule({
-  declarations: [ IndexComponent ],
+  declarations: [ HomeComponent ],
   imports: [
     CommonModule,
+    BaseComponentsModule,
+    NgZorroAntdModule,
     PagesRoutingModule,
   ]
 })

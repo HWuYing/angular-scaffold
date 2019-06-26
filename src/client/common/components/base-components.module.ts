@@ -1,18 +1,21 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DynamicModule } from './dynamic/dynamic.module';
-import { SearchFormModule } from './search-form/search-form.module';
+import { NgZorroAntdModule } from 'ng-zorro-antd';
+import { DynamicComponent } from './dynamic/container/dynamic.component';
+import { SearchFormComponent } from './search-form/search-form.component';
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    DynamicComponent,
+    SearchFormComponent,
+  ],
   imports: [
     CommonModule,
-    DynamicModule,
-    SearchFormModule,
+    NgZorroAntdModule,
   ],
   exports: [
-    DynamicModule,
-    SearchFormModule,
+    DynamicComponent,
+    SearchFormComponent,
   ],
 })
 export class BaseComponentsModule {}
