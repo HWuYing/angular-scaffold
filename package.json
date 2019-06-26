@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-tools start",
-    "build": "ts-tools build --release"
+    "build": "ts-tools build --release",
+    "build:debug": "ts-tools build"
   },
   "author": "",
   "license": "ISC",
