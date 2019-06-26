@@ -12,7 +12,7 @@ const baseDir = process.cwd();
 function getAssets() {
   const assets = JSON.parse(fs.readFileSync(path.join(baseDir, 'build/assets.json'), { encoding: 'utf-8' }));
   let dll = {};
-  if (existsSync(path.join(baseDir, '../../build/dll.json'))) {
+  if (existsSync(path.join(baseDir, 'build/dll.json'))) {
     dll = JSON.parse(fs.readFileSync(path.join(baseDir, 'build/dll.json'), { encoding: 'utf-8' }));
   }
   return {

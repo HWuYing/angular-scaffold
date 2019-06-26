@@ -12,7 +12,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@angular/compiler": "7.2.13",
     "@angular/compiler-cli": "7.1.0",
     "@angular/core": "7.2.13",
     "@angularclass/hmr": "2.1.3",

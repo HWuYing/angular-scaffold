@@ -7,8 +7,6 @@ import { NgZorroAntdModule, NZ_I18N, zh_CN } from 'ng-zorro-antd';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
-import { BaseComponentsModule } from '../common/components/base-components.module';
-
 registerLocaleData(zh);
 
 @NgModule({
@@ -17,7 +15,6 @@ registerLocaleData(zh);
     BrowserModule,
     AppRoutingModule,
     NgZorroAntdModule,
-    BaseComponentsModule,
     BrowserAnimationsModule,
   ],
   providers: [
