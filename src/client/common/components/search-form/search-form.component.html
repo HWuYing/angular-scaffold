@@ -1,7 +1,7 @@
 
 <div class="search-form">
   <div class="search-container">
-    <app-dynamic
+    <app-dynamic-form
       #dynamicForm
       nzLayout="inline"
       [layout]="layout"
@@ -9,7 +9,7 @@
       [fieldStore]="fieldStore"
       (valueChanges)="valueChanges.emit($event)"
       (dynamicSubmit)="searchSubmit.emit($event)">
-    </app-dynamic>
+    </app-dynamic-form>
   </div>
   <div class="search-button-container">
     <button nz-button nzType="primary" (click)="dynamicForm.submit()">查询</button>

@@ -1,0 +1,35 @@
+<section class="page-container" [ngStyle]="pageStyle" [ngClass]="pageClass">
+  <section class="search-form-container" *ngIf="formConfig" [ngStyle]="searchStyle" [ngClass]="searchClass">
+    <app-search-form
+      [layout]="layout"
+      [config]="formConfig"
+      [fieldStore]="fieldStore"
+      (searchSubmit)="_fetchRecords()"
+    >
+      <button nz-button (click)="dynamicForm.reset()">重置</button>
+    </app-search-form>
+  </section>
+
+  <ng-container *ngIf="toolsRef">
+    <ng-container *ngTemplateOutlet="toolsRef;"></ng-container>
+  </ng-container>
+  
+  <section class="table-container" *ngIf="tableColumns" [ngStyle]="tableStyle" [ngClass]="tableClass">
+    <app-dynamic-table 
+      [columns]="tableColumns"
+      [total]="total"
+      [dataSource]="dataSource"
+      [isSerial]="isSerial"
+      [templateMap]="templateMap"
+      [trTemplateRef]="trTemplateRef"
+      [tdTemplateRef]="tdTemplateRef"
+      [showCheckbox]="showCheckbox"
+      [showPagination]="showPagination"
+      [isHeadFixed]="isHeadFixed"
+      [loading]="loading"
+      (paginationChange)="_fetchRecords()"
+      (currentPageDataChange)="currentPageDataChange.emit($event)"
+      (checkChange)="checkChange.emit($event)"
+    ></app-dynamic-table>
+  </section>
+</section>

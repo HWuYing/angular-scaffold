@@ -14,12 +14,12 @@ import {
 import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.service';
 
 @Component({
-  selector: 'app-dynamic',
-  templateUrl: './dynamic.component.html',
-  styleUrls: ['./dynamic.component.scss'],
+  selector: 'app-dynamic-form',
+  templateUrl: './dynamic-form.component.html',
+  styleUrls: ['./dynamic-form.component.scss'],
   providers: [DynamicFormService],
 })
-export class DynamicComponent implements OnInit, OnDestroy {
+export class DynamicFormComponent implements OnInit, OnDestroy {
   @ViewChild('tplRef', { read: ViewContainerRef }) tplRef: ViewContainerRef;
   @Input() set nzLayout(value: string) {
     this.dynamicFormService.nzLayout = value;

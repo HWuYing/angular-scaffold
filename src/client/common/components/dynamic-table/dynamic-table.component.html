@@ -1,0 +1,84 @@
+<nz-table
+  #basicTable
+  nzShowSizeChanger
+  [nzFrontPagination]="false"
+  [nzPageSizeOptions]="pageSizeOptions"
+  [nzPageIndex]="pageNum"
+  [nzPageSize]="pageSize"
+  [nzTotal]="total"
+  [nzData]="dataSource"
+  [nzLoading]="loading"
+  [nzScroll]="scroll"
+  (nzPageIndexChange)="_paginationIndexChange($event)"
+  (nzPageSizeChange)="_paginationSizeChange($event)"
+  (nzCurrentPageDataChange)="_pageDataChange($event)"
+  [nzShowPagination]="showPagination"
+  [nzShowTotal]="showTotal"
+>
+  <thead>
+    <tr>
+      <ng-container *ngIf="showCheckbox">
+        <th
+          nzShowCheckbox
+          [(nzChecked)]="isAllDisplayDataChecked"
+          [nzIndeterminate]="isIndeterminate"
+          (nzCheckedChange)="_checkAll($event)"
+        ></th>
+      </ng-container>
+      <th *ngFor="let column of columns" [nzWidth]="getWdith(column)">{{ column.title }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <ng-container *ngIf="!trTemplateRef">
+      <tr *ngFor="let data of basicTable.data; index as index">
+        <ng-container *ngTemplateOutlet="tr; context: { $implicit: data }"></ng-container>
+      </tr>
+    </ng-container>
+    <ng-container *ngIf="trTemplateRef">
+      <ng-container *ngFor="let data of basicTable.data; index as index">
+        <ng-container
+        *ngTemplateOutlet="trTemplateRef;
+          context: { $implicit: data, trTemplate: tr, index: index }"
+        ></ng-container>
+      </ng-container>
+    </ng-container>
+  </tbody>
+</nz-table>
+
+<ng-template #tr let-data>
+  <ng-container *ngIf="showCheckbox">
+    <td
+      nzShowCheckbox
+      [nzDisabled]="data.disabled"
+      [(nzChecked)]="mapOfCheckedId[getRowKey(data,index)]"
+      (nzCheckedChange)="_rowCheckChange()"
+    ></td>
+  </ng-container>
+  <ng-container *ngIf="!tdTemplateRef">
+    <td class="td" *ngFor="let column of columns">
+      <ng-container *ngTemplateOutlet="td, context: { $implicit: data, column: column }"></ng-container>
+    </td>
+  </ng-container>
+  <ng-container *ngIf="tdTemplateRef">
+    <ng-container *ngFor="let column of columns">
+      <ng-container *ngTemplateOutlet="tdTemplateRef, context: { $implicit: data, column: column, tdTemplate: td }"></ng-container>
+    </ng-container>
+  </ng-container>
+</ng-template>
+
+<ng-template #td let-data let-column="column">
+  <ng-container *ngIf="!column.template">
+    {{ column.isSerial ? index + 1 : data[column.key]}}
+  </ng-container>
+  <ng-container *ngIf="column.template">
+    <ng-container
+      *ngTemplateOutlet="templateMap[column.template];
+        context: {$implicit: data, column: column, value: data[column.key]}">
+    </ng-container>
+  </ng-container>
+</ng-template>
+
+<ng-template #showTotal let-range="range" let-total>
+  <span class="total-span">共{{total}}条</span>
+  <span>第{{ range[0] }}-{{ range[1] }}条</span>
+</ng-template>

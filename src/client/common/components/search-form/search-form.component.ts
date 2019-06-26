@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
-import { DynamicComponent } from '../dynamic/container/dynamic.component';
+import { DynamicFormComponent } from '../dynamic-form/container/dynamic-form.component';
 
 @Component({
   selector: 'app-search-form',
@@ -12,7 +12,7 @@ export class SearchFormComponent implements OnInit {
   @Input() layout: any; // 表单布局
   @Output() searchSubmit: EventEmitter<any> = new EventEmitter();
   @Output() valueChanges: EventEmitter<any> = new EventEmitter();
-  @ViewChild('dynamicForm') dynamicForm: DynamicComponent;
+  @ViewChild('dynamicForm') dynamicForm: DynamicFormComponent;
   constructor() {}
 
   ngOnInit() {}

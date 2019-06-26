@@ -1,0 +1,15 @@
+<nz-modal 
+  [(nzVisible)]="isVisible"
+  [nzTitle]="title"
+  [nzWidth]="width"
+  nzWrapClassName="vertical-center-modal"
+  [nzFooter]="modalFooter"
+  [nzBodyStyle]="bodyStyle"
+  (nzOnCancel)="_onCancel()"
+>
+  <ng-content></ng-content>
+  <ng-template #modalFooter>
+    <button *ngIf="isShowCancel" nz-button nzType="default" (click)="_onCancel()">取消</button>
+    <button *ngIf="isShowOk" nz-button nzType="primary" (click)="_onOk()" [nzLoading]="isConfirmLoading">确定</button>
+  </ng-template>
+</nz-modal>
