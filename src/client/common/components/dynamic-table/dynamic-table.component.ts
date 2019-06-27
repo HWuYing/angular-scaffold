@@ -33,7 +33,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
     this._columns = [].concat(this.isSerial ? this._serialColumn : [], value);
     this.resetMaxWidth();
   }
-  @ViewChild(NzTableComponent) table: NzTableComponent;
+  @ViewChild(NzTableComponent, { static: true }) table: NzTableComponent;
   @Output() paginationChange: EventEmitter<any> = new EventEmitter(); // 分页信息改变事件
   @Output() currentPageDataChange: EventEmitter<any> = new EventEmitter(); // 分页数据改变事件
   @Output() checkChange: EventEmitter<any> = new EventEmitter(); // 选择数据改变事件

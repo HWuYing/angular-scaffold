@@ -9,6 +9,7 @@
     "importHelpers": true,
     "target": "es5",
     "allowSyntheticDefaultImports": true,
+    "types": [ "node" ],
     "typeRoots": [
       "node_modules/@types"
     ],

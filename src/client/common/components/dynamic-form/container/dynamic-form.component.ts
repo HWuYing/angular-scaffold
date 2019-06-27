@@ -20,7 +20,7 @@ import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.servi
   providers: [DynamicFormService],
 })
 export class DynamicFormComponent implements OnInit, OnDestroy {
-  @ViewChild('tplRef', { read: ViewContainerRef }) tplRef: ViewContainerRef;
+  @ViewChild('tplRef', { read: ViewContainerRef, static: true }) tplRef: ViewContainerRef;
   @Input() set nzLayout(value: string) {
     this.dynamicFormService.nzLayout = value;
   }

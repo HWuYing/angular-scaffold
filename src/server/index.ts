@@ -1,9 +1,18 @@
 import path from 'path';
 import express from 'express';
 import serializationSource, { Source } from './serializationSource';
+
+// try {
+//   const { AppServerModuleNgFactory, LAZY_MODULE_MAP } = require('../../build/server/main');
+//   console.log(AppServerModuleNgFactory);
+//   console.log(LAZY_MODULE_MAP);
+// } catch {
+// }
+
+
 const app = express();
 
-app.use(express.static(path.resolve(__dirname, '../../build/public')));
+app.use(express.static(path.resolve(process.cwd(), 'build/public')));
 
 app.get('*', async (req, res, next): Promise<void> => {
   const source: Source<string> = serializationSource();

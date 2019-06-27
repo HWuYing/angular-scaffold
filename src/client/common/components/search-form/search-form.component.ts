@@ -12,7 +12,7 @@ export class SearchFormComponent implements OnInit {
   @Input() layout: any; // 表单布局
   @Output() searchSubmit: EventEmitter<any> = new EventEmitter();
   @Output() valueChanges: EventEmitter<any> = new EventEmitter();
-  @ViewChild('dynamicForm') dynamicForm: DynamicFormComponent;
+  @ViewChild('dynamicForm', { static: true }) dynamicForm: DynamicFormComponent;
   constructor() {}
 
   ngOnInit() {}

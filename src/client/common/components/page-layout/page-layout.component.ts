@@ -8,8 +8,8 @@ import { DynamicTableComponent } from '../dynamic-table/dynamic-table.component'
   styleUrls: ['./page-layout.component.scss'],
 })
 export class PageLayoutComponent implements OnInit, AfterViewInit {
-  @ViewChild(SearchFormComponent) dynamicForm: SearchFormComponent;
-  @ViewChild(DynamicTableComponent) dynamicTable: DynamicTableComponent;
+  @ViewChild(SearchFormComponent, { static: false }) dynamicForm: SearchFormComponent;
+  @ViewChild(DynamicTableComponent, { static: false }) dynamicTable: DynamicTableComponent;
   @Input() layout: any;
   @Input() fieldStore: any;
   @Input() formConfig: any;
