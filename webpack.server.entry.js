@@ -7,26 +7,22 @@ const rxPaths = require(require.resolve(rxjsPathMappingImport));
 const stylesDir = path.join(__dirname, 'src/styles');
 const clientDir = path.join(__dirname, 'src/client');
 const { isAbsolute } = path; 
-console.log(1234);
+
 module.exports = (jsRules, cssRules, isDebug) => {
-  const sassRules = cssRules.sass({
-    include: clientDir,
-  });
-  sassRules.use.shift();
-  if (!isDebug) {
-    sassRules.use.shift();
-  }
-  sassRules.use.unshift({ loader: 'to-string-loader' });
   return {
-    // entry: {
-    //   main: [ path.join(__dirname, 'src/client/main.server.ts')],
-    //   'polyfills-es5': [ '@angular-devkit/build-angular/src/angular-cli-files/models/es5-polyfills.js' ],
-    // },
+    entry: {
+      main: [ path.join(__dirname, 'src/client/main.server.ts')],
+    },
     resolve: { 
       alias: rxPaths(path.join(__dirname, 'node_modules')),
     },
     module: {
+      strictExportPresence: true,
       rules: [
+        {
+          test: /\.html$/,
+          loader: 'raw-loader',
+        },
       {
         test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
         parser: { system: true } 
@@ -39,21 +35,23 @@ module.exports = (jsRules, cssRules, isDebug) => {
       ...cssRules.more(['css', 'less', 'sass'], {
         include: [stylesDir],
       }),
-      sassRules,
-      { test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.tsx?)$/,
-        use: 
-         [ '@ngtools/webpack/src/index.js' ] }]
+      cssRules.sass({
+        include: clientDir,
+        exclude: stylesDir,
+      }, 'to-string-loader'),
+      jsRules.ngTs({ })],
     },
     externals: [
       /^@angular/, (context, request, callback) => {
-        // Absolute & Relative paths are not externals
         if (/^\.{0,2}\//.test(request) || isAbsolute(request)) {
           return callback();
         }
-
+        try {
           require.resolve(request);
           callback(null, request);
-        
+        } catch(e) {
+          callback();
+        }
       },
     ],
     plugins: [
@@ -61,12 +59,11 @@ module.exports = (jsRules, cssRules, isDebug) => {
       new AngularCompilerPlugin({
         mainPath: path.join(__dirname, 'src/client/main.server.ts'),
         entryModule: path.join(__dirname, 'src/client/app/app.server.module#AppServerModule'),
-        tsConfigPath: path.join(__dirname, 'src/client/ts.client.json'),
-        skipCodeGeneration: true,
-        sourceMap: isDebug,
+        tsConfigPath: path.join(__dirname, 'src/client/ts.server.json'),
+        skipCodeGeneration: false,
         nameLazyFiles: true,
-        platform: 1,
         forkTypeChecker: true,
+        platform: 1,
       }),
     ],
   };

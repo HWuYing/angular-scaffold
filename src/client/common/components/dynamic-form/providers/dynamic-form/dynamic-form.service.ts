@@ -1,6 +1,6 @@
 import { NgModule, Injectable, Compiler } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { NgZorroAntdModule } from 'ng-zorro-antd';
 import { factoryForm } from '../../core/dynamic-form';
 
@@ -18,7 +18,11 @@ export class DynamicFormService {
     const TemComponent = factoryForm(this.config, this.layout, this.nzLayout);
     return NgModule({
       declarations: [TemComponent],
-      imports: [CommonModule, NgZorroAntdModule, ReactiveFormsModule],
+      imports: [
+        CommonModule,
+        NgZorroAntdModule,
+        ReactiveFormsModule,
+      ],
     })(class {});
   }
 

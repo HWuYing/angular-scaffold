@@ -3,7 +3,8 @@ import { registerLocaleData } from '@angular/common';
 import zh from '@angular/common/locales/zh';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgZorroAntdModule, NZ_I18N, zh_CN } from 'ng-zorro-antd';
+import { NZ_I18N, zh_CN } from 'ng-zorro-antd';
+import { BaseComponentsModule } from '../common/components/base-components.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
@@ -12,9 +13,9 @@ registerLocaleData(zh);
 @NgModule({
   declarations: [AppComponent],
   imports: [
-    BrowserModule,
+    BrowserModule.withServerTransition({appId: 'some-app-id'}),
     AppRoutingModule,
-    NgZorroAntdModule,
+    BaseComponentsModule,
     BrowserAnimationsModule,
   ],
   providers: [

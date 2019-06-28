@@ -1,6 +1,8 @@
 const path = require('path');
 const { ContextReplacementPlugin } = require('webpack');
 const { AngularCompilerPlugin } = require('@ngtools/webpack');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+
 const stylesDir = path.join(__dirname, 'src/styles');
 const clientDir = path.join(__dirname, 'src/client');
 
@@ -33,11 +35,7 @@ module.exports = (jsRules, cssRules, isDebug) => {
         { test: /\.js$/,
           exclude: /(ngfactory|ngstyle).js$/,
           enforce: 'pre' },
-        ...!isDebug ? [
-          jsRules.ngOptimizerJs({
-            include: clientDir,
-          }),
-        ] : [],
+        ...!isDebug ? [ jsRules.ngOptimizerJs() ] : [],
         ...cssRules.more(['css', 'less', 'sass'], {
           include: stylesDir,
         }),
@@ -51,6 +49,7 @@ module.exports = (jsRules, cssRules, isDebug) => {
     },
     plugins: [
       new ContextReplacementPlugin(/\@angular(\\|\/)core(\\|\/)/),
+      new ContextReplacementPlugin(/moment[/\\]locale$/, /zh-cn/),
       new AngularCompilerPlugin({
         mainPath: path.join(__dirname, 'src/client/main.ts'),
         entryModule: path.join(__dirname, 'src/client/app/app.module#AppModule'),
@@ -60,6 +59,12 @@ module.exports = (jsRules, cssRules, isDebug) => {
         nameLazyFiles: true,
         forkTypeChecker: true,
       }),
+      ...!isDebug ? [
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'disabled',
+        generateStatsFile: true,
+        statsOptions: { source: false }
+      })] : [],
     ],
   };
 };
