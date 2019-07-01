@@ -4,12 +4,11 @@ import { NgZorroAntdModule } from 'ng-zorro-antd';
 import { PageLayoutComponent } from './page-layout/page-layout.component';
 import { BasicModalComponent } from './basic-modal/basic-modal.component';
 import { DynamicTableComponent } from './dynamic-table/dynamic-table.component';
-import { DynamicFormComponent } from './dynamic-form/container/dynamic-form.component';
 import { SearchFormComponent } from './search-form/search-form.component';
+import { DynamicFormModule } from './dynamic-form/dynamic-form.module';
 
 @NgModule({
   declarations: [
-    DynamicFormComponent,
     DynamicTableComponent,
     SearchFormComponent,
     BasicModalComponent,
@@ -17,10 +16,10 @@ import { SearchFormComponent } from './search-form/search-form.component';
   ],
   imports: [
     CommonModule,
+    DynamicFormModule,
     NgZorroAntdModule,
   ],
   exports: [
-    DynamicFormComponent,
     DynamicTableComponent,
     SearchFormComponent,
     BasicModalComponent,

@@ -11,7 +11,9 @@ const { isAbsolute } = path;
 module.exports = (jsRules, cssRules, isDebug) => {
   return {
     entry: {
-      main: [ path.join(__dirname, 'src/client/main.server.ts')],
+      main: [
+        path.join(__dirname, 'src/client/main.server.ts'),
+      ],
     },
     resolve: { 
       alias: rxPaths(path.join(__dirname, 'node_modules')),
@@ -60,7 +62,7 @@ module.exports = (jsRules, cssRules, isDebug) => {
         mainPath: path.join(__dirname, 'src/client/main.server.ts'),
         entryModule: path.join(__dirname, 'src/client/app/app.server.module#AppServerModule'),
         tsConfigPath: path.join(__dirname, 'src/client/ts.server.json'),
-        skipCodeGeneration: false,
+        skipCodeGeneration: true,
         nameLazyFiles: true,
         forkTypeChecker: true,
         platform: 1,

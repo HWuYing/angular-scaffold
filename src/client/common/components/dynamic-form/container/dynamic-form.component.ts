@@ -10,6 +10,8 @@ import {
   EventEmitter,
   ComponentRef,
   ViewContainerRef,
+  ReflectiveInjector,
+  Compiler,
 } from '@angular/core';
 import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.service';
 
@@ -40,7 +42,12 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   @Output() dynamicSubmit: EventEmitter<any> = new EventEmitter();
   @Output() valueChanges: EventEmitter<any> = new EventEmitter();
   private cmpRef: ComponentRef<any>;
-  constructor(private dynamicFormService: DynamicFormService, private _injector: Injector, private _m: NgModuleRef<any>) {}
+  constructor(
+    private dynamicFormService: DynamicFormService,
+    private _injector: Injector,
+    private _m: NgModuleRef<any>,
+  ) { 
+  }
 
   ngOnInit() {}
 
