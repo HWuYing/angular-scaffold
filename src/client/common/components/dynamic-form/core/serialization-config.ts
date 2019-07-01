@@ -55,10 +55,7 @@ export class SerializationConfig extends SerializationBase {
    */
   public generateTemplate(): string {
     const { nzLayout } = this.layout;
-    let template = `<form
-      nz-form
-      ${nzLayout ? `nzLayout="${nzLayout}"` : ''}
-      (ngSubmit)="onSubmit($event)" [formGroup]="validateForm" autocomplete="off">`;
+    let template = `<form nz-form ${nzLayout ? `nzLayout="${nzLayout}"` : ''} (ngSubmit)="onSubmit($event)" [formGroup]="validateForm" autocomplete="off">`;
     template += this.serializationConfig.getTemplate();
     template += `</form>`;
     return template;

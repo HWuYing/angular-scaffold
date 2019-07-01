@@ -10,8 +10,6 @@ import {
   EventEmitter,
   ComponentRef,
   ViewContainerRef,
-  ReflectiveInjector,
-  Compiler,
 } from '@angular/core';
 import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.service';
 

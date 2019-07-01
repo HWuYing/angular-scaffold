@@ -13,7 +13,7 @@ enableProdMode();
 let render: any = (): string => ``;
 
 try {
-  const { LAZY_MODULE_MAP, AppServerModule} = require('../../build/server/main');
+  const { LAZY_MODULE_MAP, AppServerModule} = require(`${process.cwd()}/build/server/main`);
   render = ngExpressEngine({
     bootstrap: AppServerModule,
     providers: [
@@ -24,7 +24,7 @@ try {
   console.log(e);
 }
 
-export const renderServer = async (req: Request, res: Response, next: NextFunction): Promise<string> => {
+export const renderServer = async (req: Request, res: Response, next?: NextFunction): Promise<string> => {
   return new Promise((resolve, reject) => {
     render(req.path, {
       req,
