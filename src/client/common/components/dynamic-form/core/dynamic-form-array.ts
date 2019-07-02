@@ -2,7 +2,6 @@ import { FormBuilder } from '@angular/forms';
 import { SerializationBase } from './serialization-base';
 
 export class DyanmicFormArray extends SerializationBase {
-  private controlKey: string;
   private __initialValues: any;
 
   public children: any[];
@@ -24,7 +23,8 @@ export class DyanmicFormArray extends SerializationBase {
    * 获取模版数据
    */
   public getTemplate() {
-    const { name, controlKey } = this;
+    const name = this.name;
+    const controlKey = this.controlKey;
     let template = `<ng-container formArrayName="${name}">`;
     template += `<ng-container *ngFor="let constrol of ${controlKey}.controls; let i = index" [formGroupName]="i">`;
     template += this.children.reduce((_template: string, child: any) => {
@@ -41,21 +41,22 @@ export class DyanmicFormArray extends SerializationBase {
    * @param fb FormBuilder
    */
   public generateFormControlName(fileStore: any, fb: FormBuilder) {
-    const { name } = this;
+    const name = this.name;
+    let _fileStore = fileStore;
     if (!fileStore) {
-      fileStore = this.initialValues;
+      _fileStore = this.initialValues;
     }
 
     if (!Array.isArray(fileStore)) {
-      fileStore = [fileStore];
+      _fileStore = [fileStore];
     }
-    return { [name]: fb.array(fileStore.map((store: any) => this.generateFormGroup(fb, store))) };
+    return { [name]: fb.array(_fileStore.map((store: any) => this.generateFormGroup(fb, store))) };
   }
 
   get initialValues(): object {
     return this.__initialValues.map((store: any) => ({
       ...store,
-      ...this._initialValue,
+      ...this._initialValue
     }));
   }
 }

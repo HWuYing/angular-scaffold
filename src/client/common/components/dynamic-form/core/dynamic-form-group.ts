@@ -20,7 +20,7 @@ export class DynamicFormGroup extends SerializationBase {
    * 获取模版html
    */
   public getTemplate() {
-    const { name } = this;
+    const name = this.name;
     let template = `<ng-container formGroupName="${name}">`;
     template += this.children.reduce((_template: string, child: any) => {
       return _template + child.getTemplate();
@@ -35,14 +35,14 @@ export class DynamicFormGroup extends SerializationBase {
    * @param fb FormBuilder
    */
   public generateFormControlName(fileStore: any, fb: FormBuilder) {
-    const { name } = this;
+    const name = this.name;
     return { [name]: this.generateFormGroup(fb, fileStore) };
   }
 
   get initialValues(): object {
     return {
       ...this.__initialValues,
-      ...this._initialValue,
+      ...this._initialValue
     };
   }
 }

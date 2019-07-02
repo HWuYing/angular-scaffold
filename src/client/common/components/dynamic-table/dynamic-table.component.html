@@ -31,7 +31,7 @@
   <tbody>
     <ng-container *ngIf="!trTemplateRef">
       <tr *ngFor="let data of basicTable.data; index as index">
-        <ng-container *ngTemplateOutlet="tr; context: { $implicit: data }"></ng-container>
+        <ng-container *ngTemplateOutlet="tr; context: { $implicit: data, index: index }"></ng-container>
       </tr>
     </ng-container>
     <ng-container *ngIf="trTemplateRef">
@@ -45,12 +45,12 @@
   </tbody>
 </nz-table>
 
-<ng-template #tr let-data>
+<ng-template #tr let-data let-index="index">
   <ng-container *ngIf="showCheckbox">
     <td
       nzShowCheckbox
       [nzDisabled]="data.disabled"
-      [(nzChecked)]="mapOfCheckedId[getRowKey(data,index)]"
+      [(nzChecked)]="mapOfCheckedId[getRowKey(data, index)]"
       (nzCheckedChange)="_rowCheckChange()"
     ></td>
   </ng-container>

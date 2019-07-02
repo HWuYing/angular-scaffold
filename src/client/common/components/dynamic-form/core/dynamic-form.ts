@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, Input } from '@angular/core';
-import { FormBuilder, FormGroup, AbstractControl, FormArray, FormControl } from '@angular/forms';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormControl,  FormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { SerializationConfig } from './serialization-config';
 
@@ -12,15 +12,15 @@ export const factoryForm = (config: any, layout?: any, nzLayout?: string) => {
   // 序列化配置项
   const serializationConfig = new SerializationConfig(config, {
     nzLayout,
-    ...layout,
+    ...layout
   });
   @Component({
     template: serializationConfig.generateTemplate(), // 获取动态的template
-    providers: [FormBuilder],
+    providers: [FormBuilder]
   })
   class TemComponent implements OnInit, OnDestroy {
-    @Output() dynamicSubmit: EventEmitter<any> = new EventEmitter();
-    @Output() valueChanges: EventEmitter<any> = new EventEmitter();
+    @Output() readonly dynamicSubmit: EventEmitter<any> = new EventEmitter();
+    @Output() readonly valueChanges: EventEmitter<any> = new EventEmitter();
     @Input() set fieldStore(value: object) {
       this._fieldStore = value || {};
       this.resetValidateForm();
@@ -29,9 +29,7 @@ export const factoryForm = (config: any, layout?: any, nzLayout?: string) => {
     private subscription: Subscription = new Subscription();
     public validateForm: FormGroup;
     public serialization: SerializationConfig = serializationConfig;
-    constructor(private fb: FormBuilder) {
-      
-    }
+    constructor(private fb: FormBuilder) { }
 
     ngOnInit() {
       if (!this.validateForm) {
@@ -82,7 +80,7 @@ export const factoryForm = (config: any, layout?: any, nzLayout?: string) => {
      * @param event MoustEvent
      */
     onSubmit(event?: any) {
-      const { validateForm } = this;
+      const validateForm = this.validateForm;
       if (event && event.preventDefault) {
         event.preventDefault();
       }
@@ -123,7 +121,7 @@ export const factoryForm = (config: any, layout?: any, nzLayout?: string) => {
       if (fieldStore) {
         this._fieldStore = fieldStore;
       }
-      const { _fieldStore } = this;
+      const _fieldStore = this._fieldStore;
       if (this.validateForm && !serializationConfig.typeOrInclude('formArray')) {
         this.validateForm.reset(_fieldStore);
       } else {

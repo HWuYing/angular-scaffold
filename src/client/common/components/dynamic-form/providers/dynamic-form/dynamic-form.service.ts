@@ -1,5 +1,5 @@
-import { NgModule, Injectable, Compiler } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Compiler, Injectable, NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgZorroAntdModule } from 'ng-zorro-antd';
 import { factoryForm } from '../../core/dynamic-form';
@@ -21,8 +21,8 @@ export class DynamicFormService {
       imports: [
         CommonModule,
         NgZorroAntdModule,
-        ReactiveFormsModule,
-      ],
+        ReactiveFormsModule
+      ]
     })(class {});
   }
 

@@ -12,7 +12,7 @@ export class TextQuestion extends BaseQuestion {
   }
 
   public getTemplate(): string {
-    const text = this.constrolKey && this.name ? this.constrolKey + '.value' : `${this.privateProps}.text`;
+    const text = this.controlKey && this.name ? this.controlKey + '.value' : `${this.privateProps}.text`;
     return `<${this.target} ${this.serializationProps()}>{{ ${text} }}</${this.target}>`;
   }
 }

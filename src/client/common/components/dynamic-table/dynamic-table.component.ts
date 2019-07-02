@@ -1,21 +1,21 @@
 import {
-  Component,
-  OnInit,
-  Input,
-  ViewChild,
-  Output,
-  EventEmitter,
-  ElementRef,
   AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
   HostListener,
+  Input,
+  OnInit,
+  Output,
   TemplateRef,
+  ViewChild
 } from '@angular/core';
 import { NzTableComponent } from 'ng-zorro-antd';
 
 @Component({
   selector: 'app-dynamic-table',
   templateUrl: './dynamic-table.component.html',
-  styleUrls: ['./dynamic-table.component.scss'],
+  styleUrls: ['./dynamic-table.component.scss']
 })
 export class DynamicTableComponent implements OnInit, AfterViewInit {
   @Input() total: number;
@@ -34,9 +34,9 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
     this.resetMaxWidth();
   }
   @ViewChild(NzTableComponent, { static: true }) table: NzTableComponent;
-  @Output() paginationChange: EventEmitter<any> = new EventEmitter(); // 分页信息改变事件
-  @Output() currentPageDataChange: EventEmitter<any> = new EventEmitter(); // 分页数据改变事件
-  @Output() checkChange: EventEmitter<any> = new EventEmitter(); // 选择数据改变事件
+  @Output() readonly paginationChange: EventEmitter<any> = new EventEmitter(); // 分页信息改变事件
+  @Output() readonly currentPageDataChange: EventEmitter<any> = new EventEmitter(); // 分页数据改变事件
+  @Output() readonly checkChange: EventEmitter<any> = new EventEmitter(); // 选择数据改变事件
   private _serialColumn: object = { title: '序号', width: 70, isSerial: true };
   private _maxWidth: any; // 最大宽对
   private _columns: any[] = []; // 配置对象
@@ -72,12 +72,10 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
     }
 
     this.mapOfCheckedId = this.dataSource.reduce(
-      (o: object, item: any, index: number) =>
-        Object.assign(o, {
-          [this.getRowKey(item, index)]: false,
-        }),
-      {}
-    );
+      (o: object, item: any, index: number) => ({
+        ...o,
+        [this.getRowKey(item, index)]: false
+      }), {});
     this._rowCheckChange();
   }
 
@@ -96,7 +94,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
       const theadHeight = thead ? thead.offsetHeight : 0;
       const rootHeight = nativeElement.parentNode.offsetHeight;
       this.scroll = {
-        y: `${rootHeight - (this.showPagination ? 64 : 0) - theadHeight}px`,
+        y: `${rootHeight - (this.showPagination ? 64 : 0) - theadHeight}px`
       };
     });
   }
@@ -156,13 +154,10 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
    * @param checkd checkbox值
    */
   _checkAll(checkd: boolean) {
-    this.mapOfCheckedId = this.dataSource.reduce(
-      (o: object, item: any, index: number) =>
-        Object.assign(o, {
-          [this.getRowKey(item, index)]: !item.disabled ? checkd : false,
-        }),
-      {}
-    );
+    this.mapOfCheckedId = this.dataSource.reduce((o: object, item: any, index: number) => ({
+      ...o,
+      [this.getRowKey(item, index)]: !item.disabled ? checkd : false
+    }), {});
     this._rowCheckChange();
   }
 
@@ -197,8 +192,11 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   toTop() {
     let tableBodyContainer: Element;
     const { nativeElement } = this.elementRef;
-    if (this.isHeadFixed && nativeElement && (tableBodyContainer = nativeElement.querySelector('.ant-table-body'))) {
-      tableBodyContainer.scrollTop = 0;
+    if (this.isHeadFixed && nativeElement) {
+      tableBodyContainer = nativeElement.querySelector('.ant-table-body');
+      if (tableBodyContainer) {
+        tableBodyContainer.scrollTop = 0;
+      }
     }
   }
 
@@ -247,7 +245,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   get checkedOption(): object {
     return {
       selectedRowKeys: this._selectedRowKeys,
-      selectedRows: this._selectedRows,
+      selectedRows: this._selectedRows
     };
   }
 
@@ -264,7 +262,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   get page() {
     return {
       pageNum: this.pageNum,
-      pageSize: this.pageSize,
+      pageSize: this.pageSize
     };
   }
 }

@@ -1,11 +1,11 @@
-import { Component, OnInit, Input, ViewChild, TemplateRef, EventEmitter, Output, AfterViewInit } from '@angular/core';
-import { SearchFormComponent } from '../search-form/search-form.component';
+import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
 import { DynamicTableComponent } from '../dynamic-table/dynamic-table.component';
+import { SearchFormComponent } from '../search-form/search-form.component';
 
 @Component({
   selector: 'app-page-layout',
   templateUrl: './page-layout.component.html',
-  styleUrls: ['./page-layout.component.scss'],
+  styleUrls: ['./page-layout.component.scss']
 })
 export class PageLayoutComponent implements OnInit, AfterViewInit {
   @ViewChild(SearchFormComponent, { static: false }) dynamicForm: SearchFormComponent;
@@ -25,10 +25,10 @@ export class PageLayoutComponent implements OnInit, AfterViewInit {
   @Input() isHeadFixed: boolean;
   @Input() loading: boolean;
   @Input() isSerial: boolean;
-  @Output() paginationChange: EventEmitter<any> = new EventEmitter();
-  @Output() currentPageDataChange: EventEmitter<any> = new EventEmitter();
-  @Output() checkChange: EventEmitter<any> = new EventEmitter();
-  @Output() fetchRecords: EventEmitter<any> = new EventEmitter();
+  @Output() readonly paginationChange: EventEmitter<any> = new EventEmitter();
+  @Output() readonly currentPageDataChange: EventEmitter<any> = new EventEmitter();
+  @Output() readonly checkChange: EventEmitter<any> = new EventEmitter();
+  @Output() readonly fetchRecords: EventEmitter<any> = new EventEmitter();
 
   @Input() pageStyle: object = {};
   @Input() pageClass: string;
@@ -59,19 +59,19 @@ export class PageLayoutComponent implements OnInit, AfterViewInit {
   get fields(): object {
     return {
       ...this.formFields,
-      ...this.page,
+      ...this.page
     };
   }
 
   get formFields(): object {
     return {
-      ...(this.formConfig ? this.dynamicForm.value : {}),
+      ...(this.formConfig ? this.dynamicForm.value : {})
     };
   }
 
   get page(): object {
     return {
-      ...(this.showPagination && this.tableColumns ? this.dynamicTable.page : {}),
+      ...(this.showPagination && this.tableColumns ? this.dynamicTable.page : {})
     };
   }
 }

@@ -1,15 +1,15 @@
 import {
   Component,
-  OnInit,
-  OnDestroy,
-  ViewChild,
-  Injector,
-  NgModuleRef,
-  Input,
-  Output,
-  EventEmitter,
   ComponentRef,
-  ViewContainerRef,
+  EventEmitter,
+  Injector,
+  Input,
+  NgModuleRef,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  ViewContainerRef
 } from '@angular/core';
 import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.service';
 
@@ -17,31 +17,30 @@ import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.servi
   selector: 'app-dynamic-form',
   templateUrl: './dynamic-form.component.html',
   styleUrls: ['./dynamic-form.component.scss'],
-  providers: [DynamicFormService],
+  providers: [DynamicFormService]
 })
 export class DynamicFormComponent implements OnInit, OnDestroy {
   @ViewChild('tplRef', { read: ViewContainerRef, static: true }) tplRef: ViewContainerRef;
   @Input() set nzLayout(value: string) {
     this.dynamicFormService.nzLayout = value;
   }
-  @Input() set layout(value: any) {
+  @Input() set layout(value: object) {
     this.dynamicFormService.layout = value;
   }
-  @Input() set config(value: any) {
+  @Input() set config(value: object | object[]) {
     this.setConfig(value);
   }
-  @Input() set fieldStore(value: any) {
+  @Input() set fieldStore(value: object) {
     this.resetFormFieldStore(value);
   }
-  @Output() dynamicSubmit: EventEmitter<any> = new EventEmitter();
-  @Output() valueChanges: EventEmitter<any> = new EventEmitter();
+  @Output() readonly dynamicSubmit: EventEmitter<any> = new EventEmitter();
+  @Output() readonly valueChanges: EventEmitter<any> = new EventEmitter();
   private cmpRef: ComponentRef<any>;
   constructor(
     private dynamicFormService: DynamicFormService,
     private _injector: Injector,
-    private _m: NgModuleRef<any>,
-  ) { 
-  }
+    private _m: NgModuleRef<any>
+  ) { }
 
   ngOnInit() {}
 
@@ -53,7 +52,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
    * 设置config值
    * @param value any
    */
-  private setConfig(value: any) {
+  private setConfig(value: object | object[]) {
     if (!this.dynamicFormService.config && (!value || (Array.isArray(value) && !value.length))) {
       return;
     }
@@ -69,7 +68,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
       return {};
     }
     return {
-      fieldStore: this.value,
+      fieldStore: this.value
     };
   }
 
@@ -77,34 +76,34 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
    * 设置form的值
    * @param fieldStore form表单值
    */
-  resetFormFieldStore(fieldStore: any) {
+  resetFormFieldStore(fieldStore: any): void {
     if (!this.cmpRef) {
       return;
     }
-    const dynamicForm = this.cmpRef['_component'];
+    const dynamicForm = (this.cmpRef as any)._component;
     dynamicForm.resetValidateForm(fieldStore);
   }
 
   /**
    * 程序调用表单提交
    */
-  submit() {
-    const dynamicForm = this.cmpRef['_component'];
+  submit(): void {
+    const dynamicForm = (this.cmpRef as any)._component;
     (dynamicForm as any).onSubmit();
   }
 
   /**
    * 重置表单数据
    */
-  reset() {
-    const dynamicForm = this.cmpRef['_component'];
+  reset(): void {
+    const dynamicForm = (this.cmpRef as any)._component;
     (dynamicForm as any).resetForm();
   }
 
   /**
    * 注销动态组件
    */
-  destroyCmpRef() {
+  destroyCmpRef(): void {
     if (this.cmpRef) {
       this.cmpRef.destroy();
     }
@@ -113,29 +112,30 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   /**
    * 加载动态组件
    */
-  loadDynamicForm() {
+  loadDynamicForm(): void {
     const f = this.dynamicFormService.loadModule();
     const injector = Injector.create({ providers: [], parent: this._injector });
     const cmpRef = f.create(injector, [], null, this._m);
     this.destroyCmpRef();
     this.tplRef.clear();
     const mergeInstance: any = this.mergeInstance();
-    cmpRef.instance = Object.assign(cmpRef.instance, {
+    cmpRef.instance = {
+      ...cmpRef.instance,
       config: this.dynamicFormService.config,
       layout: this.layout,
-      dynamicSubmit: this.dynamicSubmit,
-      valueChanges: this.valueChanges,
-      ...mergeInstance,
-    });
+      ...mergeInstance
+    };
+    cmpRef.instance.dynamicSubmit.subscribe(($event: object) => this.dynamicSubmit.emit($event));
+    cmpRef.instance.valueChanges.subscribe(($event: object) => this.valueChanges.emit($event));
     this.tplRef.insert(cmpRef.hostView);
     this.cmpRef = cmpRef;
   }
 
-  get value() {
+  get value(): object {
     if (!this.cmpRef) {
       return {};
     }
 
-    return this.cmpRef['_component'].getFormValue();
+    return (this.cmpRef as any)._component.getFormValue();
   }
 }

@@ -16,14 +16,14 @@ export class DynamicLayout {
   }
 
   private getNzSpan() {
-    const { col } = this;
+    const col = this.col;
     let currentSpan = 24;
     let currentCol = Number(col);
     return (child: any) => {
       const nzSpan = child.spanCol || currentSpan / currentCol;
       currentSpan = currentSpan - nzSpan;
       currentCol = currentCol - 1;
-      if (currentCol === 0) {
+      if (currentSpan <= 0) {
         currentSpan = 24;
         currentCol = Number(col);
       }
@@ -35,12 +35,17 @@ export class DynamicLayout {
    * 获取布局的template
    */
   public getTemplate(): string {
-    const { children } = this;
+    const children = this.children;
     const getNzSpan = this.getNzSpan();
     let template = ``;
+    let isShowProps = ``;
     template += `<div nz-row>`;
     children.forEach((child: any) => {
-      template += `<div nz-col nzSpan="${getNzSpan(child)}">`;
+      isShowProps = ``;
+      if (child.getIsShowTemplate) {
+        isShowProps = child.getIsShowTemplate();
+      }
+      template += `<div nz-col nzSpan="${getNzSpan(child)}" ${isShowProps}>`;
       template += child.getTemplate();
       template += `</div>`;
     });

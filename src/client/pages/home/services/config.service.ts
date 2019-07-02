@@ -10,6 +10,9 @@ export class ConfigService {
   get searchForm(): any {
     return [{
       key: 'monthPicker',
+      isShow: (validateForm: any) => {
+        return validateForm.value.checkResult === '0';
+      },
       fieldDecorator: {
         label: '查询月份',
         initialValue: new Date(new Date().setDate(0)),
@@ -18,7 +21,6 @@ export class ConfigService {
         name: 'month',
         nzPlaceHolder: '请选择查询月份',
         nzAllowClear: false,
-        isShow: false,
       },
     }, {
       key: 'select',

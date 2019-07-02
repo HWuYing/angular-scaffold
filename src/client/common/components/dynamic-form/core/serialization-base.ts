@@ -1,11 +1,12 @@
-import { FormGroup, FormBuilder } from '@angular/forms';
-import { DynamicFormItem } from './dynamic-form-item';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { getQuestion, BaseQuestion } from '../question';
+import { GenerateProps } from '../question/generate-props';
+import { DynamicFormItem } from './dynamic-form-item';
 import { DynamicLayout } from './dynamic-layout';
 
 const hasOwnProperty = (o: any, name: string) => Object.prototype.hasOwnProperty.call(o, name);
 
-export class SerializationBase {
+export class SerializationBase extends GenerateProps {
   private rootParent: SerializationBase;
   protected decorator: any[];
   protected parentSerialization: SerializationBase;
@@ -18,6 +19,7 @@ export class SerializationBase {
   public serializationProps: any = {};
   public types: string[] = [];
   constructor(layout?: any) {
+    super();
     this.layout = layout || {};
   }
 
@@ -39,21 +41,27 @@ export class SerializationBase {
    * @param arr 类型数组
    */
   public typeOrInclude(arr: string | string[]): boolean {
+    let _arr: any = arr;
     if (!Array.isArray(arr)) {
-      arr = [arr];
+      _arr = [arr];
     }
-    return arr.reduce((status: boolean, type: string) => status || this.types.includes(type), false);
+    return _arr.reduce((status: boolean, type: string) => status || this.types.includes(type), false);
   }
 
   /**
    * 序列化配置
    */
   protected serialization(config?: any): any[] {
-    const { parentSerialization, name, decorator } = this;
+    const parentSerialization = this.parentSerialization;
+    const name = this.name;
+    const decorator = this.decorator;
     this.types = [];
     const children = this._serialization(decorator, this.propsKey);
-    parentSerialization.serializationProps = Object.assign(parentSerialization.serializationProps, this.serializationProps);
-    (<this>parentSerialization).serializationFormItem.push(this);
+    parentSerialization.serializationProps = {
+      ...parentSerialization.serializationProps,
+      ...this.serializationProps
+    };
+    (parentSerialization as this).serializationFormItem.push(this);
     parentSerialization._initialValue[name] = this.initialValues;
     return children;
   }
@@ -71,7 +79,7 @@ export class SerializationBase {
    * @param isGet 是否采用get方式获取
    */
   protected getValidateFormControlName(isGet?: boolean) {
-    let { parentSerialization } = this;
+    let parentSerialization = this.parentSerialization;
     const nameArray = [];
     let isArrayConstrol: boolean;
     while (!!parentSerialization && !!parentSerialization.name) {
@@ -133,12 +141,12 @@ export class SerializationBase {
       exp = new DynamicFormItem(
         {
           layout: { ...this.layout },
-          ...item,
+          ...item
         },
         question,
         this
       );
-      question.setFormConstrolKey(exp.controlKey);
+      question.setFormControlKey(exp.controlKey);
       // 加入propsmap 最后动态模版中需要
       this.serializationProps[(question as BaseQuestion).propsKey] = (question as BaseQuestion).props;
       // 缓存formItem 代表每个form输入
@@ -161,7 +169,10 @@ export class SerializationBase {
     return fb.group(
       this.serializationFormItem.reduce((o: object, formItem: DynamicFormItem) => {
         const { name } = formItem;
-        return Object.assign(o, formItem.generateFormControlName(_fieldStore[name], fb));
+        return {
+          ...o,
+          ...formItem.generateFormControlName(_fieldStore[name], fb)
+        };
       }, {})
     );
   }

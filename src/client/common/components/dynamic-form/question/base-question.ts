@@ -1,27 +1,26 @@
-import { EventEmitter } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { GenerateProps } from './generate-props';
 
-export class BaseQuestion {
+export class BaseQuestion extends GenerateProps {
   public key: string;
   public name: string;
   public props: object;
   public validate: any[];
   public propsKey: string;
+  public privateProps: string;
   public fieldDecorator: object;
   protected isAddFormConstrolName: boolean = true;
   protected value: any;
   protected _ngModelChange: any;
-  protected privateProps: string;
-  protected propsExclude: string[] = [];
+  protected propsExclude: string[] = ['*ngIf'];
   protected format: (value: any) => any | void;
-  protected constrolKey: string;
-  protected isShow: boolean;
+  protected controlKey: string;
   constructor(key: string, propsKey: string, props: any) {
+    super({ isShow: props. isShow });
     const { name, format, isShow, ...config } = props;
     this.key = key;
     this.name = name;
     this.format = format;
-    this.isShow = isShow;
     this.propsKey = propsKey;
     this.props = this.initProps(config || {});
     this._ngModelChange = props['(ngModelChange)'] || (() => {});
@@ -33,31 +32,28 @@ export class BaseQuestion {
    * @param config 配置
    * @param isFormat 是否格式化值
    */
-  private initProps(config: any): object {
-    const { format, isShow } = this;
+  protected initProps(config: any): object {
+    const format = this.format;
     const isFormat = !!format;
-    return Object.assign(
-      {},
-      config,
-      isFormat ? {
-        '(ngModelChange)': ($event: any, constrol?: FormControl) => this.ngModelChange($event, constrol),
-      } : {},
-      ![null, undefined].includes(isShow) ? {
-        '*ngIf': (validateForm: any, constrol: FormControl) => true,
-      }: {}
-    );
+    const props = {
+      ...config
+    };
+    if (isFormat) {
+      props[this.getTransformProps('ngModelChange')] = ($event: any, constrol?: FormControl) => this.ngModelChange($event, constrol);
+    }
+    return super.initProps(props);
   }
 
   /**
    * form数据改变时change
    * @param value value
    */
-  private ngModelChange(value: any, constrol?: FormControl) {
-    const { format } = this;
+  protected ngModelChange(value: any, constrol?: FormControl) {
+    const format = this.format;
     if (this.value === value) {
       return;
     }
-    const { _ngModelChange } = this;
+    const _ngModelChange = this._ngModelChange;
     const _value = format(value);
     this.value = [null, undefined].includes(_value) ? value : _value;
     setTimeout(() => {
@@ -81,47 +77,24 @@ export class BaseQuestion {
    * @param key 指令，属性
    * @param _value 值
    */
-  private parsetPropsValue(key: string, _value: any): any {
-    const typeString = typeof _value;
-    let value = `${this.privateProps}['${key}']`;
-    switch (typeString) {
-      case 'function':
-        value = this.functionValue(key, value);
-        break;
-      case 'number':
-      case 'boolean':
-        value = _value;
-        break;
-      case 'string':
-        value = `'${_value}'`;
-        break;
-    }
-    return value;
+  protected parsetPropsValue(key: string, _value: any): any {
+    return super.parsetPropsValue(key, _value, this.privateProps);
   }
 
   /**
    * 拼接props 对应的属性 或者指令 事件
    */
   public serializationProps(): string {
-    const { props, name, isAddFormConstrolName } = this;
-    console.log(Object.keys(props)
-    .reduce(
-      (propsArr: any[], key: string) => {
-        if (!this._isExcludeKey(key)) {
-          const bindKey = this.parsePropsKey(key);
-          propsArr.push(`${bindKey}="${this.parsetPropsValue(key, props[key])}"`);
-        }
-        return propsArr;
-      },
-      name && isAddFormConstrolName ? [`formControlName="${name}"`] : []
-    )
-    .join(' '))
+    const props = this.props;
+    const name = this.name;
+    const isAddFormConstrolName = this.isAddFormConstrolName;
     return Object.keys(props)
       .reduce(
         (propsArr: any[], key: string) => {
           if (!this._isExcludeKey(key)) {
-            const bindKey = this.parsePropsKey(key);
-            propsArr.push(`${bindKey}="${this.parsetPropsValue(key, props[key])}"`);
+            const _key = this.getTransformProps(key);
+            const bindKey = this.parsePropsKey(_key);
+            propsArr.push(`${bindKey}="${this.parsetPropsValue(_key, props[key])}"`);
           }
           return propsArr;
         },
@@ -138,14 +111,11 @@ export class BaseQuestion {
     return ``;
   }
 
-  public setFormConstrolKey(constrolKey: string) {
-    this.constrolKey = constrolKey;
-  }
-
-  private functionValue(key: string, value: string) {
-    /^\([\s\S]*\)$/.test(key) ? (value = `${value}($event${this.constrolKey ? `, ${this.constrolKey}` : ''})`) : (value = value);
-    let _value = /^\*ngIf$/.test(key) ? `${value}(${this.constrolKey}, validateForm)`: value;
-    return _value;
+  /**
+   * 获取ngIf 显示隐藏信息
+   */
+  public getIsShowTemplate() {
+    return super.getIsShowTemplate(this.props, this.privateProps);
   }
 
   /**

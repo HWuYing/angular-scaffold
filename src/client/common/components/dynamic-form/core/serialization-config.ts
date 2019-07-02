@@ -1,8 +1,8 @@
-import { SerializationBase } from './serialization-base';
+import { DyanmicFormArray } from './dynamic-form-array';
+import { DynamicFormGroup } from './dynamic-form-group';
 import { DynamicFormItem } from './dynamic-form-item';
 import { DynamicLayout } from './dynamic-layout';
-import { DynamicFormGroup } from './dynamic-form-group';
-import { DyanmicFormArray } from './dynamic-form-array';
+import { SerializationBase } from './serialization-base';
 
 export class SerializationConfig extends SerializationBase {
   public config: any;
@@ -23,7 +23,7 @@ export class SerializationConfig extends SerializationBase {
    * @param config 表单配置项
    */
   public serialization(config: any): any {
-    const { layout } = this;
+    const layout = this.layout;
     this.serializationProps = {};
     this.serializationFormItem = [];
     this.types = [];
