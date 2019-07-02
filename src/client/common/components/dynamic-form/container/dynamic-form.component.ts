@@ -28,11 +28,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     this.dynamicFormService.layout = value;
   }
   @Input() set config(value: any) {
-    if (!this.dynamicFormService.config && (!value || (Array.isArray(value) && !value.length))) {
-      return;
-    }
-    this.dynamicFormService.config = value;
-    this.loadDynamicForm();
+    this.setConfig(value);
   }
   @Input() set fieldStore(value: any) {
     this.resetFormFieldStore(value);
@@ -53,6 +49,21 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     this.destroyCmpRef();
   }
 
+  /**
+   * 设置config值
+   * @param value any
+   */
+  private setConfig(value: any) {
+    if (!this.dynamicFormService.config && (!value || (Array.isArray(value) && !value.length))) {
+      return;
+    }
+    this.dynamicFormService.config = value;
+    this.loadDynamicForm();
+  }
+
+  /**
+   * 获取合并以前的value
+   */
   private mergeInstance(): object {
     if (!this.cmpRef) {
       return {};

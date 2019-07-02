@@ -18,6 +18,7 @@ export class ConfigService {
         name: 'month',
         nzPlaceHolder: '请选择查询月份',
         nzAllowClear: false,
+        isShow: false,
       },
     }, {
       key: 'select',

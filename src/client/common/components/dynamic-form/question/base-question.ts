@@ -15,13 +15,15 @@ export class BaseQuestion {
   protected propsExclude: string[] = [];
   protected format: (value: any) => any | void;
   protected constrolKey: string;
+  protected isShow: boolean;
   constructor(key: string, propsKey: string, props: any) {
-    const { name, format, ...config } = props;
+    const { name, format, isShow, ...config } = props;
     this.key = key;
     this.name = name;
     this.format = format;
+    this.isShow = isShow;
     this.propsKey = propsKey;
-    this.props = this.initProps(config || {}, !!format);
+    this.props = this.initProps(config || {});
     this._ngModelChange = props['(ngModelChange)'] || (() => {});
     this.privateProps = `serialization.serializationProps['${this.propsKey}']`;
   }
@@ -31,15 +33,18 @@ export class BaseQuestion {
    * @param config 配置
    * @param isFormat 是否格式化值
    */
-  private initProps(config: any, isFormat: boolean): object {
+  private initProps(config: any): object {
+    const { format, isShow } = this;
+    const isFormat = !!format;
     return Object.assign(
       {},
       config,
-      isFormat
-        ? {
-            '(ngModelChange)': ($event: any, constrol?: FormControl) => this.ngModelChange($event, constrol),
-          }
-        : {}
+      isFormat ? {
+        '(ngModelChange)': ($event: any, constrol?: FormControl) => this.ngModelChange($event, constrol),
+      } : {},
+      ![null, undefined].includes(isShow) ? {
+        '*ngIf': (validateForm: any, constrol: FormControl) => true,
+      }: {}
     );
   }
 
@@ -81,7 +86,7 @@ export class BaseQuestion {
     let value = `${this.privateProps}['${key}']`;
     switch (typeString) {
       case 'function':
-        /^\([\s\S]*\)$/.test(key) ? (value = `${value}($event${this.constrolKey ? `, ${this.constrolKey}` : ''})`) : (value = value);
+        value = this.functionValue(key, value);
         break;
       case 'number':
       case 'boolean':
@@ -99,6 +104,18 @@ export class BaseQuestion {
    */
   public serializationProps(): string {
     const { props, name, isAddFormConstrolName } = this;
+    console.log(Object.keys(props)
+    .reduce(
+      (propsArr: any[], key: string) => {
+        if (!this._isExcludeKey(key)) {
+          const bindKey = this.parsePropsKey(key);
+          propsArr.push(`${bindKey}="${this.parsetPropsValue(key, props[key])}"`);
+        }
+        return propsArr;
+      },
+      name && isAddFormConstrolName ? [`formControlName="${name}"`] : []
+    )
+    .join(' '))
     return Object.keys(props)
       .reduce(
         (propsArr: any[], key: string) => {
@@ -125,12 +142,18 @@ export class BaseQuestion {
     this.constrolKey = constrolKey;
   }
 
+  private functionValue(key: string, value: string) {
+    /^\([\s\S]*\)$/.test(key) ? (value = `${value}($event${this.constrolKey ? `, ${this.constrolKey}` : ''})`) : (value = value);
+    let _value = /^\*ngIf$/.test(key) ? `${value}(${this.constrolKey}, validateForm)`: value;
+    return _value;
+  }
+
   /**
    * 是否对key进行特殊处理
    * @param key string
    */
   private _isNotDealKey(key: string): boolean {
-    return ['disabled'].includes(key) || /(^\[[\S\s]+\]$)|(^\([\s\S]+\)$)/.test(key);
+    return ['disabled'].includes(key) || /(^\[[\S\s]+\]$)|(^\([\s\S]+\)$)|(^\*[\s\S]+$)/.test(key);
   }
 
   /**
