@@ -8,7 +8,7 @@ import { SerializationConfig } from './serialization-config';
  * @param config 表单配置
  * @param layout 表单布局
  */
-export const factoryForm = (config: any, layout?: any, nzLayout?: string) => {
+export const factoryForm = (config: any, layout?: any, templateMap?: object, nzLayout?: string) => {
   // 序列化配置项
   const serializationConfig = new SerializationConfig(config, {
     nzLayout,
@@ -22,11 +22,12 @@ export const factoryForm = (config: any, layout?: any, nzLayout?: string) => {
     @Output() readonly dynamicSubmit: EventEmitter<any> = new EventEmitter();
     @Output() readonly valueChanges: EventEmitter<any> = new EventEmitter();
     @Input() set fieldStore(value: object) {
-      this._fieldStore = value || {};
+      this.underFieldStore = value || {};
       this.resetValidateForm();
     }
-    private _fieldStore: any = {};
+    private underFieldStore: any = {};
     private subscription: Subscription = new Subscription();
+    public templateMap = templateMap;
     public validateForm: FormGroup;
     public serialization: SerializationConfig = serializationConfig;
     constructor(private fb: FormBuilder) { }
@@ -76,6 +77,16 @@ export const factoryForm = (config: any, layout?: any, nzLayout?: string) => {
     }
 
     /**
+     * 验证表单
+     */
+    validationForm() {
+      this.eachForm(this.validateForm, (control: FormControl) => {
+        control.markAsDirty();
+        control.updateValueAndValidity();
+      });
+    }
+
+    /**
      * 表单提交 对应onSubmit事件
      * @param event MoustEvent
      */
@@ -85,10 +96,7 @@ export const factoryForm = (config: any, layout?: any, nzLayout?: string) => {
         event.preventDefault();
       }
       // 验证表单
-      this.eachForm(validateForm, (control: FormControl) => {
-        control.markAsDirty();
-        control.updateValueAndValidity();
-      });
+      this.validationForm();
       if (validateForm.valid) {
         this.dynamicSubmit.emit(validateForm.value);
       }
@@ -119,13 +127,13 @@ export const factoryForm = (config: any, layout?: any, nzLayout?: string) => {
      */
     resetValidateForm(fieldStore?: any) {
       if (fieldStore) {
-        this._fieldStore = fieldStore;
+        this.underFieldStore = fieldStore;
       }
-      const _fieldStore = this._fieldStore;
-      if (this.validateForm && !serializationConfig.typeOrInclude('formArray')) {
-        this.validateForm.reset(_fieldStore);
+      const underFieldStore = this.underFieldStore;
+      if (this.validateForm && !serializationConfig.typeOrInclude(['formArray', 'table'])) {
+        this.validateForm.reset(underFieldStore);
       } else {
-        this.createValidateForm(_fieldStore);
+        this.createValidateForm(underFieldStore);
       }
     }
 

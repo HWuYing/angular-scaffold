@@ -29,9 +29,17 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   @Input() trTemplateRef: TemplateRef<any>; // tr的templateRef 存在就采用传入的处理
   @Input() tdTemplateRef: TemplateRef<any>; // td的templateRef 存在就采用传入的处理
   @Input() pageSize: number = 20; // 每页调数
+  @Input() cellAlign: string = 'center'; // 单元格对齐方式 center left right
   @Input() set columns(value: any[]) {
-    this._columns = [].concat(this.isSerial ? this._serialColumn : [], value);
+    this._columns = [].concat(this.isSerial ? this._serialColumn : [], value).map((_column: object) => ({
+      align: this.cellAlign,
+      ..._column
+    }));
     this.resetMaxWidth();
+    this.resetWidthConfig();
+  }
+  @Input() set theadColumn(value: any[]) {
+    console.log(value);
   }
   @ViewChild(NzTableComponent, { static: true }) table: NzTableComponent;
   @Output() readonly paginationChange: EventEmitter<any> = new EventEmitter(); // 分页信息改变事件
@@ -39,6 +47,8 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   @Output() readonly checkChange: EventEmitter<any> = new EventEmitter(); // 选择数据改变事件
   private _serialColumn: object = { title: '序号', width: 70, isSerial: true };
   private _maxWidth: any; // 最大宽对
+  private _theadColumn: any[] = [];
+  private _widthConfig: string[] = [];
   private _columns: any[] = []; // 配置对象
   private _defaultColumnWidth: number = 120; // 默认每列宽度
   private _selectedRowKeys: any[] = []; // 选中的列的key值
@@ -57,7 +67,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
 
   constructor(private elementRef: ElementRef) {}
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ngAfterViewInit() {
     this._resetScroll(this.isHeadFixed);
@@ -84,9 +94,11 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
    * @param isHeadFixed boolean
    */
   _resetScroll(isHeadFixed: boolean): void {
-    if (!isHeadFixed && this.scroll.y) {
-      this.scroll = {};
-      return;
+    if (!isHeadFixed) {
+      if (this.scroll.y) {
+        this.scroll = {};
+      }
+      return ;
     }
     setTimeout(() => {
       const { nativeElement } = this.elementRef;
@@ -187,6 +199,13 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * 重置宽度配置
+   */
+  resetWidthConfig() {
+    this._widthConfig = this.columns.map((column: any) => this.getWdith(column));
+  }
+
+  /**
    * 回到tbody顶部
    */
   toTop() {
@@ -223,12 +242,35 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * 当前表格标签可点击
+   * @param data 数据
+   * @param column column
+   */
+  isClickCeel(data: any, column: object) {
+    return Object.prototype.hasOwnProperty.call(column, 'click');
+  }
+
+  /**
    * 获取数据的key值
    * @param data 数据
    * @param index 索引
    */
   getRowKey(data: any, index: number) {
     return data.rowKey || index.toString();
+  }
+
+  /**
+   * 获取宽度配置
+   */
+  get widthConfig(): string[] {
+    if (!this.isTheadGroup) {
+      return void 0;
+    }
+    return this._widthConfig;
+  }
+
+  get isTheadGroup(): boolean {
+    return !!(this._theadColumn && this._theadColumn.length);
   }
 
   /**
@@ -247,6 +289,13 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
       selectedRowKeys: this._selectedRowKeys,
       selectedRows: this._selectedRows
     };
+  }
+
+  /**
+   * 获取表头单独配置信息
+   */
+  get theadColumn(): any[] {
+    return this._theadColumn;
   }
 
   /**

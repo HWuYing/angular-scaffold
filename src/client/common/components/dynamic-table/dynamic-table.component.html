@@ -9,24 +9,28 @@
   [nzData]="dataSource"
   [nzLoading]="loading"
   [nzScroll]="scroll"
+  [nzWidthConfig]="widthConfig"
+  [nzShowPagination]="showPagination"
+  [nzShowTotal]="showTotal"
   (nzPageIndexChange)="_paginationIndexChange($event)"
   (nzPageSizeChange)="_paginationSizeChange($event)"
   (nzCurrentPageDataChange)="_pageDataChange($event)"
-  [nzShowPagination]="showPagination"
-  [nzShowTotal]="showTotal"
 >
   <thead>
-    <tr>
-      <ng-container *ngIf="showCheckbox">
-        <th
-          nzShowCheckbox
-          [(nzChecked)]="isAllDisplayDataChecked"
-          [nzIndeterminate]="isIndeterminate"
-          (nzCheckedChange)="_checkAll($event)"
-        ></th>
-      </ng-container>
-      <th *ngFor="let column of columns" [nzWidth]="getWdith(column)">{{ column.title }}</th>
-    </tr>
+    <ng-container *ngIf="isTheadGroup"></ng-container>
+    <ng-container *ngIf="!isTheadGroup">
+      <tr>
+        <ng-container *ngIf="showCheckbox">
+          <th
+            nzShowCheckbox
+            [(nzChecked)]="isAllDisplayDataChecked"
+            [nzIndeterminate]="isIndeterminate"
+            (nzCheckedChange)="_checkAll($event)"
+          ></th>
+        </ng-container>
+        <th *ngFor="let column of columns" [nzWidth]="getWdith(column)" [ngClass]="'cell-align-'+ column.align">{{ column.title }}</th>
+      </tr>
+    </ng-container>
   </thead>
   <tbody>
     <ng-container *ngIf="!trTemplateRef">
@@ -55,25 +59,29 @@
     ></td>
   </ng-container>
   <ng-container *ngIf="!tdTemplateRef">
-    <td class="td" *ngFor="let column of columns">
-      <ng-container *ngTemplateOutlet="td, context: { $implicit: data, column: column }"></ng-container>
+    <td class="td" *ngFor="let column of columns" [ngClass]="'cell-align-'+ column.align">
+      <ng-container *ngTemplateOutlet="td, context: { $implicit: data, column: column, index: index }"></ng-container>
     </td>
   </ng-container>
   <ng-container *ngIf="tdTemplateRef">
     <ng-container *ngFor="let column of columns">
-      <ng-container *ngTemplateOutlet="tdTemplateRef, context: { $implicit: data, column: column, tdTemplate: td }"></ng-container>
+      <ng-container *ngTemplateOutlet="tdTemplateRef, context: { $implicit: data, column: column, tdTemplate: td, index: index }"></ng-container>
     </ng-container>
   </ng-container>
 </ng-template>
 
-<ng-template #td let-data let-column="column">
+<ng-template #td let-data let-column="column" let-index="index">
   <ng-container *ngIf="!column.template">
-    {{ column.isSerial ? index + 1 : data[column.key]}}
+    <!-- 单元格标签点击 -->
+    <ng-container *ngIf="isClickCeel(data, column)">
+      <a (click)="column.click(data, column)">{{ column.isSerial ? index + 1 : data[column.key]}}</a>
+    </ng-container>
+    <ng-container *ngIf="!isClickCeel(data, column)">{{ column.isSerial ? index + 1 : data[column.key]}}</ng-container>
   </ng-container>
   <ng-container *ngIf="column.template">
     <ng-container
       *ngTemplateOutlet="templateMap[column.template];
-        context: {$implicit: data, column: column, value: data[column.key]}">
+        context: {$implicit: data, column: column, value: data[column.key], index: index}">
     </ng-container>
   </ng-container>
 </ng-template>

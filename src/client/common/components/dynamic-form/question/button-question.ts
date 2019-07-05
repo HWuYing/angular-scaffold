@@ -1,17 +1,15 @@
 import { BaseQuestion } from './base-question';
 
-export class TextQuestion extends BaseQuestion {
-  private target: string;
+export class ButtonQuestion extends BaseQuestion {
   constructor(key: string, propsKey: string, props: any) {
-    const { target, ...other } = props;
+    const { ...other } = props;
     super(key, propsKey, other);
-    this.propsExclude = ['text', 'placeholder'];
-    this.target = target || 'span';
+    this.propsExclude = ['text'];
     this.isAddFormConstrolName = false;
   }
 
   public getTemplate(): string {
     const text = this.controlKey && this.name ? this.controlKey + '.value' : `${this.privateProps}.text`;
-    return `<${this.target} ${this.serializationProps()}>{{ ${text} }}</${this.target}>`;
+    return `<button nz-button ${this.serializationProps()}>{{ ${text} }}</button>`;
   }
 }

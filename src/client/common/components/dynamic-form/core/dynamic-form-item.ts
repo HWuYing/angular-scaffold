@@ -4,8 +4,7 @@ import { GenerateProps } from '../question/generate-props';
 
 export class DynamicFormItem extends GenerateProps {
   protected parentSerialization: any;
-  private constrolParentKey: string;
-  private fb: FormBuilder;
+  public constrolParentKey: string;
   public controlKey: string;
   public question: BaseQuestion;
   public fieldDecorator: any;
@@ -27,6 +26,7 @@ export class DynamicFormItem extends GenerateProps {
     this.isShow = isShow;
     this.fieldDecorator = fieldDecorator || {};
     this.question = question;
+    this.controlValidate = fieldDecorator.validate;
     this.validate = [];
     this.parentSerialization = parentSerialization;
     this.constrolParentKey = `validateForm${this.getValidateFormControlName()}`;
@@ -38,16 +38,14 @@ export class DynamicFormItem extends GenerateProps {
    * @param validateForm Form
    * @param constrol 控制器
    */
-  protected isChangeShow(validateForm: FormGroup, constrol?: FormControl) {
-    const _isShow = super.isChangeShow(validateForm, constrol);
-    if (_isShow) {
-      if (constrol.value === null) {
-        constrol.setValue(this.initialValue);
-      }
-    } else {
-      constrol.setValue(null);
-    }
-    return _isShow;
+  protected isChangeShow(validateForm: FormGroup, constrol?: FormControl, parentGroup?: FormGroup): boolean {
+    const isShow = super.isChangeShow(validateForm, constrol, parentGroup);
+    this.toggerControl(
+      this.generateFormControlName(undefined, this.fb),
+      !!(isShow && parentGroup),
+      parentGroup
+    );
+    return isShow;
   }
 
   /**
@@ -58,7 +56,7 @@ export class DynamicFormItem extends GenerateProps {
     const nameArray = [];
     let isArrayConstrol: boolean;
     while (!!parentSerialization && !!parentSerialization.name) {
-      isArrayConstrol = parentSerialization.type === 'formArray';
+      isArrayConstrol = ['formArray', 'table'].includes(parentSerialization.type );
       nameArray.unshift(`get('${parentSerialization.name}')${isArrayConstrol ? `?.get(i.toString())` : ''}`);
       parentSerialization = parentSerialization.parentSerialization;
     }
@@ -72,22 +70,20 @@ export class DynamicFormItem extends GenerateProps {
    * 验证错误信息显示的template
    */
   public validateTemplate(): string {
-    const fieldDecorator = this.fieldDecorator;
-    const name = this.name;
     const controlKey = this.controlKey;
-    const { validate } = fieldDecorator;
+    const validate = (this.question as any).controlValidate;
     let template = ``;
-    if (!validate || !name) {
+    if (!validate) {
       return template;
     }
     this.validate = [];
     template += `<nz-form-explain *ngIf="${controlKey}?.dirty && ${controlKey}?.errors">`;
     validate.forEach((vali: any) => {
-      this.validate.push(vali.patter);
-      template += `
-        <ng-container *ngIf="${controlKey}?.hasError('${vali.isError}')">
-          ${vali.message}
-        </ng-container>`;
+      if (vali.patter) {
+        this.validate.push(vali.patter);
+      }
+      const underControlKey = vali.controlKey || this.controlKey;
+      template += `<ng-container *ngIf="${underControlKey}?.hasError('${vali.isError}')">${vali.message}</ng-container>`;
     });
     template += `</nz-form-explain>`;
     return template;
@@ -97,14 +93,14 @@ export class DynamicFormItem extends GenerateProps {
    * 获取formItem的template
    */
   public getTemplate() {
-    const { labelStyle } = this.layout;
+    const { labelStyle, nzLayout } = this.layout;
     const fieldDecorator = this.fieldDecorator;
     const question = this.question;
     const { label } = fieldDecorator;
     const validateTemplate = this.validateTemplate();
     const isRequire = this.validate.includes(Validators.required);
     const hasLabel = fieldDecorator && !!label;
-    return `<nz-form-item [nzFlex]="true">
+    return `<nz-form-item [nzFlex]="${nzLayout !== 'vertical'}" [style.marginRight]="'16px'">
               ${
                 hasLabel
                   ? `<nz-form-label style="${labelStyle}" ${isRequire ? 'nzRequired' : ''} nzFor="${this.name}">${label}</nz-form-label>`
@@ -135,9 +131,8 @@ export class DynamicFormItem extends GenerateProps {
    * @param field 表单节点值
    */
   public generateFormControlName(field: any, fb?: FormBuilder): object {
-    const name = this.question.name;
     this.fb = fb;
-    return name ? { [name]: [field || field === 0 || field === '' ? field : this.initialValue, this.validate] } : {};
+    return this.question.generateFormControlInfo(field, fb);
   }
 
   get initialValue() {

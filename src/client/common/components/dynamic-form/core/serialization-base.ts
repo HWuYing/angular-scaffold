@@ -1,25 +1,24 @@
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { getQuestion, BaseQuestion } from '../question';
-import { GenerateProps } from '../question/generate-props';
 import { DynamicFormItem } from './dynamic-form-item';
 import { DynamicLayout } from './dynamic-layout';
 
 const hasOwnProperty = (o: any, name: string) => Object.prototype.hasOwnProperty.call(o, name);
-
-export class SerializationBase extends GenerateProps {
-  private rootParent: SerializationBase;
+const objectType = (o: object) => Object.prototype.toString.call(o).replace(/^\[object ([\s\S]+)\]$/g, '$1');
+export class SerializationBase {
+  protected rootParent: SerializationBase;
   protected decorator: any[];
   protected parentSerialization: SerializationBase;
   protected layout: any;
+  protected controlKey: string;
   public propsKey: string;
   public type: string;
   public name: any;
   public serializationFormItem: any[] = [];
-  public _initialValue: object = {};
+  public privateInitialValue: object = {};
   public serializationProps: any = {};
   public types: string[] = [];
   constructor(layout?: any) {
-    super();
     this.layout = layout || {};
   }
 
@@ -41,11 +40,11 @@ export class SerializationBase extends GenerateProps {
    * @param arr 类型数组
    */
   public typeOrInclude(arr: string | string[]): boolean {
-    let _arr: any = arr;
+    let underArr: any = arr;
     if (!Array.isArray(arr)) {
-      _arr = [arr];
+      underArr = [arr];
     }
-    return _arr.reduce((status: boolean, type: string) => status || this.types.includes(type), false);
+    return underArr.reduce((status: boolean, type: string) => status || this.types.includes(type), false);
   }
 
   /**
@@ -56,13 +55,13 @@ export class SerializationBase extends GenerateProps {
     const name = this.name;
     const decorator = this.decorator;
     this.types = [];
-    const children = this._serialization(decorator, this.propsKey);
+    const children = this.privateSerialization(decorator, this.propsKey);
     parentSerialization.serializationProps = {
       ...parentSerialization.serializationProps,
       ...this.serializationProps
     };
     (parentSerialization as this).serializationFormItem.push(this);
-    parentSerialization._initialValue[name] = this.initialValues;
+    parentSerialization.privateInitialValue[name] = this.initialValues;
     return children;
   }
 
@@ -71,7 +70,7 @@ export class SerializationBase extends GenerateProps {
    * @param item 配置
    */
   private isSerializationItemConfig(item: any): boolean {
-    return this._isDyanmicFormArray(item) || this._isDynamicFormGroup(item);
+    return this.isDyanmicFormArray(item) || this.isDynamicFormGroup(item);
   }
 
   /**
@@ -99,21 +98,22 @@ export class SerializationBase extends GenerateProps {
    * @param config 表单配置项
    * @param preFix 设置表单item对应值的前缀
    */
-  protected _serialization(config: any, preFix: any): any[] {
-    let _config = config;
-    if (!_config) {
+  protected privateSerialization(config: any, preFix: any): any[] {
+    let underConfig = config;
+    if (!underConfig) {
       return [];
     }
 
-    if (!Array.isArray(_config)) {
-      _config = [_config];
+    if (!Array.isArray(underConfig)) {
+      underConfig = [underConfig];
     }
-    return _config.reduce((serialization: any[], item: any, index: number) => {
-      const exp = this._serializationItemConfig(`${preFix}_${index.toString()}`, item);
+    return underConfig.reduce((serialization: any[], item: any, index: number) => {
+      const exp = this.privateSerializationItemConfig(`${preFix}_${index.toString()}`, item);
       if (exp) {
         serialization.push(exp);
-        if (this.rootParent && !this.rootParent.types.includes(exp.type)) {
-          this.rootParent.types.push(exp.type);
+        const rootParent = this.rootParent || this;
+        if (!rootParent.types.includes(exp.type)) {
+          rootParent.types.push(exp.type);
         }
       }
       return serialization;
@@ -125,16 +125,16 @@ export class SerializationBase extends GenerateProps {
    * @param propsKey string
    * @param item configItem
    */
-  protected _serializationItemConfig(propsKey: string, item: any): DynamicFormItem | DynamicLayout {
+  protected privateSerializationItemConfig(propsKey: string, item: any): DynamicFormItem | DynamicLayout {
     let exp: DynamicFormItem | DynamicLayout;
     if (this.isSerializationItemConfig(item)) {
       // 是容器
       if (this.rootParent) {
-        exp = this.rootParent._serializationItemConfig.call(this, propsKey, item);
+        exp = this.rootParent.privateSerializationItemConfig.call(this, propsKey, item);
       }
-    } else if (this._isDynamicLayoutConfig(item)) {
+    } else if (this.isDynamicLayoutConfig(item)) {
       // 是布局
-      exp = new DynamicLayout(item, this._serialization(item.decorator, propsKey) as any);
+      exp = new DynamicLayout(item, this.privateSerialization(item.decorator, propsKey) as any);
     } else {
       // 不是布局（formItem）
       const question = getQuestion(propsKey, item);
@@ -146,15 +146,16 @@ export class SerializationBase extends GenerateProps {
         question,
         this
       );
-      question.setFormControlKey(exp.controlKey);
+      question.setFormControlValidate((exp as any).controlValidate);
+      question.setControlInitialValue(exp.initialValue);
+      question.setFormControlKey(exp.controlKey, exp.constrolParentKey);
+
       // 加入propsmap 最后动态模版中需要
       this.serializationProps[(question as BaseQuestion).propsKey] = (question as BaseQuestion).props;
       // 缓存formItem 代表每个form输入
       this.serializationFormItem.push(exp);
       // 配置中的初始化数据 form reset等需要
-      if (question.name && ![undefined, null].includes(exp.initialValue)) {
-        this._initialValue[question.name] = exp.initialValue;
-      }
+      this.addInitialValue(exp);
     }
     return exp;
   }
@@ -165,23 +166,38 @@ export class SerializationBase extends GenerateProps {
    * @param fieldStore object表单初始化数据
    */
   public generateFormGroup(fb: FormBuilder, fieldStore?: object): FormGroup {
-    const _fieldStore = fieldStore || {};
+    const underFieldStore = fieldStore || {};
     return fb.group(
       this.serializationFormItem.reduce((o: object, formItem: DynamicFormItem) => {
         const { name } = formItem;
         return {
           ...o,
-          ...formItem.generateFormControlName(_fieldStore[name], fb)
+          ...formItem.generateFormControlName(underFieldStore[name], fb)
         };
       }, {})
     );
   }
 
   /**
+   * 添加默认的初始化数据 initialValue
+   * @param formItem DynamicFormItem
+   */
+  private addInitialValue(formItem: DynamicFormItem): void {
+    const { question } = formItem;
+    if (objectType(formItem.initialValue) === 'Object') {
+      Object.keys(formItem.initialValue).forEach((key: string) => {
+        this.privateInitialValue[key] = formItem.initialValue[key];
+      });
+    } else if (question.name && ![undefined, null].includes(formItem.initialValue)) {
+      this.privateInitialValue[question.name] = formItem.initialValue;
+    }
+  }
+
+  /**
    * 动态布局配置
    * @param item 配置
    */
-  private _isDynamicLayoutConfig(item: any) {
+  private isDynamicLayoutConfig(item: any) {
     return hasOwnProperty(item, 'decorator');
   }
 
@@ -189,20 +205,28 @@ export class SerializationBase extends GenerateProps {
    * formGroup动态配置
    * @param item 配置
    */
-  protected _isDynamicFormGroup(item: any) {
+  protected isDynamicFormGroup(item: any) {
     return item.type === 'formGroup';
+  }
+
+  /**
+   * table动态配置
+   * @param item 配置
+   */
+  protected isDyanmicTable(item: any) {
+    return item.type === 'table';
   }
 
   /**
    * formArray动态配置
    * @param item 配置
    */
-  protected _isDyanmicFormArray(item: any) {
+  protected isDyanmicFormArray(item: any) {
     return item.type === 'formArray';
   }
 
   get initialValues(): object {
-    return this._initialValue;
+    return this.privateInitialValue;
   }
 
   get spanCol() {

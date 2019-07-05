@@ -1,38 +1,46 @@
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 
 export class GenerateProps {
   protected isShow: boolean;
+  protected propsExclude: string[] = ['*ngIf'];
   protected transformProps: any = {
     ngModelChange: '(ngModelChange)',
     style: '[ngStyle]',
     class: '[ngClass]',
-    isShow: '*ngIf'
+    isShow: '*ngIf',
+    click: '(click)',
+    disabled: 'attr.disabled'
   };
+  protected controlValidate: any[] = [];
+  protected initialValue: any;
   protected controlKey: string;
+  protected constrolParentKey: string;
+  protected fb: FormBuilder;
   constructor(defaultProps?: any) {
-    const _defaultProps = defaultProps || {};
-    this.isShow = _defaultProps.isShow;
+    const underDefaultProps = defaultProps || {};
+    this.isShow = underDefaultProps.isShow;
   }
 
   /**
    * 解析生成props value
    * @param key 指令，属性
-   * @param _value 值
+   * @param underValue 值
    * @param privateProps 对应组件中的属性
    */
-  protected parsetPropsValue(key: string, _value: any, privateProps: string): any {
-    const typeString = typeof _value;
+  protected parsetPropsValue(key: string, underValue: any, privateProps: string): any {
+    const typeString = typeof underValue;
+    const transformKey = this.getTransformProps(key);
     let value = `${privateProps}['${key}']`;
     switch (typeString) {
       case 'function':
-        value = this.functionValue(key, value);
+        value = this.functionValue(transformKey, value);
         break;
       case 'number':
       case 'boolean':
-        value = _value;
+        value = underValue;
         break;
       case 'string':
-        value = `'${_value}'`;
+        value = `'${underValue}'`;
         break;
     }
     return value;
@@ -43,13 +51,13 @@ export class GenerateProps {
    * @param validateForm Form
    * @param constrol 控制器
    */
-  protected isChangeShow(validateForm: FormGroup, constrol?: FormControl) {
+  protected isChangeShow(validateForm: FormGroup, constrol?: FormControl, parentGroup?: FormGroup) {
     const isShow: any = this.isShow;
-    let _isShow: boolean = isShow;
+    let privateIsShow: boolean = isShow;
     if (typeof isShow === 'function') {
-      _isShow = isShow(validateForm, constrol);
+      privateIsShow = isShow(validateForm, constrol, parentGroup);
     }
-    return _isShow;
+    return privateIsShow;
   }
 
   /**
@@ -64,7 +72,7 @@ export class GenerateProps {
     };
 
     if (![null, undefined].includes(isShow)) {
-      props[this.getTransformProps('isShow')] = (validateForm: any, constrol: FormControl) => this.isChangeShow(validateForm, constrol);
+      props[this.getTransformProps('isShow')] = (validateForm: any, constrol: FormControl, propsGroup?: FormGroup) => this.isChangeShow(validateForm, constrol, propsGroup);
     }
     return props;
   }
@@ -83,21 +91,79 @@ export class GenerateProps {
    * @param value value
    */
   protected functionValue(key: string, value: string) {
-    let _value: string;
+    let underValue: string;
     if (/^\*ngIf$/.test(key)) {
-      _value = `${value}(validateForm${this.controlKey ? `, ${this.controlKey}` : ''})`;
+      underValue = this.getNgIfProps(value);
     } else if (/^\([\s\S]*\)$/.test(key)) {
-      _value = `${value}($event${this.controlKey ? `, ${this.controlKey}` : ''})`;
+      underValue = `${value}($event${this.controlKey ? `, ${this.controlKey}` : ', null'}, validateForm)`;
     }
-    return _value;
+    return underValue;
+  }
+
+  /**
+   * 获取*ngif的拼接
+   * @param propsKey props对应值
+   */
+  protected getNgIfProps(propsKey: string) {
+    return `${propsKey}(validateForm${this.controlKey ? `, ${this.controlKey}, ${this.constrolParentKey}` : ''})`;
+  }
+
+  /**
+   * 是否排除对key进行序列化
+   * @param key string
+   */
+  protected isExcludeKey(key: string, value: any): boolean {
+    let status = this.propsExclude.includes(key);
+    if (!status) {
+      switch (key) {
+        case 'disabled': value === true ? status = false : status = true; break;
+      }
+    }
+    return status;
+  }
+
+  /**
+   * 添加、删除当前control
+   * @param controlOption controlOption
+   * @param addStatus isadd
+   * @param parentGroup FormGroup
+   */
+  protected toggerControl(controlOption: any, addStatus: boolean, parentGroup: FormGroup) {
+    Object.keys(controlOption).forEach((name: string) => {
+      if (addStatus) {
+        if (!parentGroup.get(name)) {
+          const option = controlOption[name];
+          parentGroup.addControl(name, this.fb.control(option[0], option[1]));
+        }
+      } else if (parentGroup.get(name)) {
+        parentGroup.removeControl(name);
+      }
+    });
   }
 
   /**
    * 设置控制器
    * @param controlKey 控制器keyTemplate
    */
-  public setFormControlKey(controlKey: string) {
+  public setFormControlKey(controlKey: string, constrolParentKey: string) {
     this.controlKey = controlKey;
+    this.constrolParentKey = constrolParentKey;
+  }
+
+  /**
+   * 设置控件验证规则
+   * @param validate 验证规则
+   */
+  public setFormControlValidate(validate: any[]) {
+    this.controlValidate = [...(validate || [])];
+  }
+
+  /**
+   * 设置初始值
+   * @param initialValue 初始值
+   */
+  public setControlInitialValue(initialValue: any) {
+    this.initialValue = initialValue;
   }
 
   /**

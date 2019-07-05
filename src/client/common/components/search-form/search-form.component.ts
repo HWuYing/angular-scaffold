@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { DynamicFormComponent } from '../dynamic-form/container/dynamic-form.component';
+import { DynamicFormComponent } from '../dynamic-form/enquire/dynamic-form.component';
 
 @Component({
   selector: 'app-search-form',

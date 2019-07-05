@@ -2,7 +2,7 @@ import { FormBuilder } from '@angular/forms';
 import { SerializationBase } from './serialization-base';
 
 export class DynamicFormGroup extends SerializationBase {
-  private __initialValues: any;
+  private privateInitialValues: any;
   public children: any[];
   constructor(layout: any, propsKey: string, config: any, parentSerialization: SerializationBase) {
     const { type, props = {}, decorator, layout: itemLayout, fieldDecorator = {} } = config;
@@ -11,7 +11,7 @@ export class DynamicFormGroup extends SerializationBase {
     this.type = type;
     this.name = props.name;
     this.propsKey = propsKey;
-    this.__initialValues = fieldDecorator.initialValues;
+    this.privateInitialValues = fieldDecorator.initialValues;
     this.setParentSerialization(parentSerialization);
     this.children = this.serialization();
   }
@@ -22,8 +22,8 @@ export class DynamicFormGroup extends SerializationBase {
   public getTemplate() {
     const name = this.name;
     let template = `<ng-container formGroupName="${name}">`;
-    template += this.children.reduce((_template: string, child: any) => {
-      return _template + child.getTemplate();
+    template += this.children.reduce((underTemplate: string, child: any) => {
+      return underTemplate + child.getTemplate();
     }, ``);
     template += `</ng-container>`;
     return template;
@@ -41,8 +41,8 @@ export class DynamicFormGroup extends SerializationBase {
 
   get initialValues(): object {
     return {
-      ...this.__initialValues,
-      ...this._initialValue
+      ...this.privateInitialValues,
+      ...this.privateInitialValue
     };
   }
 }

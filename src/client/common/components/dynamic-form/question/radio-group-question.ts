@@ -1,23 +1,19 @@
 import { BaseQuestion } from './base-question';
 
-export class SelectQuestion extends BaseQuestion {
+export class RadioGroupQuestion extends BaseQuestion {
   private children: any[];
   constructor(key: string, propsKey: string, props: any) {
     const { children, ...config } = props;
     super(key, propsKey, config);
     this.children = children || [];
-    this.transformProps = {
-      ...this.transformProps,
-      placeholder: 'nzPlaceHolder'
-    };
   }
 
   public getTemplate(): string {
-    let template = `<nz-select ${this.serializationProps()}>`;
+    let template = `<nz-radio-group ${this.serializationProps()}>`;
     this.children.forEach((child: any) => {
-      template += `<nz-option nzLabel="${child.label}" [nzValue]="'${child.value}'"></nz-option>`;
+      template += `<label nz-radio nzValue="${child.value}">${child.label}</label>`;
     });
-    template += `</nz-select>`;
+    template += `</nz-radio-group>`;
     return template;
   }
 }

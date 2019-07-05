@@ -9,7 +9,7 @@
 >
   <ng-content></ng-content>
   <ng-template #modalFooter>
-    <button *ngIf="isShowCancel" nz-button nzType="default" (click)="_onCancel()">取消</button>
-    <button *ngIf="isShowOk" nz-button nzType="primary" (click)="_onOk()" [nzLoading]="isConfirmLoading">确定</button>
+    <button *ngIf="isShowCancel" nz-button nzType="default" (click)="_onCancel()">{{cancelText}}</button>
+    <button *ngIf="isShowOk" nz-button nzType="primary" (click)="_onOk()">{{okText}}</button>
   </ng-template>
 </nz-modal>

@@ -6,16 +6,17 @@ import { factoryForm } from '../../core/dynamic-form';
 
 @Injectable()
 export class DynamicFormService {
-  private _config: any; // 表单配置文件
-  private _layout: any; // 表单布局配置
-  private _nzLayout: string;
+  private underConfig: any; // 表单配置文件
+  private underLayout: any; // 表单布局配置
+  private underNzLayout: string;
+  private underTemplateMap: object;
   constructor(private _compiler: Compiler) {}
 
   /**
    * 创建动态组件的NgModule
    */
   private factoryModule() {
-    const TemComponent = factoryForm(this.config, this.layout, this.nzLayout);
+    const TemComponent = factoryForm(this.config, this.layout, this.templateMap, this.nzLayout);
     return NgModule({
       declarations: [TemComponent],
       imports: [
@@ -34,27 +35,35 @@ export class DynamicFormService {
     return factories.componentFactories.slice(-1)[0];
   }
 
+  set templateMap(map: any) {
+    this.underTemplateMap = map;
+  }
+
+  get templateMap() {
+    return this.underTemplateMap;
+  }
+
   set config(config: any) {
-    this._config = config;
+    this.underConfig = config;
   }
 
   get config() {
-    return this._config;
+    return this.underConfig;
   }
 
   set layout(layout: any) {
-    this._layout = layout;
+    this.underLayout = layout;
   }
 
   get layout() {
-    return this._layout;
+    return this.underLayout;
   }
 
   get nzLayout() {
-    return this._nzLayout;
+    return this.underNzLayout;
   }
 
   set nzLayout(value: string) {
-    this._nzLayout = value;
+    this.underNzLayout = value;
   }
 }

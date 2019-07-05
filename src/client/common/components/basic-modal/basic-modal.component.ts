@@ -11,6 +11,8 @@ export class BasicModalComponent implements OnInit {
   @Input() isShowOk: boolean = true;
   @Input() width: number = 650;
   @Input() bodyStyle: object;
+  @Input() cancelText: string = '取消';
+  @Input() okText: string = '确定';
   @Output() readonly nzOnOk: EventEmitter<any> = new EventEmitter();
   @Output() readonly nzOnCancel: EventEmitter<any> = new EventEmitter();
   private _isVisible: boolean = false;

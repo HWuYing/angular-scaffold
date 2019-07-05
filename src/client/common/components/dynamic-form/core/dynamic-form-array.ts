@@ -2,7 +2,7 @@ import { FormBuilder } from '@angular/forms';
 import { SerializationBase } from './serialization-base';
 
 export class DyanmicFormArray extends SerializationBase {
-  private __initialValues: any;
+  private privateInitialValues: any;
 
   public children: any[];
   constructor(layout: any, propsKey: string, config: any, parentSerialization: SerializationBase) {
@@ -12,11 +12,11 @@ export class DyanmicFormArray extends SerializationBase {
     this.type = type;
     this.decorator = decorator;
     this.propsKey = propsKey;
-    this.__initialValues = fieldDecorator.initialValue;
+    this.privateInitialValues = fieldDecorator.initialValue || [];
     this.parentSerialization = parentSerialization;
     this.setParentSerialization(parentSerialization);
     this.controlKey = `validateForm${this.getValidateFormControlName(true)}.get('${this.name}')`;
-    this.children = this.serialization();
+    this.children = this.serialization(config);
   }
 
   /**
@@ -27,8 +27,8 @@ export class DyanmicFormArray extends SerializationBase {
     const controlKey = this.controlKey;
     let template = `<ng-container formArrayName="${name}">`;
     template += `<ng-container *ngFor="let constrol of ${controlKey}.controls; let i = index" [formGroupName]="i">`;
-    template += this.children.reduce((_template: string, child: any) => {
-      return _template + child.getTemplate();
+    template += this.children.reduce((underTemplate: string, child: any) => {
+      return underTemplate + child.getTemplate();
     }, ``);
     template += `</ng-container>`;
     template += `</ng-container>`;
@@ -42,21 +42,21 @@ export class DyanmicFormArray extends SerializationBase {
    */
   public generateFormControlName(fileStore: any, fb: FormBuilder) {
     const name = this.name;
-    let _fileStore = fileStore;
+    let underFileStore = fileStore;
     if (!fileStore) {
-      _fileStore = this.initialValues;
+      underFileStore = this.initialValues;
     }
 
-    if (!Array.isArray(fileStore)) {
-      _fileStore = [fileStore];
+    if (!Array.isArray(underFileStore)) {
+      underFileStore = [fileStore];
     }
-    return { [name]: fb.array(_fileStore.map((store: any) => this.generateFormGroup(fb, store))) };
+    return { [name]: fb.array(underFileStore.map((store: any) => this.generateFormGroup(fb, store))) };
   }
 
   get initialValues(): object {
-    return this.__initialValues.map((store: any) => ({
-      ...store,
-      ...this._initialValue
+    return this.privateInitialValues.map((store: any) => ({
+      ...this.privateInitialValue,
+      ...store
     }));
   }
 }

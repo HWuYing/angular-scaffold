@@ -1,0 +1,33 @@
+<app-dynamic-form
+  #dynamicForm
+  [layout]="{ col: 1 }"
+  [fieldStore]="fieldStore"
+  [config]="entryConfig"
+  [templateMap]="{
+    editTable: editTableTemplate
+  }"
+>
+  <ng-template
+    #editTableTemplate
+    let-columns="columns"
+    let-trTemplateRef="trTemplate"
+    let-dataSource="dataSource"
+    let-tdTemplateMap="tdTemplateMap"
+  >
+    <app-dynamic-table
+      #dynamicTable
+      [columns]="columns"
+      [dataSource]="dataSource"
+      [templateMap]="tdTemplateMap"
+      [trTemplateRef]="trTemplateRef"
+      [showPagination]="false"
+      [isSerial]="isSerial"
+      [showCheckbox]="showCheckbox"
+      [tdTemplateRef]="tdTemplateRef"
+      (paginationChange)="_fetchRecords()"
+      (currentPageDataChange)="currentPageDataChange.emit($event)"
+      (checkChange)="checkChange.emit($event)"
+    >
+    </app-dynamic-table>
+  </ng-template>
+</app-dynamic-form>

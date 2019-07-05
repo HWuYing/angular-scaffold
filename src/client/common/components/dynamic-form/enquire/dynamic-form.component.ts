@@ -16,11 +16,13 @@ import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.servi
 @Component({
   selector: 'app-dynamic-form',
   templateUrl: './dynamic-form.component.html',
-  styleUrls: ['./dynamic-form.component.scss'],
   providers: [DynamicFormService]
 })
 export class DynamicFormComponent implements OnInit, OnDestroy {
   @ViewChild('tplRef', { read: ViewContainerRef, static: true }) tplRef: ViewContainerRef;
+  @Input() set templateMap(value: object) {
+    this.dynamicFormService.templateMap = value;
+  }
   @Input() set nzLayout(value: string) {
     this.dynamicFormService.nzLayout = value;
   }
@@ -118,17 +120,37 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     const cmpRef = f.create(injector, [], null, this._m);
     this.destroyCmpRef();
     this.tplRef.clear();
+    this.tplRef.insert(cmpRef.hostView);
     const mergeInstance: any = this.mergeInstance();
-    cmpRef.instance = {
+    const instance = {
       ...cmpRef.instance,
-      config: this.dynamicFormService.config,
-      layout: this.layout,
       ...mergeInstance
     };
+    Object.keys(instance).forEach((key: string) => {
+      cmpRef.instance[key] = instance[key];
+    });
     cmpRef.instance.dynamicSubmit.subscribe(($event: object) => this.dynamicSubmit.emit($event));
     cmpRef.instance.valueChanges.subscribe(($event: object) => this.valueChanges.emit($event));
-    this.tplRef.insert(cmpRef.hostView);
+
     this.cmpRef = cmpRef;
+  }
+
+  /**
+   * 验证表单
+   */
+  validationForm() {
+    if (!this.cmpRef) {
+      return;
+    }
+    const dynamicForm = (this.cmpRef as any)._component;
+    dynamicForm.validationForm();
+  }
+
+  get valid(): boolean {
+    if (!this.cmpRef) {
+      return true;
+    }
+    return (this.cmpRef as any)._component.validateForm.valid;
   }
 
   get value(): object {
