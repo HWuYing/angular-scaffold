@@ -17,11 +17,11 @@ app.get('*', async (req: Request, res: Response, next: NextFunction): Promise<vo
     next();
   }
   res.write(`<!doctype html>`);
-  res.write(`<html><head><title>title</title>`);
+  res.write(`<html><head><title>angular-scaffold</title>`);
   res.write(`<base href="/">`);
   res.write(`<meta charset="utf-8">`);
   res.write(`<meta name="viewport" content="width=device-width, initial-scale=1">`);
-  res.write(`<meta http-equiv="x-ua-compatible" content="ie=edge">`)
+  res.write(`<meta http-equiv="x-ua-compatible" content="ie=edge">`);
   res.write(source.styleSheet.join(''));
   res.write(`</head><body>`);
   res.write(html);
