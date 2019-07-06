@@ -2,7 +2,7 @@ import { DyanmicFormArray } from './dynamic-form-array';
 import { SerializationBase } from './serialization-base';
 
 const parsingColumns = (propsKey: string, columns: any[]) => {
-  const decorator = [];
+  const decorator: any[] = [];
   let cursor = 0;
   columns.forEach((column: any, index: number) => {
     if (column.entry) {
@@ -57,7 +57,7 @@ export class DyanmicTable extends DyanmicFormArray {
 
   getTdTemplate(): any[] {
     let template = ``;
-    const tdTemplateMap = [];
+    const tdTemplateMap: any[] = [];
     const propsKey = this.propsKey;
     template += this.children.reduce((underTemplate: string, child: any, index: number) => {
       const tdTemplateKey = `${propsKey}_${index}_td_template`;

@@ -37,8 +37,7 @@ module.exports = (jsRules, cssRules, isDebug) => {
       ...cssRules.more(['css', 'less', 'sass'], {
         include: [stylesDir],
       }),
-      cssRules.sass({
-        include: clientDir,
+      ...cssRules.more(['css', 'less', 'sass'], {
         exclude: stylesDir,
       }, 'to-string-loader'),
       jsRules.ngTs({ })],

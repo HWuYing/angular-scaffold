@@ -3,7 +3,7 @@ const { ContextReplacementPlugin } = require('webpack');
 const { AngularCompilerPlugin } = require('@ngtools/webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
-const stylesDir = path.join(__dirname, 'src/styles');
+const stylesDir = [path.join(__dirname, 'src/styles/theme.less'), path.join(__dirname, 'src/styles/theme.scss')];
 const clientDir = path.join(__dirname, 'src/client');
 
 const rxjsPathMappingImport = 'rxjs/_esm5/path-mapping';
@@ -39,8 +39,7 @@ module.exports = (jsRules, cssRules, isDebug) => {
         ...cssRules.more(['css', 'less', 'sass'], {
           include: stylesDir,
         }),
-        cssRules.sass({
-          include: clientDir,
+        ...cssRules.more(['css', 'less', 'sass'], {
           exclude: stylesDir,
         }, 'to-string-loader'),
         jsRules.ngTs({
