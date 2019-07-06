@@ -9,10 +9,17 @@ export class ConfigService {
    */
   get searchForm(): any {
     return [{
-      key: 'monthPicker',
-      isShow: (validateForm: any) => {
-        return validateForm.value.checkResult === '0';
+      key: 'radioGroup',
+      props: {
+        name: 'radioGroup',
+        children: [{ label: '全部', value: '' }, { label: '正常', value: 0 }, { label: '异常', value: 1 }],
       },
+      fieldDecorator: {
+        label: 'radioGroup',
+        initialValue: '',
+      },
+    }, {
+      key: 'monthPicker',
       fieldDecorator: {
         label: '查询月份',
         initialValue: new Date(new Date().setDate(0)),
@@ -35,6 +42,9 @@ export class ConfigService {
       },
     }, {
       key: 'input',
+      isShow: (validateForm: any) => {
+        return validateForm.value.checkResult === '0';
+      },
       fieldDecorator: {
         label: '用户信息',
       },
