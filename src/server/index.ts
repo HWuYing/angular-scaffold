@@ -1,7 +1,7 @@
 import path from 'path';
 import express, { Request, Response, NextFunction} from 'express';
-import { renderServer } from './renderApp';
-import serializationSource, { Source } from './serializationSource';
+import { renderServer } from './render/renderApp';
+import serializationSource, { Source } from './render/serializationSource';
 
 const app = express();
 

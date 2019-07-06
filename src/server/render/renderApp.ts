@@ -1,19 +1,18 @@
 import 'zone.js/dist/zone-node';
 import 'reflect-metadata';
 import {enableProdMode} from '@angular/core';
-// Express Engine
 import { ngExpressEngine } from '@nguniversal/express-engine';
 import { Request, Response, NextFunction} from 'express';
 import { provideModuleMap } from '@nguniversal/module-map-ngfactory-loader';
-
-global['Event'] = null;
+import  './polyfills';
+import { LAZY_MODULE_MAP, AppServerModule } from '../../../build/server/main.js';
 
 enableProdMode();
 
 let render: any = (): string => ``;
 
 try {
-  const { LAZY_MODULE_MAP, AppServerModule} = require(`${process.cwd()}/build/server/main`);
+  // const { LAZY_MODULE_MAP, AppServerModule} = require('../../build/server/main');
   render = ngExpressEngine({
     bootstrap: AppServerModule,
     providers: [
