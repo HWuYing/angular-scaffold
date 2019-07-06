@@ -9,13 +9,7 @@ app.use(express.static(path.resolve(__dirname, './public')));
 
 app.get('*', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const source: Source<string> = serializationSource();
-  let html = ``;
-  try {
-    html = await renderServer(req, res, next);
-  } catch(e) {
-    console.log(e);
-    next();
-  }
+  let html = await renderServer(req, res, next);
   res.write(`<!doctype html>`);
   res.write(`<html><head><title>angular-scaffold</title>`);
   res.write(`<base href="/">`);

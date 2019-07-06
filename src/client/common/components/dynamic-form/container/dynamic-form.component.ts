@@ -16,6 +16,7 @@ import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.servi
 @Component({
   selector: 'app-dynamic-form',
   templateUrl: './dynamic-form.component.html',
+  styleUrls: ['./dynamic-form.component.scss'],
   providers: [DynamicFormService]
 })
 export class DynamicFormComponent implements OnInit, OnDestroy {

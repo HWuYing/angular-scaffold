@@ -9,9 +9,7 @@ import { LAZY_MODULE_MAP, AppServerModule } from '../../../build/server/main';
 
 enableProdMode();
 
-let render: any = (): string => ``;
-
-render = ngExpressEngine({
+const render = ngExpressEngine({
   bootstrap: AppServerModule,
   providers: [
     provideModuleMap(LAZY_MODULE_MAP)
@@ -19,18 +17,12 @@ render = ngExpressEngine({
 });
 
 export const renderServer = async (req: Request, res: Response, next?: NextFunction): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    render(req.path, {
-      req,
-      res,
-      url: req.path,
-      document: `<app-root></app-root>`,
-    } as any, (error: any, html: string) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(html);
-      }
-    })
-  })
+  return new Promise((resolve, reject) => render(req.path, { req, res,  document: `<app-root></app-root>`  } as any, (error: any, html: string) => {
+    if (error) {
+      console.log(error);
+      next(error);
+    } else {
+      resolve(html);
+    }
+  }));
 };

@@ -6,7 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NZ_I18N, zh_CN } from 'ng-zorro-antd';
 import { BaseComponentsModule } from '../common/components/base-components.module';
 import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
+import { AppComponent } from './container/app.component';
 
 registerLocaleData(zh);
 
