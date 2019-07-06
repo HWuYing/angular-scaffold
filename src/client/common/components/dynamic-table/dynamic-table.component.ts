@@ -60,7 +60,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   public isIndeterminate: any; // 部分选择
   public mapOfCheckedId: { [key: string]: boolean } = {}; // checkbox 双向绑定对象
   // 浏览器改变大小时 从新设置高度
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize', [])
   resizeChange() {
     this._resetScroll(this.isHeadFixed);
   }

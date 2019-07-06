@@ -24,7 +24,6 @@
       [isSerial]="isSerial"
       [showCheckbox]="showCheckbox"
       [tdTemplateRef]="tdTemplateRef"
-      (paginationChange)="_fetchRecords()"
       (currentPageDataChange)="currentPageDataChange.emit($event)"
       (checkChange)="checkChange.emit($event)"
     >
