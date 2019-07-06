@@ -1,25 +1,10 @@
-import fs, { existsSync } from 'fs';
-import path from 'path';
-
+import assets from '../../../build/assets.json';
+import dll from '../../../build/dll.json';
 export interface Source<T> {
   javascript: Array<T>;
   styleSheet: Array<T>;
 }
-
 type serialization = () => Source<string>;
-const baseDir = process.cwd();
-
-function getAssets() {
-  const assets = JSON.parse(fs.readFileSync(path.join(baseDir, 'build/assets.json'), { encoding: 'utf-8' }));
-  let dll = {};
-  if (existsSync(path.join(baseDir, 'build/dll.json'))) {
-    dll = JSON.parse(fs.readFileSync(path.join(baseDir, 'build/dll.json'), { encoding: 'utf-8' }));
-  }
-  return {
-    ...dll,
-    ...assets,
-  };
-}
 
 const serializationSource = (source: any) => {
   const keys = Object.keys(source).sort((a, b) => a.indexOf('main') ? -1 : a.indexOf('runtime') ? 1 : 0).filter((_key: string) => {
@@ -41,7 +26,10 @@ const serializationSource = (source: any) => {
 
 const getResource = ((): serialization => {
   let json: Source<string>;
-  return (): Source<string> => json ? json : json = serializationSource(getAssets());
+  return (): Source<string> => json ? json : json = serializationSource({
+      ...dll,
+      ...assets,
+    });
 })();
 
 export default getResource;

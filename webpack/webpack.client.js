@@ -1,10 +1,10 @@
 const path = require('path');
 const { ContextReplacementPlugin } = require('webpack');
 const { AngularCompilerPlugin } = require('@ngtools/webpack');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-const stylesDir = [path.join(__dirname, 'src/styles/theme.less'), path.join(__dirname, 'src/styles/theme.scss')];
-const clientDir = path.join(__dirname, 'src/client');
+const baseDir = process.cwd();
+const stylesDir = [path.join(baseDir, 'src/styles/theme.less'), path.join(baseDir, 'src/styles/theme.scss')];
 
 const rxjsPathMappingImport = 'rxjs/_esm5/path-mapping';
 const rxPaths = require(require.resolve(rxjsPathMappingImport));
@@ -22,7 +22,7 @@ module.exports = (jsRules, cssRules, isDebug) => {
       ],
     },
     resolve: { 
-      alias: rxPaths(path.join(__dirname, 'node_modules')),
+      alias: rxPaths(path.join(baseDir, 'node_modules')),
     },
     module: {
       strictExportPresence: true,
@@ -42,17 +42,15 @@ module.exports = (jsRules, cssRules, isDebug) => {
         ...cssRules.more(['css', 'less', 'sass'], {
           exclude: stylesDir,
         }, 'to-string-loader'),
-        jsRules.ngTs({
-          include: clientDir,
-        })],
+        jsRules.ngTs()],
     },
     plugins: [
       new ContextReplacementPlugin(/\@angular(\\|\/)core(\\|\/)/),
       new ContextReplacementPlugin(/moment[/\\]locale$/, /zh-cn/),
       new AngularCompilerPlugin({
-        mainPath: path.join(__dirname, 'src/client/main.ts'),
-        entryModule: path.join(__dirname, 'src/client/app/app.module#AppModule'),
-        tsConfigPath: path.join(__dirname, 'src/client/ts.client.json'),
+        mainPath: path.join(baseDir, 'src/client/main.ts'),
+        entryModule: path.join(baseDir, 'src/client/app/app.module#AppModule'),
+        tsConfigPath: path.join(baseDir, 'src/client/ts.client.json'),
         skipCodeGeneration: true,
         sourceMap: isDebug,
         nameLazyFiles: true,

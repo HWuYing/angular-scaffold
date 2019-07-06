@@ -5,23 +5,18 @@ import { ngExpressEngine } from '@nguniversal/express-engine';
 import { Request, Response, NextFunction} from 'express';
 import { provideModuleMap } from '@nguniversal/module-map-ngfactory-loader';
 import  './polyfills';
-import { LAZY_MODULE_MAP, AppServerModule } from '../../../build/server/main.js';
+import { LAZY_MODULE_MAP, AppServerModule } from '../../../build/server/main';
 
 enableProdMode();
 
 let render: any = (): string => ``;
 
-try {
-  // const { LAZY_MODULE_MAP, AppServerModule} = require('../../build/server/main');
-  render = ngExpressEngine({
-    bootstrap: AppServerModule,
-    providers: [
-      provideModuleMap(LAZY_MODULE_MAP)
-    ]
-  });
-} catch (e) {
-  console.log(e);
-}
+render = ngExpressEngine({
+  bootstrap: AppServerModule,
+  providers: [
+    provideModuleMap(LAZY_MODULE_MAP)
+  ]
+});
 
 export const renderServer = async (req: Request, res: Response, next?: NextFunction): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -38,4 +33,4 @@ export const renderServer = async (req: Request, res: Response, next?: NextFunct
       }
     })
   })
-}
+};
