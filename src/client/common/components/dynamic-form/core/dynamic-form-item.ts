@@ -69,24 +69,33 @@ export class DynamicFormItem extends GenerateProps {
   /**
    * 验证错误信息显示的template
    */
-  public validateTemplate(): string {
+  public validateTemplate(): any {
     const controlKey = this.controlKey;
     const validate = (this.question as any).controlValidate;
-    let template = ``;
-    if (!validate) {
-      return template;
+    let validateTemplate: string[] = [];
+    let childrenTemplate: string[] = [];
+    let ifTemplate: any = {};
+    if (validate) {
+      this.validate = [];
+      validate.forEach((vali: any) => {
+        const underControlKey = vali.controlKey || this.controlKey;
+        if (vali.patter) {
+          this.validate.push(vali.patter);
+        }
+        if (!ifTemplate[underControlKey]) {
+          ifTemplate[underControlKey] = `${underControlKey}?.dirty && ${underControlKey}?.errors`;
+        }
+        childrenTemplate.push(`<ng-container *ngIf="${underControlKey}?.hasError('${vali.isError}')">${vali.message}</ng-container>`);
+      });
+      ifTemplate = Object.keys(ifTemplate).map((key: string) => `(${ifTemplate[key]})`).join(' || ');
+      validateTemplate.push(`<nz-form-explain *ngIf="${ifTemplate}">`);
+      validateTemplate.push(childrenTemplate.join(`&nbsp;&nbsp;`));
+      validateTemplate.push(`</nz-form-explain>`);
     }
-    this.validate = [];
-    template += `<nz-form-explain *ngIf="${controlKey}?.dirty && ${controlKey}?.errors">`;
-    validate.forEach((vali: any) => {
-      if (vali.patter) {
-        this.validate.push(vali.patter);
-      }
-      const underControlKey = vali.controlKey || this.controlKey;
-      template += `<ng-container *ngIf="${underControlKey}?.hasError('${vali.isError}')">${vali.message}</ng-container>`;
-    });
-    template += `</nz-form-explain>`;
-    return template;
+    return {
+      validateTemplate: validateTemplate.join(``),
+      validateStatusTemplate: ifTemplate,
+    };
   }
 
   /**
@@ -97,7 +106,7 @@ export class DynamicFormItem extends GenerateProps {
     const fieldDecorator = this.fieldDecorator;
     const question = this.question;
     const { label } = fieldDecorator;
-    const validateTemplate = this.validateTemplate();
+    const { validateTemplate, validateStatusTemplate } = this.validateTemplate();
     const isRequire = this.validate.includes(Validators.required);
     const hasLabel = fieldDecorator && !!label;
     return `<nz-form-item [nzFlex]="${nzLayout !== 'vertical'}" [style.marginRight]="'16px'">
@@ -106,7 +115,7 @@ export class DynamicFormItem extends GenerateProps {
                   ? `<nz-form-label style="${labelStyle}" ${isRequire ? 'nzRequired' : ''} nzFor="${this.name}">${label}</nz-form-label>`
                   : ''
               }
-              <nz-form-control style="flex: 1;">
+              <nz-form-control style="flex: 1;" ${validateStatusTemplate ? `[class.has-error]="${validateStatusTemplate}"` : ``}>
                 ${question.getTemplate()}
                 ${validateTemplate}
               </nz-form-control>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormGroup, FormControl, Validators  } from '@angular/forms';
 
 @Injectable()
 export class ConfigService {
@@ -28,7 +28,7 @@ export class ConfigService {
         children: [{
           key: 'select',
           fieldDecorator: {
-            initialValue: '1'
+            initialValue: '0',
           },
           props: {
             name: 'groupSelect',
@@ -42,6 +42,11 @@ export class ConfigService {
           key: 'input',
           fieldDecorator: {
             initialValue: '',
+            validate: {
+              isError: 'required',
+              patter: Validators.required,
+              message: "groupInput不能为空",
+            },
           },
           props: {
             name: 'groupInput',
@@ -78,6 +83,11 @@ export class ConfigService {
       isShow: (validateForm: any) => validateForm.value.checkResult === '0',
       fieldDecorator: {
         label: '用户信息',
+        validate: {
+          isError: 'required',
+          patter: Validators.required,
+          message: "用户信息不能为空",
+        },
       },
       props: {
         name: 'keyWord',

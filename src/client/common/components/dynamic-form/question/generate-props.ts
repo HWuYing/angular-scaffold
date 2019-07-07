@@ -157,7 +157,11 @@ export class GenerateProps {
    * @param validate 验证规则
    */
   public setFormControlValidate(validate: any[]) {
-    this.controlValidate = [...(validate || [])];
+    if (!Array.isArray(validate) && !!validate) {
+      this.setFormControlValidate([validate]);
+    } else {
+      this.controlValidate = [...(validate || [])];
+    }
   }
 
   /**

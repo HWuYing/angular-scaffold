@@ -109,7 +109,7 @@ export const factoryForm = (config: any, layout?: any, templateMap?: object, nzL
       if (event) {
         event.preventDefault();
       }
-      if (serializationConfig.typeOrInclude('formArray')) {
+      if (serializationConfig.typeOrInclude(['formArray', 'table'])) {
         this.createValidateForm(this.initialValues);
       } else if (this.validateForm) {
         this.validateForm.reset(this.initialValues);
