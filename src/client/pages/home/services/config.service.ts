@@ -45,7 +45,7 @@ export class ConfigService {
           },
           props: {
             name: 'groupInput',
-            format: (value: string = '') => value.indexOf('$') !== -1 ? value : ('$' + value),
+            format: (value: string) => (value || '').indexOf('$') !== -1 ? value : ('$' + value),
             style: { width: '70%' },
             placeholder: '测试group',
           }
