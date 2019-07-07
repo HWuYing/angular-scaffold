@@ -51,7 +51,7 @@ module.exports = (jsRules, cssRules, isDebug) => {
         mainPath: path.join(baseDir, 'src/client/main.ts'),
         entryModule: path.join(baseDir, 'src/client/app/app.module#AppModule'),
         tsConfigPath: path.join(baseDir, 'src/client/ts.client.json'),
-        skipCodeGeneration: true,
+        skipCodeGeneration: isDebug,
         sourceMap: isDebug,
         nameLazyFiles: true,
         forkTypeChecker: true,

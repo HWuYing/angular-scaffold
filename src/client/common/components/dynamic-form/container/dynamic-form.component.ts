@@ -127,9 +127,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
       ...cmpRef.instance,
       ...mergeInstance
     };
-    Object.keys(instance).forEach((key: string) => {
-      cmpRef.instance[key] = instance[key];
-    });
+    Object.keys(instance).forEach((key: string) => cmpRef.instance[key] = instance[key]);
     cmpRef.instance.dynamicSubmit.subscribe(($event: object) => this.dynamicSubmit.emit($event));
     cmpRef.instance.valueChanges.subscribe(($event: object) => this.valueChanges.emit($event));
 

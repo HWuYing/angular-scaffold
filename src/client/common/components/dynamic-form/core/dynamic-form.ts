@@ -14,10 +14,6 @@ export const factoryForm = (config: any, layout?: any, templateMap?: object, nzL
     nzLayout,
     ...layout
   });
-  @Component({
-    template: serializationConfig.generateTemplate(), // 获取动态的template
-    providers: [FormBuilder]
-  })
   class TemComponent implements OnInit, OnDestroy {
     @Output() readonly dynamicSubmit: EventEmitter<any> = new EventEmitter();
     @Output() readonly valueChanges: EventEmitter<any> = new EventEmitter();
@@ -30,7 +26,10 @@ export const factoryForm = (config: any, layout?: any, templateMap?: object, nzL
     public templateMap = templateMap;
     public validateForm: FormGroup;
     public serialization: SerializationConfig = serializationConfig;
-    constructor(private fb: FormBuilder) { }
+    private fb: FormBuilder
+    constructor() {
+      this.fb = new FormBuilder();
+    }
 
     ngOnInit() {
       if (!this.validateForm) {
@@ -149,5 +148,8 @@ export const factoryForm = (config: any, layout?: any, templateMap?: object, nzL
     }
   }
 
-  return TemComponent;
+  return Component({
+    template: serializationConfig.generateTemplate(), // 获取动态的template
+    providers: [FormBuilder]
+  })(TemComponent);
 };

@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Compiler, Injectable, NgModule } from '@angular/core';
+import { Compiler, Inject, Injectable, NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgZorroAntdModule } from 'ng-zorro-antd';
+import { DynamicCompilerToken } from '../dynamic-compiler-provider';
 import { factoryForm } from '../../core/dynamic-form';
 
 @Injectable()
@@ -10,7 +11,7 @@ export class DynamicFormService {
   private underLayout: any; // 表单布局配置
   private underNzLayout: string;
   private underTemplateMap: object;
-  constructor(private _compiler: Compiler) {}
+  constructor(@Inject(DynamicCompilerToken) private _compiler: Compiler) { }
 
   /**
    * 创建动态组件的NgModule

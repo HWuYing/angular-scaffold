@@ -10,7 +10,7 @@ import { LAZY_MODULE_MAP, AppServerModule, AppServerModuleNgFactory } from '../.
 enableProdMode();
 
 const render = ngExpressEngine({
-  bootstrap: AppServerModule,
+  bootstrap: AppServerModuleNgFactory,
   providers: [
     provideModuleMap(LAZY_MODULE_MAP)
   ]
