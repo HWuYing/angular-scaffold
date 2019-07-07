@@ -1,33 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { NgZorroAntdModule } from 'ng-zorro-antd';
-import { BasicModalComponent } from './basic-modal/basic-modal.component';
+import { BasicModalModule } from './basic-modal/basic-modal.module';
 import { DynamicFormModule } from './dynamic-form/dynamic-form.module';
-import { DynamicTableComponent } from './dynamic-table/dynamic-table.component';
-import { EditTableComponent } from './edit-table/edit-table.component';
-import { PageLayoutComponent } from './page-layout/page-layout.component';
-import { SearchFormComponent } from './search-form/search-form.component';
+import { DynamicTableModule } from './dynamic-table/dynamic-table.module';
+import { EditTableModule } from './edit-table/edit-table.module';
+import { PageLayoutModule } from './page-layout/page-layout.module';
+import { SearchFormModule } from './search-form/search-form.module';
 
 @NgModule({
-  declarations: [
-    DynamicTableComponent,
-    SearchFormComponent,
-    BasicModalComponent,
-    PageLayoutComponent,
-    EditTableComponent
-  ],
+  declarations: [],
   imports: [
     CommonModule,
-    DynamicFormModule,
-    NgZorroAntdModule
   ],
   exports: [
-    DynamicTableComponent,
-    SearchFormComponent,
-    BasicModalComponent,
-    PageLayoutComponent,
+    SearchFormModule,
+    PageLayoutModule,
     DynamicFormModule,
-    EditTableComponent
+    EditTableModule,
+    BasicModalModule,
+    DynamicTableModule,
   ]
 })
 export class BaseComponentsModule {}

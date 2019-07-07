@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Compiler, Inject, Injectable, NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { NgZorroAntdModule } from 'ng-zorro-antd';
 import { DynamicCompilerToken } from '../dynamic-compiler-provider';
+import { NzZorroImport } from '../nz-zorro-lazy';
 import { factoryForm } from '../../core/dynamic-form';
 
 @Injectable()
@@ -22,8 +22,8 @@ export class DynamicFormService {
       declarations: [TemComponent],
       imports: [
         CommonModule,
-        NgZorroAntdModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        ...NzZorroImport,
       ]
     })(class {});
   }
