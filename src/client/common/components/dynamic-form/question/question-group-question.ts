@@ -73,11 +73,10 @@ export class QuestionGroupQuestion extends BaseQuestion {
     const underInitialValue = initialValue || {};
     this.initialValue = {};
     this.initialValue = this.children.reduce((o: object, child: BaseQuestion) => {
-      let value = {};
       if (child.name) {
-        value[child.name] = (child as any).initialValue || underInitialValue[child.name];
+        o[child.name] = (child as any).initialValue || underInitialValue[child.name];
       }
-      return { ...o, ...value };
+      return o;
     }, {});
   }
 }
