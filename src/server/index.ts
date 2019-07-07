@@ -9,18 +9,20 @@ app.use(express.static(path.resolve(__dirname, './public')));
 
 app.get('*', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const source: Source<string> = serializationSource();
-  let html = await renderServer(req, res, next);
-  res.write(`<!doctype html>`);
-  res.write(`<html><head><title>angular-scaffold</title>`);
-  res.write(`<base href="/">`);
-  res.write(`<meta charset="utf-8">`);
-  res.write(`<meta name="viewport" content="width=device-width, initial-scale=1">`);
-  res.write(`<meta http-equiv="x-ua-compatible" content="ie=edge">`);
-  res.write(source.styleSheet.join(''));
-  res.write(`</head><body>`);
-  res.write(html);
-  res.write(source.javascript.join(''));
-  res.write(`</body></html>`);
+  const html = [];
+  html.push(`<!doctype html>`);
+  html.push(`<html><head>`);
+  html.push(`<title>angular-scaffold</title>`);
+  html.push(`<base href="/">`);
+  html.push(`<meta charset="utf-8">`);
+  html.push(`<meta name="viewport" content="width=device-width, initial-scale=1">`);
+  html.push(`<meta http-equiv="x-ua-compatible" content="ie=edge">`);
+  html.push(source.styleSheet.join(''));
+  html.push(`</head><body>`);
+  html.push(`<app-root></app-root>`);
+  html.push(source.javascript.join(''));
+  html.push(`</body></html>`);
+  res.write(await renderServer(req, res, html.join(''), next));
   res.end();
 });
 

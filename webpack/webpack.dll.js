@@ -9,6 +9,7 @@ module.exports = (jsRules) => {
      module: {
        rules: [
         jsRules.ngOptimizerJs(),
+        jsRules.ngTs(),
        ],
      }
   };

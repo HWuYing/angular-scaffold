@@ -16,9 +16,9 @@ const render = ngExpressEngine({
   ]
 });
 
-export const renderServer = async (req: Request, res: Response, next?: NextFunction): Promise<string> => {
+export const renderServer = async (req: Request, res: Response, document: string, next?: NextFunction): Promise<string> => {
   const startTimer = new Date().getTime();
-  return new Promise((resolve, reject) => render(req.path, { req, res,  document: `<app-root></app-root>`  } as any, (error: any, html: string) => {
+  return new Promise((resolve, reject) => render(req.path, { req, res,  document } as any, (error: any, html: string) => {
     if (error) {
       console.log(error);
       next(error);

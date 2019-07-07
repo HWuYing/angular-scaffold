@@ -15,7 +15,6 @@ registerLocaleData(zh);
   imports: [
     BrowserModule.withServerTransition({appId: 'some-app-id'}),
     AppRoutingModule,
-    BaseComponentsModule,
     BrowserAnimationsModule,
   ],
   providers: [

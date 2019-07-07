@@ -15,4 +15,6 @@ export class HomeComponent implements OnInit {
   constructor(private config: ConfigService) { }
 
   ngOnInit() { }
+
+  fetchRecords(fields?: any) { }
 }
