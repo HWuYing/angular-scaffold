@@ -5,7 +5,7 @@ export class ButtonQuestion extends BaseQuestion {
     const { ...other } = props;
     super(key, propsKey, other);
     this.propsExclude = ['text'];
-    this.isAddFormConstrolName = false;
+    this.isAddFormControlName = false;
   }
 
   public getTemplate(): string {

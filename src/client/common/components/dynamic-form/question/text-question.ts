@@ -7,7 +7,7 @@ export class TextQuestion extends BaseQuestion {
     super(key, propsKey, other);
     this.propsExclude = ['text', 'placeholder'];
     this.target = target || 'span';
-    this.isAddFormConstrolName = false;
+    this.isAddFormControlName = false;
   }
 
   public getTemplate(): string {

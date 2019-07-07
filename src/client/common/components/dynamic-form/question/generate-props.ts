@@ -14,7 +14,7 @@ export class GenerateProps {
   protected controlValidate: any[] = [];
   protected initialValue: any;
   protected controlKey: string;
-  protected constrolParentKey: string;
+  protected controlParentKey: string;
   protected fb: FormBuilder;
   constructor(defaultProps?: any) {
     const underDefaultProps = defaultProps || {};
@@ -49,13 +49,13 @@ export class GenerateProps {
   /**
    * 是否显示
    * @param validateForm Form
-   * @param constrol 控制器
+   * @param control 控制器
    */
-  protected isChangeShow(validateForm: FormGroup, constrol?: FormControl, parentGroup?: FormGroup) {
+  protected isChangeShow(validateForm: FormGroup, control?: FormControl, parentGroup?: FormGroup) {
     const isShow: any = this.isShow;
     let privateIsShow: boolean = isShow;
     if (typeof isShow === 'function') {
-      privateIsShow = isShow(validateForm, constrol, parentGroup);
+      privateIsShow = isShow(validateForm, control, parentGroup);
     }
     return privateIsShow;
   }
@@ -72,7 +72,7 @@ export class GenerateProps {
     };
 
     if (![null, undefined].includes(isShow)) {
-      props[this.getTransformProps('isShow')] = (validateForm: any, constrol: FormControl, propsGroup?: FormGroup) => this.isChangeShow(validateForm, constrol, propsGroup);
+      props[this.getTransformProps('isShow')] = (validateForm: any, control: FormControl, propsGroup?: FormGroup) => this.isChangeShow(validateForm, control, propsGroup);
     }
     return props;
   }
@@ -94,8 +94,10 @@ export class GenerateProps {
     let underValue: string;
     if (/^\*ngIf$/.test(key)) {
       underValue = this.getNgIfProps(value);
+    } if(/\(ngModelChange\)/.test(key)) {
+      underValue = `${value}($event, ${this.controlKey ? `${this.controlKey}` : 'null'}, validateForm, ${this.controlParentKey})`;
     } else if (/^\([\s\S]*\)$/.test(key)) {
-      underValue = `${value}($event${this.controlKey ? `, ${this.controlKey}` : ', null'}, validateForm)`;
+      underValue = this.getNgIfProps(value);
     }
     return underValue;
   }
@@ -105,7 +107,7 @@ export class GenerateProps {
    * @param propsKey props对应值
    */
   protected getNgIfProps(propsKey: string) {
-    return `${propsKey}(validateForm${this.controlKey ? `, ${this.controlKey}, ${this.constrolParentKey}` : ''})`;
+    return `${propsKey}(validateForm${this.controlKey ? `, ${this.controlKey}, ${this.controlParentKey}` : ''})`;
   }
 
   /**
@@ -145,9 +147,9 @@ export class GenerateProps {
    * 设置控制器
    * @param controlKey 控制器keyTemplate
    */
-  public setFormControlKey(controlKey: string, constrolParentKey: string) {
+  public setFormControlKey(controlKey: string, controlParentKey: string) {
     this.controlKey = controlKey;
-    this.constrolParentKey = constrolParentKey;
+    this.controlParentKey = controlParentKey;
   }
 
   /**

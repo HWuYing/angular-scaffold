@@ -80,11 +80,11 @@ export class SerializationBase {
   protected getValidateFormControlName(isGet?: boolean) {
     let parentSerialization = this.parentSerialization;
     const nameArray = [];
-    let isArrayConstrol: boolean;
+    let isArrayControl: boolean;
     while (!!parentSerialization && !!parentSerialization.name) {
-      isArrayConstrol = parentSerialization.type === 'formArray';
+      isArrayControl = parentSerialization.type === 'formArray';
       nameArray.unshift(`${!isGet ? parentSerialization.name : `get('${parentSerialization.name}')`}
-        ${isArrayConstrol ? `?.get(i.toString())` : ''}`);
+        ${isArrayControl ? `?.get(i.toString())` : ''}`);
       parentSerialization = parentSerialization.parentSerialization;
     }
     if (nameArray.length) {
@@ -148,7 +148,7 @@ export class SerializationBase {
       );
       question.setFormControlValidate((exp as any).controlValidate);
       question.setControlInitialValue(exp.initialValue);
-      question.setFormControlKey(exp.controlKey, exp.constrolParentKey);
+      question.setFormControlKey(exp.controlKey, (exp as any).controlParentKey);
 
       // 加入propsmap 最后动态模版中需要
       this.serializationProps[(question as BaseQuestion).propsKey] = (question as BaseQuestion).props;

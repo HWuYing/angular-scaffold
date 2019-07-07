@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
 
 @Injectable()
 export class ConfigService {
@@ -19,6 +20,38 @@ export class ConfigService {
         initialValue: '',
       },
     }, {
+      key: 'inputGroup',
+      fieldDecorator: {
+        label: 'group',
+      },
+      props: {
+        children: [{
+          key: 'select',
+          fieldDecorator: {
+            initialValue: ''
+          },
+          props: {
+            name: 'groupSelect',
+            style: { width: '30%' },
+            ngModelChange: (value: any, control: FormControl, validateForm: FormGroup) => {
+              validateForm.get('groupInput').setValue(value);
+            },
+            children: [{ label: '全部', value: '' }, { label: '正常', value: 0 }, { label: '异常', value: 1 }],
+          }
+        }, {
+          key: 'input',
+          fieldDecorator: {
+            initialValue: '',
+          },
+          props: {
+            name: 'groupInput',
+            format: (value: string) => value.indexOf('￥') !== -1 ? value : ('￥' + value),
+            style: { width: '70%' },
+            placeholder: '测试group',
+          }
+        }],
+      }
+    }, {
       key: 'monthPicker',
       fieldDecorator: {
         label: '查询月份',
@@ -34,7 +67,7 @@ export class ConfigService {
       props: {
         name: 'checkResult',
         children: [{ label: '全部', value: '' }, { label: '正常', value: 0 }, { label: '异常', value: 1 }],
-        nzPlaceHolder: '请选择考勤状态',
+        placeholder: '请选择考勤状态',
       },
       fieldDecorator: {
         label: '考勤状态',

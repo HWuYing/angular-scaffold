@@ -49,13 +49,13 @@ export class QuestionGroupQuestion extends BaseQuestion {
    * 设置控制器
    * @param controlKey 控制器keyTemplate
    */
-  public setFormControlKey(controlKey: string, constrolParentKey: string) {
-    super.setFormControlKey(controlKey, constrolParentKey);
+  public setFormControlKey(controlKey: string, controlParentKey: string) {
+    super.setFormControlKey(controlKey, controlParentKey);
     const name = this.name || 'undefined';
     this.controlValidate = [];
     this.children.forEach((child: BaseQuestion) => {
       const underControlKey = this.controlKey.replace(name, child.name);
-      child.setFormControlKey(underControlKey, this.constrolParentKey);
+      child.setFormControlKey(underControlKey, this.controlParentKey);
       (child as any).controlValidate.forEach((validate: any) => {
         this.controlValidate.push({
           controlKey: underControlKey,

@@ -4,7 +4,7 @@ import { GenerateProps } from '../question/generate-props';
 
 export class DynamicFormItem extends GenerateProps {
   protected parentSerialization: any;
-  public constrolParentKey: string;
+  public consrolParentKey: string;
   public controlKey: string;
   public question: BaseQuestion;
   public fieldDecorator: any;
@@ -29,17 +29,17 @@ export class DynamicFormItem extends GenerateProps {
     this.controlValidate = fieldDecorator.validate;
     this.validate = [];
     this.parentSerialization = parentSerialization;
-    this.constrolParentKey = `validateForm${this.getValidateFormControlName()}`;
-    this.controlKey = `${this.constrolParentKey}?.get('${this.name}')`;
+    this.controlParentKey = `validateForm${this.getValidateFormControlName()}`;
+    this.controlKey = `${this.controlParentKey}?.get('${this.name}')`;
   }
 
   /**
    * 是否显示
    * @param validateForm Form
-   * @param constrol 控制器
+   * @param control 控制器
    */
-  protected isChangeShow(validateForm: FormGroup, constrol?: FormControl, parentGroup?: FormGroup): boolean {
-    const isShow = super.isChangeShow(validateForm, constrol, parentGroup);
+  protected isChangeShow(validateForm: FormGroup, control?: FormControl, parentGroup?: FormGroup): boolean {
+    const isShow = super.isChangeShow(validateForm, control, parentGroup);
     this.toggerControl(
       this.generateFormControlName(undefined, this.fb),
       !!(isShow && parentGroup),
@@ -54,10 +54,10 @@ export class DynamicFormItem extends GenerateProps {
   private getValidateFormControlName() {
     let parentSerialization = this.parentSerialization;
     const nameArray = [];
-    let isArrayConstrol: boolean;
+    let isArrayControl: boolean;
     while (!!parentSerialization && !!parentSerialization.name) {
-      isArrayConstrol = ['formArray', 'table'].includes(parentSerialization.type );
-      nameArray.unshift(`get('${parentSerialization.name}')${isArrayConstrol ? `?.get(i.toString())` : ''}`);
+      isArrayControl = ['formArray', 'table'].includes(parentSerialization.type );
+      nameArray.unshift(`get('${parentSerialization.name}')${isArrayControl ? `?.get(i.toString())` : ''}`);
       parentSerialization = parentSerialization.parentSerialization;
     }
     if (nameArray.length) {

@@ -8,7 +8,7 @@ export class BaseQuestion extends GenerateProps {
   public propsKey: string;
   public privateProps: string;
   public fieldDecorator: object;
-  protected isAddFormConstrolName: boolean = true;
+  protected isAddFormControlName: boolean = true;
   protected value: any;
   protected underNgModelChange: any;
   protected format: (value: any) => any | void;
@@ -21,7 +21,7 @@ export class BaseQuestion extends GenerateProps {
     this.propsKey = propsKey;
     this.name = name;
     this.props = this.initProps(config || {});
-    this.underNgModelChange = props['(ngModelChange)'] || (() => {});
+    this.underNgModelChange = props['ngModelChange'] || (() => {});
     this.privateProps = `serialization.serializationProps.${this.propsKey}`;
   }
 
@@ -35,7 +35,8 @@ export class BaseQuestion extends GenerateProps {
     const isFormat = !!format;
     const props = { ...config };
     if (isFormat) {
-      props.ngModelChange = ($event: any, constrol?: FormControl) => this.ngModelChange($event, constrol);
+      props.ngModelChange = ($event: any, control?: FormControl, validateForm?: FormGroup, parentGroup?: FormGroup) =>
+        this.ngModelChange($event, control, validateForm, parentGroup);
     }
     return super.initProps(props);
   }
@@ -44,7 +45,7 @@ export class BaseQuestion extends GenerateProps {
    * form数据改变时change
    * @param value value
    */
-  protected ngModelChange(value: any, constrol?: FormControl) {
+  protected ngModelChange(value: any, control?: FormControl, validateForm?: FormGroup, parentGroup?: FormGroup) {
     const format = this.format;
     if (this.value === value) {
       return;
@@ -53,20 +54,20 @@ export class BaseQuestion extends GenerateProps {
     const underValue = format(value);
     this.value = [null, undefined].includes(underValue) ? value : underValue;
     setTimeout(() => {
-      if (constrol) {
-        constrol.setValue(this.value);
+      if (control) {
+        control.setValue(this.value);
       }
-      underNgModelChange(this.value);
+      underNgModelChange(this.value, control, validateForm, parentGroup);
     });
   }
 
 /**
    * 是否显示
    * @param validateForm Form
-   * @param constrol 控制器
+   * @param control 控制器
    */
-  protected isChangeShow(validateForm: FormGroup, constrol?: FormControl, parentGroup?: FormGroup): boolean {
-    const isShow = super.isChangeShow(validateForm, constrol, parentGroup);
+  protected isChangeShow(validateForm: FormGroup, control?: FormControl, parentGroup?: FormGroup): boolean {
+    const isShow = super.isChangeShow(validateForm, control, parentGroup);
     this.toggerControl(
       this.generateFormControlInfo(this.initialValue, this.fb),
       !!(isShow && parentGroup),
@@ -98,7 +99,7 @@ export class BaseQuestion extends GenerateProps {
   public serializationProps(): string {
     const props = this.props;
     const name = this.name;
-    const isAddFormConstrolName = this.isAddFormConstrolName;
+    const isAddFormControlName = this.isAddFormControlName;
     return Object.keys(props)
       .reduce(
         (propsArr: any[], key: string) => {
@@ -109,7 +110,7 @@ export class BaseQuestion extends GenerateProps {
           }
           return propsArr;
         },
-        name && isAddFormConstrolName ? [`formControlName="${name}"`] : []
+        name && isAddFormControlName ? [`formControlName="${name}"`] : []
       )
       .join(' ');
   }

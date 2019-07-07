@@ -16,5 +16,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() { }
 
-  fetchRecords(fields?: any) { }
+  fetchRecords(fields?: any) {
+    console.log(fields);
+  }
 }

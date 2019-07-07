@@ -26,7 +26,7 @@ export class DyanmicFormArray extends SerializationBase {
     const name = this.name;
     const controlKey = this.controlKey;
     let template = `<ng-container formArrayName="${name}">`;
-    template += `<ng-container *ngFor="let constrol of ${controlKey}.controls; let i = index" [formGroupName]="i">`;
+    template += `<ng-container *ngFor="let control of ${controlKey}.controls; let i = index" [formGroupName]="i">`;
     template += this.children.reduce((underTemplate: string, child: any) => {
       return underTemplate + child.getTemplate();
     }, ``);

@@ -6,7 +6,7 @@ export class IconQuestion extends BaseQuestion {
     const { target, ...other } = props;
     super(key, propsKey, other);
     this.target = target || 'i';
-    this.isAddFormConstrolName = false;
+    this.isAddFormControlName = false;
     this.transformProps = {
       ...this.transformProps,
       type: 'nzType'
