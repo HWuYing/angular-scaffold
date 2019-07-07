@@ -28,7 +28,7 @@ export class ConfigService {
         children: [{
           key: 'select',
           fieldDecorator: {
-            initialValue: ''
+            initialValue: '1'
           },
           props: {
             name: 'groupSelect',

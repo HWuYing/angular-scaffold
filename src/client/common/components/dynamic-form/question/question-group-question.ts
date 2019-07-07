@@ -64,4 +64,20 @@ export class QuestionGroupQuestion extends BaseQuestion {
       });
     });
   }
+
+  /**
+   * 设置初始值
+   * @param initialValue 初始值
+   */
+  public setControlInitialValue(initialValue: any) {
+    const underInitialValue = initialValue || {};
+    this.initialValue = {};
+    this.initialValue = this.children.reduce((o: object, child: BaseQuestion) => {
+      let value = {};
+      if (child.name) {
+        value[child.name] = (child as any).initialValue || underInitialValue[child.name];
+      }
+      return { ...o, ...value };
+    }, {});
+  }
 }

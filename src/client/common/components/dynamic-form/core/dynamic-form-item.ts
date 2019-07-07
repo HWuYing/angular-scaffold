@@ -136,7 +136,7 @@ export class DynamicFormItem extends GenerateProps {
   }
 
   get initialValue() {
-    return this.fieldDecorator.initialValue;
+    return (this.question as any).initialValue || this.fieldDecorator.initialValue;
   }
 
   get name() {

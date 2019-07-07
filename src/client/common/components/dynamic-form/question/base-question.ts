@@ -7,7 +7,6 @@ export class BaseQuestion extends GenerateProps {
   public props: object;
   public propsKey: string;
   public privateProps: string;
-  public fieldDecorator: object;
   protected isAddFormControlName: boolean = true;
   protected value: any;
   protected underNgModelChange: any;
