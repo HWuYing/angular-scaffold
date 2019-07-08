@@ -11,6 +11,7 @@ import {
   ViewChild,
   ViewContainerRef
 } from '@angular/core';
+import { SerializationConfig } from '../core/serialization-config';
 import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.service';
 
 @Component({
@@ -116,7 +117,9 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
    * 加载动态组件
    */
   loadDynamicForm(): void {
-    this.dynamicFormService.loadModule().then((f) => {
+    console.log('loadDynamicForm');
+    const date = new Date().getTime();
+    this.dynamicFormService.loadModule().then(([f, serialization, templateMap]: [any, SerializationConfig, any]) => {
       const injector = Injector.create({ providers: [], parent: this._injector });
       const cmpRef = f.create(injector, [], null, this._m);
       this.destroyCmpRef();
@@ -125,13 +128,16 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
       const mergeInstance: any = this.mergeInstance();
       const instance = {
         ...cmpRef.instance,
-        ...mergeInstance
+        ...mergeInstance,
+        ...serialization ? { serialization } : {},
+        ...templateMap ? { template: templateMap } : {},
       };
       Object.keys(instance).forEach((key: string) => cmpRef.instance[key] = instance[key]);
       cmpRef.instance.dynamicSubmit.subscribe(($event: object) => this.dynamicSubmit.emit($event));
       cmpRef.instance.valueChanges.subscribe(($event: object) => this.valueChanges.emit($event));
 
       this.cmpRef = cmpRef;
+      console.log(new Date().getTime() - date);
     });
   }
 

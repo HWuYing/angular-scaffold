@@ -1,3 +1,4 @@
+import { createHash  } from 'crypto';
 import { DyanmicFormArray } from './dynamic-form-array';
 import { DynamicFormGroup } from './dynamic-form-group';
 import { DynamicFormItem } from './dynamic-form-item';
@@ -7,6 +8,8 @@ import { SerializationBase } from './serialization-base';
 
 export class SerializationConfig extends SerializationBase {
   public config: any;
+  public underHashKey: string;
+  public template: string;
   public serializationConfig: any;
   /**
    * @param config 表单配置项
@@ -59,9 +62,37 @@ export class SerializationConfig extends SerializationBase {
    */
   public generateTemplate(): string {
     const { nzLayout } = this.layout;
+    if (this.template) {
+      return this.template;
+    }
     let template = `<form nz-form ${nzLayout ? `nzLayout="${nzLayout}"` : ''} (ngSubmit)="onSubmit($event)" [formGroup]="validateForm" autocomplete="off">`;
     template += this.serializationConfig.getTemplate();
     template += `</form>`;
+    this.template = template;
+    const md5 = createHash('md5');
+    md5.update(template);
+    this.underHashKey = md5.digest('hex');
     return template;
   }
+
+  get hashKey() {
+    if (!this.underHashKey) {
+      this.generateTemplate();
+    }
+    return this.underHashKey;
+  }
+
+  /**
+   * 序列化配置项
+   * @param config config
+   * @param layout layout
+   * @param nzLayout nzLayout
+   * @returns {SerializationConfig}
+   */
+  static factorySerializationConfig = (config: any, layout?: any, nzLayout?: string): SerializationConfig => {
+    return new SerializationConfig(config, {
+      nzLayout,
+      ...layout
+    });
+  };
 }

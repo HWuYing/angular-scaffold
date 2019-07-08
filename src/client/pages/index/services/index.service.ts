@@ -17,7 +17,7 @@ export class ConfigService {
       },
       fieldDecorator: {
         label: 'radioGroup',
-        initialValue: '',
+        initialValue: '1',
       },
     }, {
       key: 'inputGroup',
@@ -50,10 +50,7 @@ export class ConfigService {
           },
           props: {
             name: 'groupInput',
-            format: (value: string) => {
-              console.log(value);
-              return (value || '').indexOf('金额：') !== -1 ? value : ('金额：' + (value || ''));
-            },
+            format: (value: string) => (value || '').indexOf('金额：') !== -1 ? value : ('金额：' + value),
             style: { width: '70%' },
             placeholder: '测试group',
           }
@@ -83,7 +80,7 @@ export class ConfigService {
       },
     }, {
       key: 'input',
-      isShow: (validateForm: any) => validateForm.value.checkResult === '',
+      isShow: (validateForm: any) => validateForm.value.checkResult === '0',
       fieldDecorator: {
         label: '用户信息',
         validate: {

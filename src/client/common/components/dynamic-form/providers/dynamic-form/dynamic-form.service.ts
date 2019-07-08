@@ -1,9 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Compiler, Inject, Injectable, NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { SerializationConfig } from '../../core/serialization-config';
 import { factoryForm } from '../../core/dynamic-form';
 import { DynamicCompilerToken } from '../dynamic-compiler-provider';
 import { NzZorroImport } from '../nz-zorro-lazy';
+
+const temComponentFactoryCache = {};
 
 @Injectable()
 export class DynamicFormService {
@@ -16,10 +19,9 @@ export class DynamicFormService {
   /**
    * 创建动态组件的NgModule
    */
-  private factoryModule() {
-    const TemComponent = factoryForm(this.config, this.layout, this.templateMap, this.nzLayout);
+  private factoryModule(serialization: SerializationConfig) {
     return NgModule({
-      declarations: [TemComponent],
+      declarations: [factoryForm(serialization, this.templateMap)],
       imports: [
         CommonModule,
         ReactiveFormsModule,
@@ -32,11 +34,16 @@ export class DynamicFormService {
    * 价值NgModule
    */
   async loadModule(): Promise<any> {
-    // console.log('compileModuleAndAllComponentsAsync');
-    // const date = new Date().getTime();
-    const factories = this._compiler.compileModuleAndAllComponentsAsync(this.factoryModule());
-    // console.log(new Date().getTime() - date);
-    return factories.then((f: any) => f.componentFactories.slice(-1)[0]);
+    const serialization = SerializationConfig.factorySerializationConfig(this.config, this.layout, this.nzLayout);
+    const hashKey = serialization.hashKey;
+    if (temComponentFactoryCache[hashKey]) {
+      return Promise.resolve([temComponentFactoryCache[hashKey], serialization, this.templateMap]);
+    }
+    const factories = this._compiler.compileModuleAndAllComponentsAsync(this.factoryModule(serialization));
+    return factories.then((f: any) => {
+      temComponentFactoryCache[hashKey] = f.componentFactories.slice(-1)[0];
+      return [temComponentFactoryCache[hashKey], serialization, this.templateMap];
+    });
   }
 
   set templateMap(map: any) {

@@ -8,24 +8,19 @@ import { SerializationConfig } from './serialization-config';
  * @param config 表单配置
  * @param layout 表单布局
  */
-export const factoryForm = (config: any, layout?: any, templateMap?: object, nzLayout?: string) => {
-  // 序列化配置项
-  const serializationConfig = new SerializationConfig(config, {
-    nzLayout,
-    ...layout
-  });
+export const factoryForm = (serializationConfig: SerializationConfig, templateMap?: object) => {
   class TemComponent implements OnInit, OnDestroy {
     @Output() readonly dynamicSubmit: EventEmitter<any> = new EventEmitter();
     @Output() readonly valueChanges: EventEmitter<any> = new EventEmitter();
+    @Input() serialization: SerializationConfig;
+    @Input() templateMap: object;
     @Input() set fieldStore(value: object) {
       this.underFieldStore = value || {};
       this.resetValidateForm();
     }
     private underFieldStore: any = {};
     private subscription: Subscription = new Subscription();
-    public templateMap = templateMap;
     public validateForm: FormGroup;
-    public serialization: SerializationConfig = serializationConfig;
     private fb: FormBuilder;
     constructor() {
       this.fb = new FormBuilder();
@@ -67,7 +62,7 @@ export const factoryForm = (config: any, layout?: any, templateMap?: object, nzL
      * @param fieldStore 数据
      */
     private createValidateForm(fieldStore?: any) {
-      this.validateForm = serializationConfig.generateFormGroup(this.fb, fieldStore);
+      this.validateForm = this.serialization.generateFormGroup(this.fb, fieldStore);
       this.subscription.add(
         this.validateForm.valueChanges.subscribe((value: any) => {
           this.valueChanges.emit(value);
@@ -109,7 +104,7 @@ export const factoryForm = (config: any, layout?: any, templateMap?: object, nzL
       if (event) {
         event.preventDefault();
       }
-      if (serializationConfig.typeOrInclude(['formArray', 'table'])) {
+      if (this.serialization.typeOrInclude(['formArray', 'table'])) {
         this.createValidateForm(this.initialValues);
       } else if (this.validateForm) {
         this.validateForm.reset(this.initialValues);
@@ -129,7 +124,7 @@ export const factoryForm = (config: any, layout?: any, templateMap?: object, nzL
         this.underFieldStore = fieldStore;
       }
       const underFieldStore = this.underFieldStore;
-      if (this.validateForm && !serializationConfig.typeOrInclude(['formArray', 'table'])) {
+      if (this.validateForm && !this.serialization.typeOrInclude(['formArray', 'table'])) {
         this.validateForm.reset(underFieldStore);
       } else {
         this.createValidateForm(underFieldStore);
@@ -144,11 +139,11 @@ export const factoryForm = (config: any, layout?: any, templateMap?: object, nzL
     }
 
     get initialValues() {
-      return serializationConfig.initialValues;
+      return this.serialization.initialValues;
     }
   }
 
-  return Component({
+  return  Component({
     template: serializationConfig.generateTemplate(), // 获取动态的template
     providers: [FormBuilder]
   })(TemComponent);

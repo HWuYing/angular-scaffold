@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ConfigService } from '../services/config.service';
+import { ConfigService } from '../services/index.service';
 
 @Component({
   selector: 'app-index',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
+  templateUrl: 'index.component.html',
+  styleUrls: ['index.component.scss'],
   providers: [ ConfigService ],
 })
-export class HomeComponent implements OnInit {
+export class IndexComponent implements OnInit {
   public columns: any[] = this.config.tableColumn;
   public entryConfig: any = this.config.searchForm;
   public dataSource: any[] = [];
@@ -22,6 +22,6 @@ export class HomeComponent implements OnInit {
   }
 
   go(path: string) {
-    this.router.navigate([path]);
+    this.router.navigateByUrl(path);
   }
 }
