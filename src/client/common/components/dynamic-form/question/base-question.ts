@@ -20,7 +20,7 @@ export class BaseQuestion extends GenerateProps {
     this.propsKey = propsKey;
     this.name = name;
     this.props = this.initProps(config || {});
-    this.underNgModelChange = props['ngModelChange'] || (() => {});
+    this.underNgModelChange = props.ngModelChange || (() => {});
     this.privateProps = `serialization.serializationProps.${this.propsKey}`;
   }
 
@@ -76,7 +76,7 @@ export class BaseQuestion extends GenerateProps {
   }
 
   /**
-   * 格式化key 是否需要绑定 或者事件
+   * 格式化key 是否需要绑定 或者 事件
    * @param key string
    */
   private parsePropsKey(key: string): string {
@@ -89,7 +89,7 @@ export class BaseQuestion extends GenerateProps {
    * @param underValue 值
    */
   protected parsetPropsValue(key: string, underValue: any): any {
-    return super.parsetPropsValue(key, underValue, this.privateProps);
+    return this.isNotDealValue(key, underValue) ? underValue : super.parsetPropsValue(key, underValue, this.privateProps);
   }
 
   /**
@@ -146,10 +146,19 @@ export class BaseQuestion extends GenerateProps {
   }
 
   /**
+   * 是否对value进行序列化处理
+   * @param key key
+   * @param value value
+   */
+  private isNotDealValue(key: string, value: any): boolean {
+    return ['htmlStyle'].includes(key) && ['string', 'number', 'boolean'].includes(typeof value);
+  }
+
+  /**
    * 是否对key进行特殊处理
    * @param key string
    */
   private isNotDealKey(key: string): boolean {
-    return ['disabled'].includes(key) || /(^\[[\S\s]+\]$)|(^\([\s\S]+\)$)|(^\*[\s\S]+$)/.test(key);
+    return ['disabled', 'style'].includes(key) || /(^\[[\S\s]+\]$)|(^\([\s\S]+\)$)|(^\*[\s\S]+$)/.test(key);
   }
 }

@@ -26,7 +26,7 @@ export const factoryForm = (config: any, layout?: any, templateMap?: object, nzL
     public templateMap = templateMap;
     public validateForm: FormGroup;
     public serialization: SerializationConfig = serializationConfig;
-    private fb: FormBuilder
+    private fb: FormBuilder;
     constructor() {
       this.fb = new FormBuilder();
     }

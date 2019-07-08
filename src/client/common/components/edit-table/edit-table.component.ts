@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
+import { DynamicConfigType } from '..//dynamic-form/dynamic-form';
 import { DynamicFormComponent } from '../dynamic-form/container/dynamic-form.component';
 import { DynamicTableComponent } from '../dynamic-table/dynamic-table.component';
 
@@ -59,7 +60,7 @@ export class EditTableComponent implements OnInit {
   }
 
   static getInitEntryConfig = (templateName: string, name: string, columns: any[]): any => {
-    return (dataSource: any[]) => [{
+    return (dataSource: any[]): DynamicConfigType[] => [{
       type: 'table',
       template: templateName,
       columns,

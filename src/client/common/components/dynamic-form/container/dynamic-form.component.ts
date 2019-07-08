@@ -116,22 +116,23 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
    * 加载动态组件
    */
   loadDynamicForm(): void {
-    const f = this.dynamicFormService.loadModule();
-    const injector = Injector.create({ providers: [], parent: this._injector });
-    const cmpRef = f.create(injector, [], null, this._m);
-    this.destroyCmpRef();
-    this.tplRef.clear();
-    this.tplRef.insert(cmpRef.hostView);
-    const mergeInstance: any = this.mergeInstance();
-    const instance = {
-      ...cmpRef.instance,
-      ...mergeInstance
-    };
-    Object.keys(instance).forEach((key: string) => cmpRef.instance[key] = instance[key]);
-    cmpRef.instance.dynamicSubmit.subscribe(($event: object) => this.dynamicSubmit.emit($event));
-    cmpRef.instance.valueChanges.subscribe(($event: object) => this.valueChanges.emit($event));
+    this.dynamicFormService.loadModule().then((f) => {
+      const injector = Injector.create({ providers: [], parent: this._injector });
+      const cmpRef = f.create(injector, [], null, this._m);
+      this.destroyCmpRef();
+      this.tplRef.clear();
+      this.tplRef.insert(cmpRef.hostView);
+      const mergeInstance: any = this.mergeInstance();
+      const instance = {
+        ...cmpRef.instance,
+        ...mergeInstance
+      };
+      Object.keys(instance).forEach((key: string) => cmpRef.instance[key] = instance[key]);
+      cmpRef.instance.dynamicSubmit.subscribe(($event: object) => this.dynamicSubmit.emit($event));
+      cmpRef.instance.valueChanges.subscribe(($event: object) => this.valueChanges.emit($event));
 
-    this.cmpRef = cmpRef;
+      this.cmpRef = cmpRef;
+    });
   }
 
   /**

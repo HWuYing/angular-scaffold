@@ -1,4 +1,4 @@
-import { COMPILER_OPTIONS, Compiler, CompilerFactory, InjectionToken } from '@angular/core';
+import { Compiler, CompilerFactory, COMPILER_OPTIONS, InjectionToken } from '@angular/core';
 import { JitCompilerFactory } from '@angular/platform-browser-dynamic';
 
 const createCompiler = () => {
@@ -18,5 +18,5 @@ export const DynamicCompilerFactory = new InjectionToken('dynamic-compiler-facto
 export const DYNAMIC_COMPILER_PROVIDER = [
   {provide: COMPILER_OPTIONS, useValue: { }, multi: true},
   {provide: DynamicCompilerFactory, useClass: JitCompilerFactory, deps: [COMPILER_OPTIONS]},
-  {provide: DynamicCompilerToken, useFactory: createCompiler(), deps: [DynamicCompilerFactory]},
+  {provide: DynamicCompilerToken, useFactory: createCompiler(), deps: [DynamicCompilerFactory]}
 ];

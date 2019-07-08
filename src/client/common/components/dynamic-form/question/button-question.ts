@@ -6,6 +6,10 @@ export class ButtonQuestion extends BaseQuestion {
     super(key, propsKey, other);
     this.propsExclude = ['text'];
     this.isAddFormControlName = false;
+    this.transformProps = {
+      ...this.transformProps,
+      type: 'nzType'
+    };
   }
 
   public getTemplate(): string {

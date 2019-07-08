@@ -134,7 +134,10 @@ export class SerializationBase {
       }
     } else if (this.isDynamicLayoutConfig(item)) {
       // 是布局
-      exp = new DynamicLayout(item, this.privateSerialization(item.decorator, propsKey) as any);
+      exp = new DynamicLayout({
+        ...item,
+        nzLayout: this.layout.nzLayout
+      }, this.privateSerialization(item.decorator, propsKey) as any);
     } else {
       // 不是布局（formItem）
       const question = getQuestion(propsKey, item);

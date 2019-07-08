@@ -72,13 +72,13 @@ export class DynamicFormItem extends GenerateProps {
   public validateTemplate(): any {
     const controlKey = this.controlKey;
     const validate = (this.question as any).controlValidate;
-    let validateTemplate: string[] = [];
-    let childrenTemplate: string[] = [];
+    const validateTemplate: string[] = [];
+    const childrenTemplate: string[] = [];
     let ifTemplate: any = {};
     if (validate) {
       this.validate = [];
       validate.forEach((vali: any) => {
-        const underControlKey = vali.controlKey || this.controlKey;
+        const underControlKey = vali.controlKey || controlKey;
         if (vali.patter) {
           this.validate.push(vali.patter);
         }
@@ -94,14 +94,14 @@ export class DynamicFormItem extends GenerateProps {
     }
     return {
       validateTemplate: validateTemplate.join(``),
-      validateStatusTemplate: ifTemplate,
+      validateStatusTemplate: ifTemplate
     };
   }
 
   /**
    * 获取formItem的template
    */
-  public getTemplate() {
+  public getTemplate(isLastCol?: boolean) {
     const { labelStyle, nzLayout } = this.layout;
     const fieldDecorator = this.fieldDecorator;
     const question = this.question;

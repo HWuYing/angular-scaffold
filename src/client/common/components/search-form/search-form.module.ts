@@ -1,20 +1,20 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DynamicFormModule } from '../dynamic-form/dynamic-form.module';
+import { NgModule } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { DynamicFormModule } from '../dynamic-form/dynamic-form.module';
 import { SearchFormComponent } from './search-form.component';
 
 @NgModule({
   declarations: [
-    SearchFormComponent,
+    SearchFormComponent
   ],
   imports: [
     CommonModule,
     DynamicFormModule,
-    NzButtonModule,
+    NzButtonModule
   ],
   exports: [
-    SearchFormComponent,
-  ],
+    SearchFormComponent
+  ]
 })
 export class SearchFormModule { }

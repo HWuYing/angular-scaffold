@@ -37,7 +37,7 @@ export class SerializationConfig extends SerializationBase {
    * @param propsKey string
    * @param item configItem
    */
-  privateSerializationItemConfig(propsKey: string, item: any): any {
+  public privateSerializationItemConfig(propsKey: string, item: any): any {
     let exp: DynamicFormItem | DynamicLayout | DynamicFormGroup | DyanmicFormArray;
     if (this.isDynamicFormGroup(item)) {
       // 是formgroup

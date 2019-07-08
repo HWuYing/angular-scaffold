@@ -1,21 +1,21 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DynamicTableModule } from '../dynamic-table/dynamic-table.module';
+import { NgModule } from '@angular/core';
 import { DynamicFormModule } from '../dynamic-form/dynamic-form.module';
+import { DynamicTableModule } from '../dynamic-table/dynamic-table.module';
 
 import { EditTableComponent } from './edit-table.component';
 
 @NgModule({
   declarations: [
-    EditTableComponent,
+    EditTableComponent
   ],
   imports: [
     CommonModule,
     DynamicTableModule,
-    DynamicFormModule,
+    DynamicFormModule
   ],
   exports: [
-    EditTableComponent,
-  ],
+    EditTableComponent
+  ]
 })
 export class EditTableModule { }

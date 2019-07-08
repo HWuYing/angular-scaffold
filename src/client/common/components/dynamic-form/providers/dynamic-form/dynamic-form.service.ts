@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Compiler, Inject, Injectable, NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { factoryForm } from '../../core/dynamic-form';
 import { DynamicCompilerToken } from '../dynamic-compiler-provider';
 import { NzZorroImport } from '../nz-zorro-lazy';
-import { factoryForm } from '../../core/dynamic-form';
 
 @Injectable()
 export class DynamicFormService {
@@ -23,7 +23,7 @@ export class DynamicFormService {
       imports: [
         CommonModule,
         ReactiveFormsModule,
-        ...NzZorroImport,
+        ...NzZorroImport
       ]
     })(class {});
   }
@@ -31,9 +31,12 @@ export class DynamicFormService {
   /**
    * 价值NgModule
    */
-  loadModule(): any {
-    const factories = this._compiler.compileModuleAndAllComponentsSync(this.factoryModule());
-    return factories.componentFactories.slice(-1)[0];
+  async loadModule(): Promise<any> {
+    // console.log('compileModuleAndAllComponentsAsync');
+    // const date = new Date().getTime();
+    const factories = this._compiler.compileModuleAndAllComponentsAsync(this.factoryModule());
+    // console.log(new Date().getTime() - date);
+    return factories.then((f: any) => f.componentFactories.slice(-1)[0]);
   }
 
   set templateMap(map: any) {

@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { DynamicTableComponent } from './dynamic-table.component';
 
@@ -7,8 +7,8 @@ import { DynamicTableComponent } from './dynamic-table.component';
   declarations: [ DynamicTableComponent ],
   imports: [
     CommonModule,
-    NzTableModule,
+    NzTableModule
   ],
-  exports: [ DynamicTableComponent ],
+  exports: [ DynamicTableComponent ]
 })
 export class DynamicTableModule { }

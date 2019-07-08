@@ -11,7 +11,7 @@ export class DynamicFormGroup extends SerializationBase {
     this.type = type;
     this.name = props.name;
     this.propsKey = propsKey;
-    this.privateInitialValues = fieldDecorator.initialValues;
+    this.privateInitialValues = fieldDecorator.initialValue;
     this.setParentSerialization(parentSerialization);
     this.children = this.serialization();
   }
@@ -36,7 +36,7 @@ export class DynamicFormGroup extends SerializationBase {
    */
   public generateFormControlName(fileStore: any, fb: FormBuilder) {
     const name = this.name;
-    return { [name]: this.generateFormGroup(fb, fileStore) };
+    return { [name]: this.generateFormGroup(fb, fileStore || this.initialValues) };
   }
 
   get initialValues(): object {

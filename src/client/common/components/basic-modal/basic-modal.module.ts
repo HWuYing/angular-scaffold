@@ -1,7 +1,7 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NgModule } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { BasicModalComponent } from './basic-modal.component';
 
 @NgModule({
@@ -9,10 +9,10 @@ import { BasicModalComponent } from './basic-modal.component';
   imports: [
     CommonModule,
     NzModalModule,
-    NzButtonModule,
+    NzButtonModule
   ],
   exports: [
-    BasicModalComponent,
-  ],
+    BasicModalComponent
+  ]
 })
 export class BasicModalModule { }

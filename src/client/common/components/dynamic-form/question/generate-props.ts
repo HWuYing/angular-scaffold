@@ -6,6 +6,7 @@ export class GenerateProps {
   protected transformProps: any = {
     ngModelChange: '(ngModelChange)',
     style: '[ngStyle]',
+    htmlStyle: 'style',
     class: '[ngClass]',
     isShow: '*ngIf',
     click: '(click)',
@@ -74,6 +75,11 @@ export class GenerateProps {
     if (![null, undefined].includes(isShow)) {
       props[this.getTransformProps('isShow')] = (validateForm: any, control: FormControl, propsGroup?: FormGroup) => this.isChangeShow(validateForm, control, propsGroup);
     }
+
+    if (props.style && props.style.width && !props.htmlStyle) {
+      props.htmlStyle = `width: ${props.style.width};`;
+    }
+
     return props;
   }
 
@@ -94,10 +100,8 @@ export class GenerateProps {
     let underValue: string;
     if (/^\*ngIf$/.test(key)) {
       underValue = this.getNgIfProps(value);
-    } if(/\(ngModelChange\)/.test(key)) {
+    } else {
       underValue = `${value}($event, ${this.controlKey ? `${this.controlKey}` : 'null'}, validateForm, ${this.controlParentKey})`;
-    } else if (/^\([\s\S]*\)$/.test(key)) {
-      underValue = this.getNgIfProps(value);
     }
     return underValue;
   }

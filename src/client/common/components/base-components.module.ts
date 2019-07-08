@@ -10,7 +10,7 @@ import { SearchFormModule } from './search-form/search-form.module';
 @NgModule({
   declarations: [],
   imports: [
-    CommonModule,
+    CommonModule
   ],
   exports: [
     SearchFormModule,
@@ -18,7 +18,7 @@ import { SearchFormModule } from './search-form/search-form.module';
     DynamicFormModule,
     EditTableModule,
     BasicModalModule,
-    DynamicTableModule,
+    DynamicTableModule
   ]
 })
 export class BaseComponentsModule {}
