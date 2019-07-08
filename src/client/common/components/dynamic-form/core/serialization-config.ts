@@ -1,4 +1,4 @@
-import { createHash  } from 'crypto';
+import { md5 } from './md5';
 import { DyanmicFormArray } from './dynamic-form-array';
 import { DynamicFormGroup } from './dynamic-form-group';
 import { DynamicFormItem } from './dynamic-form-item';
@@ -69,9 +69,7 @@ export class SerializationConfig extends SerializationBase {
     template += this.serializationConfig.getTemplate();
     template += `</form>`;
     this.template = template;
-    const md5 = createHash('md5');
-    md5.update(template);
-    this.underHashKey = md5.digest('hex');
+    this.underHashKey = md5(template);
     return template;
   }
 
