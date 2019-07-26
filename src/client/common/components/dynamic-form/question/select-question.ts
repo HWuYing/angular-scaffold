@@ -1,11 +1,9 @@
 import { BaseQuestion } from './base-question';
 
 export class SelectQuestion extends BaseQuestion {
-  private children: any[];
   constructor(key: string, propsKey: string, props: any) {
-    const { children, ...config } = props;
-    super(key, propsKey, config);
-    this.children = children || [];
+    super(key, propsKey, props);
+    this.propsExclude = [ ...this.propsExclude, 'children' ];
     this.transformProps = {
       ...this.transformProps,
       placeholder: 'nzPlaceHolder'
@@ -14,9 +12,8 @@ export class SelectQuestion extends BaseQuestion {
 
   public getTemplate(): string {
     let template = `<nz-select ${this.serializationProps()}>`;
-    this.children.forEach((child: any) => {
-      template += `<nz-option nzLabel="${child.label}" [nzValue]="'${child.value}'"></nz-option>`;
-    });
+    template += `<nz-option *ngFor="let child of ${this.privateProps}.children;"
+      nzLabel="{{child.label}}" [nzValue]="child.value"></nz-option>`;
     template += `</nz-select>`;
     return template;
   }

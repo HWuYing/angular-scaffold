@@ -1,5 +1,5 @@
 <section class="page-container" [ngStyle]="pageStyle" [ngClass]="pageClass">
-  <section class="search-form-container" *ngIf="formConfig" [ngStyle]="searchStyle" [ngClass]="searchClass">
+  <section *ngIf="formConfig" [ngStyle]="searchStyle" [ngClass]="searchClass">
     <app-search-form
       [layout]="layout"
       [config]="formConfig"
@@ -16,6 +16,7 @@
   
   <section class="table-container" *ngIf="tableColumns" [ngStyle]="tableStyle" [ngClass]="tableClass">
     <app-dynamic-table 
+      [theadColumns]="theadColumns"
       [columns]="tableColumns"
       [total]="total"
       [dataSource]="dataSource"

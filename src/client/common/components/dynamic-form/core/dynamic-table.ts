@@ -59,10 +59,15 @@ export class DyanmicTable extends DyanmicFormArray {
     let template = ``;
     const tdTemplateMap: any[] = [];
     const propsKey = this.propsKey;
+    const ngForKey = this.ngForKey;
     template += this.children.reduce((underTemplate: string, child: any, index: number) => {
       const tdTemplateKey = `${propsKey}_${index}_td_template`;
-      let childTemplate = `<ng-template #${tdTemplateKey} let-i="index">`;
-      childTemplate += '<ng-container [formGroupName]="i">';
+      let isShowProps = ``;
+      let childTemplate = `<ng-template #${tdTemplateKey} let-${ngForKey}="index" let-data>`;
+      if (child.getIsShowTemplate) {
+        isShowProps = child.getIsShowTemplate();
+      }
+      childTemplate += `<ng-container ${isShowProps} [formGroupName]="${ngForKey}">`;
       childTemplate += child.getTemplate();
       childTemplate += '</ng-container>';
       childTemplate += `</ng-template>`;
@@ -79,19 +84,13 @@ export class DyanmicTable extends DyanmicFormArray {
     const serializationProps = `serialization.serializationProps.${propsKey}`;
     const [ tdTemplate, tdTemplateMap ] = this.getTdTemplate();
     let template = `<ng-container formArrayName="${name}">`;
-    template += `<ng-template #${this.propsKey}_tr_template let-data let-index="index" let-tr="trTemplate">
-      <tr [formGroupName]="index">
-        <ng-container *ngTemplateOutlet="tr; context: { $implicit: data, index: index }"></ng-container>
-      </tr></ng-template>`;
     template += tdTemplate;
     template += `<ng-container
       *ngTemplateOutlet="templateMap.${templateName};
         context: {
           $implicit: validateForm,
           columns: ${serializationProps}.columns,
-          trTemplate: ${propsKey}_tr_template,
-          tdTemplateMap: {${tdTemplateMap.join(',')}},
-          dataSource: ${serializationProps}.dataSource
+          tdTemplateMap: {${tdTemplateMap.join(',')}}
         }"
     >
     </ng-container>`;

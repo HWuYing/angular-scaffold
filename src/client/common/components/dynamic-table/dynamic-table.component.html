@@ -1,71 +1,86 @@
-<nz-table
+<nz-table 
   #basicTable
   nzShowSizeChanger
+  [nzTitle]="title"
+  [nzFooter]="footer"
   [nzFrontPagination]="false"
-  [nzPageSizeOptions]="pageSizeOptions"
-  [nzPageIndex]="pageNum"
-  [nzPageSize]="pageSize"
+  [nzPageSizeOptions]="pageSizeOptions" 
+  [nzPageIndex]="pageNum" 
+  [nzPageSize]="pageSize" 
   [nzTotal]="total"
   [nzData]="dataSource"
-  [nzLoading]="loading"
-  [nzScroll]="scroll"
+  [nzLoading]="loading" 
+  [nzScroll]="scroll" 
   [nzWidthConfig]="widthConfig"
-  [nzShowPagination]="showPagination"
-  [nzShowTotal]="showTotal"
-  (nzPageIndexChange)="_paginationIndexChange($event)"
+  [nzShowPagination]="showPagination" 
+  [nzShowTotal]="showTotal" 
+  [nzBordered]="borderd"
+  (nzPageIndexChange)="_paginationIndexChange($event)" 
   (nzPageSizeChange)="_paginationSizeChange($event)"
   (nzCurrentPageDataChange)="_pageDataChange($event)"
 >
   <thead>
-    <ng-container *ngIf="isTheadGroup"></ng-container>
-    <ng-container *ngIf="!isTheadGroup">
-      <tr>
-        <ng-container *ngIf="showCheckbox">
-          <th
-            nzShowCheckbox
-            [(nzChecked)]="isAllDisplayDataChecked"
-            [nzIndeterminate]="isIndeterminate"
-            (nzCheckedChange)="_checkAll($event)"
-          ></th>
+    <!-- 头部模版 -->
+    <ng-template #th let-columns let-thRowNumber="thRowNumber" let-index="index">
+      <th 
+        *ngIf="showCheckbox && index === 0" nzShowCheckbox [attr.rowspan]="thRowNumber || 1"
+        [(nzChecked)]="isAllDisplayDataChecked" 
+        [nzIndeterminate]="isIndeterminate"
+        (nzCheckedChange)="_checkAll($event)"
+      ></th>
+      <th 
+        *ngFor="let column of columns" 
+        [attr.rowspan]="column.rowSpan || 1" 
+        [attr.colspan]="column.colSpan || 1"
+        [nzWidth]="getWdith(column)" 
+        [ngClass]="'cell-align-'+ column.align"
+      >{{ column.title }}</th>
+    </ng-template>
+    <ng-container *ngIf="isTheadGroup">
+      <tr *ngFor="let columns of theadColumns; index as index; trackBy: trackByColumn">
+        <ng-container *ngTemplateOutlet="th;
+            context: { $implicit: columns, index: index, thRowNumber: theadColumns.length }">
         </ng-container>
-        <th *ngFor="let column of columns" [nzWidth]="getWdith(column)" [ngClass]="'cell-align-'+ column.align">{{ column.title }}</th>
       </tr>
     </ng-container>
+    <tr *ngIf="!isTheadGroup">
+      <ng-container *ngTemplateOutlet="th; context: { $implicit: columns, index: 0 }">
+      </ng-container>
+    </tr>
   </thead>
   <tbody>
     <ng-container *ngIf="!trTemplateRef">
-      <tr *ngFor="let data of basicTable.data; index as index">
+      <tr *ngFor="let data of basicTable.data; index as index;">
         <ng-container *ngTemplateOutlet="tr; context: { $implicit: data, index: index }"></ng-container>
       </tr>
     </ng-container>
     <ng-container *ngIf="trTemplateRef">
-      <ng-container *ngFor="let data of basicTable.data; index as index">
-        <ng-container
-        *ngTemplateOutlet="trTemplateRef;
-          context: { $implicit: data, trTemplate: tr, index: index }"
-        ></ng-container>
+      <ng-container *ngFor="let data of basicTable.data; index as index;">
+        <ng-container *ngTemplateOutlet="trTemplateRef;
+          context: { $implicit: data, trTemplate: tr, index: index }"></ng-container>
       </ng-container>
     </ng-container>
   </tbody>
 </nz-table>
 
 <ng-template #tr let-data let-index="index">
-  <ng-container *ngIf="showCheckbox">
-    <td
-      nzShowCheckbox
-      [nzDisabled]="data.disabled"
-      [(nzChecked)]="mapOfCheckedId[getRowKey(data, index)]"
-      (nzCheckedChange)="_rowCheckChange()"
-    ></td>
-  </ng-container>
+  <td 
+    *ngIf="showCheckbox" 
+    nzShowCheckbox 
+    [nzDisabled]="getDisabled(index)"
+    [(nzChecked)]="mapOfCheckedId[getRowKey(index, data)]" 
+    (nzCheckedChange)="_rowCheckChange()"
+  ></td>
   <ng-container *ngIf="!tdTemplateRef">
-    <td class="td" *ngFor="let column of columns" [ngClass]="'cell-align-'+ column.align">
+    <td class="td" *ngFor="let column of columns; trackBy: trackByColumn" [ngClass]="'cell-align-'+ column.align">
       <ng-container *ngTemplateOutlet="td, context: { $implicit: data, column: column, index: index }"></ng-container>
     </td>
   </ng-container>
   <ng-container *ngIf="tdTemplateRef">
-    <ng-container *ngFor="let column of columns">
-      <ng-container *ngTemplateOutlet="tdTemplateRef, context: { $implicit: data, column: column, tdTemplate: td, index: index }"></ng-container>
+    <ng-container *ngFor="let column of columns; trackBy: trackByColumn">
+      <ng-container
+        *ngTemplateOutlet="tdTemplateRef, context: { $implicit: data, column: column, tdTemplate: td, index: index }">
+      </ng-container>
     </ng-container>
   </ng-container>
 </ng-template>
@@ -74,19 +89,21 @@
   <ng-container *ngIf="!column.template">
     <!-- 单元格标签点击 -->
     <ng-container *ngIf="isClickCeel(data, column)">
-      <a (click)="column.click(data, column)">{{ column.isSerial ? index + 1 : data[column.key]}}</a>
+      <a (click)="column.click(data, column)">{{ column.isSerial ? index + 1 : column.render ? column.render(data, index) : data[column.key]}}</a>
     </ng-container>
-    <ng-container *ngIf="!isClickCeel(data, column)">{{ column.isSerial ? index + 1 : data[column.key]}}</ng-container>
+    <ng-container *ngIf="!isClickCeel(data, column)">{{ column.isSerial ? index + 1 : column.render ? column.render(data, index) : data[column.key]}}</ng-container>
   </ng-container>
   <ng-container *ngIf="column.template">
-    <ng-container
-      *ngTemplateOutlet="templateMap[column.template];
+    <ng-container *ngTemplateOutlet="templateMap[column.template];
         context: {$implicit: data, column: column, value: data[column.key], index: index}">
     </ng-container>
   </ng-container>
 </ng-template>
 
-<ng-template #showTotal let-range="range" let-total>
+<!-- <ng-template #showTotal let-range="range" let-total>
   <span class="total-span">共{{total}}条</span>
   <span>第{{ range[0] }}-{{ range[1] }}条</span>
+</ng-template> -->
+<ng-template #showTotal let-range="range" let-total>
+  Showing {{range[0]}} to {{range[1]}} of {{total}} rows
 </ng-template>

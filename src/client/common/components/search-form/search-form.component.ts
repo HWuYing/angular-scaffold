@@ -10,6 +10,7 @@ export class SearchFormComponent implements OnInit {
   @Input() config: any; // 表单配置
   @Input() fieldStore: any; // 表单默认值
   @Input() layout: any; // 表单布局
+  @Input() title: string = 'Search';
   @Output() readonly searchSubmit: EventEmitter<any> = new EventEmitter();
   @Output() readonly valueChanges: EventEmitter<any> = new EventEmitter();
   @ViewChild('dynamicForm', { static: true }) dynamicForm: DynamicFormComponent;

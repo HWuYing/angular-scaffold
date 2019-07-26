@@ -4,29 +4,55 @@
   [fieldStore]="fieldStore"
   [config]="entryConfig"
   [templateMap]="{
-    editTable: editTableTemplate
+    editTable: height ? isFixedHeightTemplate : editTableTemplate
   }"
+></app-dynamic-form>
+
+<ng-template #interceptTdTemplate let-data let-tdTemplate="tdTemplate" let-column="column" let-index="index">
+  <td>
+    <ng-container *ngTemplateOutlet="tdTemplate, context: { $implicit: data, column: removeEdit(column, data), index: index }"></ng-container>
+  </td>
+</ng-template>
+
+<ng-template 
+  #isFixedHeightTemplate
+  let-columns="columns"
+  let-trTemplateRef="trTemplate"
+  let-tdTemplateMap="tdTemplateMap"
 >
-  <ng-template
-    #editTableTemplate
-    let-columns="columns"
-    let-trTemplateRef="trTemplate"
-    let-dataSource="dataSource"
-    let-tdTemplateMap="tdTemplateMap"
+  <div [style.minHeight]="height" [style.maxHeight]="height" [style.height]="height">
+    <ng-container *ngTemplateOutlet="editTableTemplate; context: { 
+      columns: columns,
+      trTemplate: trTemplate,
+      tdTemplateMap: tdTemplateMap
+    }"></ng-container>
+  </div>
+</ng-template>
+
+
+<ng-template
+  #editTableTemplate
+  let-columns="columns"
+  let-trTemplateRef="trTemplate"
+  let-tdTemplateMap="tdTemplateMap"
+>
+  <app-dynamic-table
+    #dynamicTable
+    [isHeadFixed]="isHeadFixed"
+    [title]="title"
+    [footer]="footer"
+    [columns]="columns"
+    [theadColumns]="theadColumns"
+    [dataSource]="_dataSource"
+    [templateMap]="mergeTemplateMap(tdTemplateMap)"
+    [trTemplateRef]="trTemplateRef"
+    [showPagination]="false"
+    [isSerial]="isSerial"
+    [showCheckbox]="showCheckbox"
+    [tdTemplateRef]="tdTemplateRef || interceptTdTemplate"
+    (currentPageDataChange)="currentPageDataChange.emit($event)"
+    (checkChange)="checkChange.emit($event)"
   >
-    <app-dynamic-table
-      #dynamicTable
-      [columns]="columns"
-      [dataSource]="dataSource"
-      [templateMap]="tdTemplateMap"
-      [trTemplateRef]="trTemplateRef"
-      [showPagination]="false"
-      [isSerial]="isSerial"
-      [showCheckbox]="showCheckbox"
-      [tdTemplateRef]="tdTemplateRef"
-      (currentPageDataChange)="currentPageDataChange.emit($event)"
-      (checkChange)="checkChange.emit($event)"
-    >
-    </app-dynamic-table>
-  </ng-template>
-</app-dynamic-form>
+  </app-dynamic-table>
+</ng-template>
+

@@ -66,6 +66,18 @@ export class QuestionGroupQuestion extends BaseQuestion {
   }
 
   /**
+   * 是否时formArray下的控件
+   * @param isArrayChildren boolean
+   */
+  public setIsArrayChildren(isArrayChildren: boolean, ngForKey: string) {
+    this.isArrayChildren = isArrayChildren;
+    this.ngForKey = ngForKey;
+    this.children.forEach((child: BaseQuestion) => {
+      child.setIsArrayChildren(isArrayChildren, ngForKey);
+    });
+  }
+
+  /**
    * 设置初始值
    * @param initialValue 初始值
    */

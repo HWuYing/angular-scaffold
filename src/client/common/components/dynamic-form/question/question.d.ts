@@ -1,21 +1,31 @@
 import { FormControl, FormGroup } from "@angular/forms";
 
-interface QuestionGenerateType {
-
+export interface Options {
+  control?: FormControl,
+  form?: FormGroup,
+  parentForm?: FormGroup,
+  data?: any,
+  ngForKey?: string
 }
-
-interface QuestionNotControls extends QuestionGenerateType {
+interface QuestionGenerateType {
   style?: object;
   class?: string;
   name?: string;
+  [propsKey: string]: any;
+}
+
+interface QuestionNotControls extends QuestionGenerateType {
   click?: {
-    (event?: MouseEvent, constrol?: FormControl, validateForm?: FormGroup): void;
+    (event?: MouseEvent, options?: Options): void;
   }
 }
 
-export interface QuestionBaseType extends QuestionNotControls {
+export interface QuestionBaseType extends QuestionGenerateType {
   ngModelChange?: {
-    (val: any): void;
+    (value: any, options?: Options): void;
+  };
+  disabled?: boolean | {
+    (options?: Options) : boolean;
   };
   format?: {
     (val?: any): any;
@@ -43,7 +53,8 @@ export interface QuestionButtonType extends QuestionNotControls {
 
 export interface QuestionSelectType extends QuestionBaseType {
   nzAllowClear?: boolean;
-  children?: { label: any, value: any}[];
+  nzShowSearch?: boolean;
+  children?: { label: any, value: any }[];
 }
 
 export interface QuestionRadioType extends QuestionBaseType {
@@ -53,4 +64,14 @@ export interface QuestionRadioType extends QuestionBaseType {
 
 export interface QuestionGroupType extends QuestionGenerateType {
   children?: any;
+}
+
+export interface ContainerType extends QuestionGenerateType {
+  template: string;
+}
+
+export interface UploadType extends QuestionBaseType {
+  action?: string;
+  isFlex?: boolean;
+  [propKey: string]: any;
 }

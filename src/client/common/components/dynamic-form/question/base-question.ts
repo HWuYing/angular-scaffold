@@ -1,9 +1,9 @@
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { GenerateProps } from './generate-props';
+import { Options } from './question';
 
 export class BaseQuestion extends GenerateProps {
   public key: string;
-  public name: string;
   public props: object;
   public propsKey: string;
   public privateProps: string;
@@ -14,7 +14,7 @@ export class BaseQuestion extends GenerateProps {
   protected controlKey: string;
   constructor(key: string, propsKey: string, props: any) {
     super({ isShow: props. isShow });
-    const { name, format, isShow, ...config } = props;
+    const { name, format, isShow, enableIsShow, ...config } = props;
     this.key = key;
     this.format = format;
     this.propsKey = propsKey;
@@ -22,6 +22,9 @@ export class BaseQuestion extends GenerateProps {
     this.props = this.initProps(config || {});
     this.underNgModelChange = props.ngModelChange || (() => {});
     this.privateProps = `serialization.serializationProps.${this.propsKey}`;
+    if (enableIsShow) {
+      this.propsExclude = this.propsExclude.filter((underKey: string) => underKey !== '*ngIf');
+    }
   }
 
   /**
@@ -34,8 +37,8 @@ export class BaseQuestion extends GenerateProps {
     const isFormat = !!format;
     const props = { ...config };
     if (isFormat) {
-      props.ngModelChange = ($event: any, control?: FormControl, validateForm?: FormGroup, parentGroup?: FormGroup) =>
-        this.ngModelChange($event, control, validateForm, parentGroup);
+      props.ngModelChange = ($event: any, options: Options) =>
+        this.ngModelChange($event, options);
     }
     return super.initProps(props);
   }
@@ -44,7 +47,8 @@ export class BaseQuestion extends GenerateProps {
    * form数据改变时change
    * @param value value
    */
-  protected ngModelChange(value: any, control?: FormControl, validateForm?: FormGroup, parentGroup?: FormGroup) {
+  protected ngModelChange(value: any, options: Options) {
+    const { control } = options;
     const format = this.format;
     if (this.value === value) {
       return;
@@ -52,12 +56,10 @@ export class BaseQuestion extends GenerateProps {
     const underNgModelChange = this.underNgModelChange;
     const underValue = format(value);
     this.value = [null, undefined].includes(underValue) ? value : underValue;
-    setTimeout(() => {
-      if (control) {
-        control.setValue(this.value);
-      }
-      underNgModelChange(this.value, control, validateForm, parentGroup);
-    });
+    if (control) {
+      control.setValue(this.value);
+    }
+    underNgModelChange(this.value, options);
   }
 
 /**
@@ -67,8 +69,9 @@ export class BaseQuestion extends GenerateProps {
    */
   protected isChangeShow(validateForm: FormGroup, control?: FormControl, parentGroup?: FormGroup): boolean {
     const isShow = super.isChangeShow(validateForm, control, parentGroup);
-    this.toggerControl(
-      this.generateFormControlInfo(this.initialValue, this.fb),
+    this.toggleControl(
+      this.generateFormControlInfo.bind(this),
+      control,
       !!(isShow && parentGroup),
       parentGroup
     );
@@ -103,8 +106,8 @@ export class BaseQuestion extends GenerateProps {
       .reduce(
         (propsArr: any[], key: string) => {
           if (!this.isExcludeKey(key, props[key])) {
-            const underKey = this.getTransformProps(key);
-            const bindKey = this.parsePropsKey(underKey);
+            const transformKey = this.getTransformProps(key);
+            const bindKey = this.parsePropsKey(transformKey);
             propsArr.push(`${bindKey}="${this.parsetPropsValue(key, props[key])}"`);
           }
           return propsArr;
@@ -139,7 +142,7 @@ export class BaseQuestion extends GenerateProps {
     this.fb = fb;
     const disabled = (this.props as any).disabled;
     let value = field || field === 0 || field === '' ? field : this.initialValue;
-    if (disabled) {
+    if (disabled === true) {
       value = { value, disabled };
     }
     return name ? { [name]: [value, (this.controlValidate || []).map((val: any) => val.patter)] } : {};
@@ -159,6 +162,6 @@ export class BaseQuestion extends GenerateProps {
    * @param key string
    */
   private isNotDealKey(key: string): boolean {
-    return ['disabled', 'style'].includes(key) || /(^\[[\S\s]+\]$)|(^\([\s\S]+\)$)|(^\*[\s\S]+$)/.test(key);
+    return ['attr.disabled', 'style'].includes(key) || /(^\[[\S\s]+\]$)|(^\([\s\S]+\)$)|(^\*[\s\S]+$)/.test(key);
   }
 }

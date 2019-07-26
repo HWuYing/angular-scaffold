@@ -11,10 +11,13 @@ export class BasicModalComponent implements OnInit {
   @Input() isShowOk: boolean = true;
   @Input() width: number = 650;
   @Input() bodyStyle: object;
-  @Input() cancelText: string = '取消';
-  @Input() okText: string = '确定';
+  @Input() cancelText: string = 'cancel';
+  @Input() okText: string = 'submit';
+  @Input() footer: TemplateRef<void>;
   @Output() readonly nzOnOk: EventEmitter<any> = new EventEmitter();
   @Output() readonly nzOnCancel: EventEmitter<any> = new EventEmitter();
+  @Input() openLoading: boolean = false;
+  public _loading: boolean = false;
   private _isVisible: boolean = false;
   constructor() {}
 
@@ -25,16 +28,19 @@ export class BasicModalComponent implements OnInit {
   }
 
   close() {
+    this.loading = false;
     this._isVisible = false;
   }
 
-  _onOk() {
-    this.nzOnOk.emit(() => {
-      this._isVisible = false;
+  eventOnOk() {
+    this.loading = true;
+    this.nzOnOk.emit((isNotClose?: boolean) => {
+      this._isVisible = isNotClose ? isNotClose : false;
+      this.loading = false;
     });
   }
 
-  _onCancel() {
+  eventOnCancel() {
     this.close();
     this.nzOnCancel.emit();
   }
@@ -45,5 +51,13 @@ export class BasicModalComponent implements OnInit {
 
   set isVisible(value: boolean) {
     this._isVisible = value;
+  }
+
+  get loading(): boolean {
+    return this.openLoading && this._loading;
+  }
+
+  set loading(loading: boolean) {
+    this._loading = loading;
   }
 }

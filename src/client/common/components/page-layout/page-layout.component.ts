@@ -13,6 +13,7 @@ export class PageLayoutComponent implements OnInit, AfterViewInit {
   @Input() layout: any;
   @Input() fieldStore: any;
   @Input() formConfig: any;
+  @Input() theadColumns: any[][];
   @Input() tableColumns: any;
   @Input() dataSource: any[];
   @Input() total: number = 0;

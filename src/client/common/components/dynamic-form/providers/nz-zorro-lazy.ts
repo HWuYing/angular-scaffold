@@ -5,8 +5,11 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTimePickerModule } from 'ng-zorro-antd/time-picker';
+import { UploadModule } from '../../upload/upload.module';
 
 export const NzZorroImport = [
   NzButtonModule,
@@ -17,5 +20,8 @@ export const NzZorroImport = [
   NzGridModule,
   NzInputModule,
   NzIconModule,
-  NzCheckboxModule
+  NzCheckboxModule,
+  NzInputNumberModule,
+  NzTimePickerModule,
+  UploadModule
 ];

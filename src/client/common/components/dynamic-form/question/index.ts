@@ -2,9 +2,11 @@ import { BaseQuestion } from './base-question';
 import { ButtonQuestion } from './button-question';
 import { CheckboxGroupQuestion } from './checkbox-group-question';
 import { CheckBoxQuestion } from './checkbox-question';
+import { ContainerQuestion } from './container-question';
 import { DatePickerQuestion } from './date-picker-question';
 import { IconQuestion } from './icon-question';
 import { InputGroupQuestion } from './input-group-question';
+import { InputNumberQuestion } from './input-number-question';
 import { InputQuestion } from './input-question';
 import { MonthPickerQuestion } from './month-picker-question';
 import { QuestionGroupQuestion } from './question-group-question';
@@ -14,6 +16,8 @@ import { RangePickerQuestion } from './range-picker-question';
 import { SelectQuestion } from './select-question';
 import { TextQuestion } from './text-question';
 import { TextareaQuestion } from './textarea-question';
+import { TimePickerQuestion } from './time-picker-question';
+import { UploadQuestion } from './upload-question';
 
 const hasOwnProperty = (o: any, name: string) => Object.prototype.hasOwnProperty.call(o, name);
 
@@ -25,6 +29,7 @@ const questionMap = {
   select: SelectQuestion,
   monthPicker: MonthPickerQuestion,
   datePicker: DatePickerQuestion,
+  timePicker: TimePickerQuestion,
   inputGroup: InputGroupQuestion,
   questionGroup: QuestionGroupQuestion,
   button: ButtonQuestion,
@@ -32,7 +37,10 @@ const questionMap = {
   checkboxGroup: CheckboxGroupQuestion,
   radio: RadioQuestion,
   radioGroup: RadioGroupQuestion,
-  rangePicker: RangePickerQuestion
+  rangePicker: RangePickerQuestion,
+  upload: UploadQuestion,
+  inputNumber: InputNumberQuestion,
+  container: ContainerQuestion
 };
 
 export { BaseQuestion };

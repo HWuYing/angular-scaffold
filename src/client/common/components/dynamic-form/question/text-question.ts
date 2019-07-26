@@ -12,6 +12,6 @@ export class TextQuestion extends BaseQuestion {
 
   public getTemplate(): string {
     const text = this.controlKey && this.name ? this.controlKey + '.value' : `${this.privateProps}.text`;
-    return `<${this.target} ${this.serializationProps()}>{{ ${text} }}</${this.target}>`;
+    return `<${this.target} class="text-question" ${this.serializationProps()}>{{ ${text} }}</${this.target}>`;
   }
 }

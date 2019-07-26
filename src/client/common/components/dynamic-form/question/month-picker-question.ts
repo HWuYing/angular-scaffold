@@ -17,6 +17,6 @@ export class MonthPickerQuestion extends BaseQuestion {
   }
 
   public getTemplate(): string {
-    return `<nz-month-picker ${this.serializationProps()} style="width: 100%;"></nz-month-picker>`;
+    return `<nz-month-picker style="width: 100%;" ${this.serializationProps()}></nz-month-picker>`;
   }
 }

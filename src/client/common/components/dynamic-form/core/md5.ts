@@ -1,7 +1,7 @@
 function safeAdd (x: any, y: any) {
-  const lsw = (x & 0xffff) + (y & 0xffff);
+  const lsw = (x & 0xFFFF) + (y & 0xFFFF);
   const msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-  return (msw << 16) | (lsw & 0xffff);
+  return (msw << 16) | (lsw & 0xFFFF);
 }
 
 /*
@@ -42,10 +42,10 @@ function binlMD5 (x: any, len: any) {
   let oldb: any;
   let oldc: any;
   let oldd: any;
-  let a: number = 1732584193;
-  let b: number = -271733879;
-  let c: number = -1732584194;
-  let d: number = 271733878;
+  let a = 1732584193;
+  let b = -271733879;
+  let c = -1732584194;
+  let d = 271733878;
 
   for (let i = 0; i < x.length; i += 16) {
     olda = a;
@@ -126,7 +126,7 @@ function binlMD5 (x: any, len: any) {
     c = safeAdd(c, oldc);
     d = safeAdd(d, oldd);
   }
-  return [a, b, c, d]
+  return [a, b, c, d];
 }
 
 /*
@@ -136,9 +136,9 @@ function binl2rstr (input: any) {
   let output = '';
   const length32 = input.length * 32;
   for (let i = 0; i < length32; i += 8) {
-    output += String.fromCharCode((input[i >> 5] >>> (i % 32)) & 0xff)
+    output += String.fromCharCode((input[i >> 5] >>> (i % 32)) & 0xFF);
   }
-  return output
+  return output;
 }
 
 /*
@@ -149,11 +149,11 @@ function rstr2binl (input: any) {
   const output = [];
   output[(input.length >> 2) - 1] = undefined;
   for (let i = 0; i < output.length; i += 1) {
-    output[i] = 0
+    output[i] = 0;
   }
   const length8 = input.length * 8;
   for (let i = 0; i < length8; i += 8) {
-    output[i >> 5] |= (input.charCodeAt(i / 8) & 0xff) << (i % 32);
+    output[i >> 5] |= (input.charCodeAt(i / 8) & 0xFF) << (i % 32);
   }
   return output;
 }
@@ -170,8 +170,8 @@ function rstrMD5 (s: any) {
  */
 function rstrHMACMD5 (key: any, data: any) {
   let bkey = rstr2binl(key);
-  let ipad = [];
-  let opad = [];
+  const ipad = [];
+  const opad = [];
   let hash;
   ipad[15] = opad[15] = undefined;
   if (bkey.length > 16) {
@@ -179,9 +179,9 @@ function rstrHMACMD5 (key: any, data: any) {
   }
   for (let i = 0; i < 16; i += 1) {
     ipad[i] = bkey[i] ^ 0x36363636;
-    opad[i] = bkey[i] ^ 0x5c5c5c5c;
+    opad[i] = bkey[i] ^ 0x5C5C5C5C;
   }
-  hash = binlMD5(ipad.concat(rstr2binl(data)), 512 + data.length * 8);
+  hash = binlMD5(ipad.concat(rstr2binl(data)),  data.length * 8 + 512);
   return binl2rstr(binlMD5(opad.concat(hash), 512 + 128));
 }
 
@@ -194,9 +194,9 @@ function rstr2hex (input: any) {
   let x;
   for (let i = 0; i < input.length; i += 1) {
     x = input.charCodeAt(i);
-    output += hexTab.charAt((x >>> 4) & 0x0f) + hexTab.charAt(x & 0x0f)
+    output += hexTab.charAt((x >>> 4) & 0x0F) + hexTab.charAt(x & 0x0F);
   }
-  return output
+  return output;
 }
 
 /*
@@ -222,15 +222,15 @@ function hexHMACMD5 (k: any, d: any) {
   return rstr2hex(rawHMACMD5(k, d));
 }
 
-export const md5 =  (string: any, key?: any, raw?: any) => {
+export const md5 =  (str: any, key?: any, raw?: any) => {
   if (!key) {
     if (!raw) {
-      return hexMD5(string);
+      return hexMD5(str);
     }
-    return rawMD5(string);
+    return rawMD5(str);
   }
   if (!raw) {
-    return hexHMACMD5(key, string);
+    return hexHMACMD5(key, str);
   }
-  return rawHMACMD5(key, string);
+  return rawHMACMD5(key, str);
 };

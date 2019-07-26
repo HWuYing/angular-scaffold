@@ -1,0 +1,29 @@
+<nz-upload
+  [nzAccept]="nzAccept"
+  [nzAction]="nzAction"
+  [nzDirectory]="nzDirectory"
+  [nzBeforeUpload]="beforeUpload"
+  [nzCustomRequest]="nzCustomRequest"
+  [nzData]="nzData"
+  [nzDisabled]="nzDisabled"
+  [nzFileList]="nzFileList"
+  [nzLimit]="nzLimit"
+  [nzSize]="nzSize"
+  [nzFileType]="nzFileType"
+  [nzFilter]="nzFilter"
+  [nzHeaders]="nzHeaders"
+  [nzListType]="nzListType"
+  [nzMultiple]="nzMultiple"
+  [nzName]="nzName"
+  [nzShowUploadList]="nzShowUploadList"
+  [nzShowButton]="nzShowButton"
+  [nzOpenFileDialogOnClick]="nzOpenFileDialogOnClick"
+  [nzPreview]="nzPreview"
+  [nzRemove]="remove.bind(this)"
+  (nzChange)="change($event)"
+>
+  <button nz-button type="button">
+    <i nz-icon nzType="upload"></i>
+    <span>{{ uploadText }}</span>
+  </button>
+</nz-upload>

@@ -1,10 +1,25 @@
 import { FormBuilder } from '@angular/forms';
+import { DynamicLayout } from './dynamic-layout';
 import { SerializationBase } from './serialization-base';
+
+const getNgForKey = (() => {
+  const keys = ['i', 'j', 'k', 'z', 'ii', 'jj', 'kk', 'zz', 'iii', 'jjj', 'zzz'];
+  let cursor = 0;
+  return () => {
+    const ngKey = keys[cursor];
+    cursor += 1;
+    if (cursor >= keys.length) {
+      cursor = 0;
+    }
+    return ngKey;
+  };
+})();
 
 export class DyanmicFormArray extends SerializationBase {
   private privateInitialValues: any;
-
+  public ngForKey: string;
   public children: any[];
+  public dynamicLayout: DynamicLayout;
   constructor(layout: any, propsKey: string, config: any, parentSerialization: SerializationBase) {
     const { type, decorator = [], props = {}, layout: itemLayout = {}, fieldDecorator = {} } = config;
     super({ ...layout, ...itemLayout });
@@ -16,7 +31,9 @@ export class DyanmicFormArray extends SerializationBase {
     this.parentSerialization = parentSerialization;
     this.setParentSerialization(parentSerialization);
     this.controlKey = `validateForm${this.getValidateFormControlName(true)}.get('${this.name}')`;
+    this.ngForKey = getNgForKey();
     this.children = this.serialization(config);
+    this.dynamicLayout = new DynamicLayout({ ...layout, ...config }, this.children);
   }
 
   /**
@@ -25,14 +42,16 @@ export class DyanmicFormArray extends SerializationBase {
   public getTemplate() {
     const name = this.name;
     const controlKey = this.controlKey;
-    let template = `<ng-container formArrayName="${name}">`;
-    template += `<ng-container *ngFor="let control of ${controlKey}.controls; let i = index" [formGroupName]="i">`;
-    template += this.children.reduce((underTemplate: string, child: any) => {
-      return underTemplate + child.getTemplate();
-    }, ``);
-    template += `</ng-container>`;
-    template += `</ng-container>`;
-    return template;
+    const ngForKey = this.ngForKey;
+    const template = [];
+    template.push(`<ng-container formArrayName="${name}">`);
+    template.push(`<div nz-row class="dynamic-layout-${this.dynamicLayout.col}">`);
+    template.push(`<ng-container *ngFor="let control of ${controlKey}.controls; let ${ngForKey} = index" [formGroupName]="${ngForKey}">`);
+    template.push(this.dynamicLayout.getChildrenTemplate());
+    template.push(`</ng-container>`);
+    template.push(`</div>`);
+    template.push(`</ng-container>`);
+    return template.join(``);
   }
 
   /**

@@ -1,15 +1,18 @@
 import { FormBuilder, FormGroup } from '@angular/forms';
 import {
+  Options,
   QuestionBaseType,
   QuestionTextType,
   QuestionSelectType,
   QuestionRadioType,
   QuestionGroupType,
   QuestionIconType,
-  QuestionButtonType
+  QuestionButtonType,
+  UploadType,
+  ContainerType
 } from '../question/question';
 
-type keyType = | 'textarea' | 'input' |  'monthPicker' | 'datePicker' | 'checkboxGroup' | 'rangePicker';
+type keyType = | 'textarea' | 'input' | 'inputNumber' |  'monthPicker' | 'timePicker' | 'datePicker' | 'checkboxGroup' | 'rangePicker';
 
 type QuestionType = QuestionBaseType | QuestionSelectType | QuestionTextType;
 
@@ -18,7 +21,10 @@ interface QuestionGroupTypeExp extends QuestionGroupType {
 }
 
 interface FieldDecoratorBaseType {
-  label?: string;
+  label?: string | {
+    text?: string;
+    title?: string;
+  };
 }
 
 interface FieldDecoratorType extends FieldDecoratorBaseType {
@@ -38,6 +44,11 @@ interface FormItemBaseType {
   isShow?: boolean | {
     (validateForm: FormGroup): boolean;
   };
+  layout?: {
+    labelStyle?: string;
+    spanCol?: number;
+    nzLayout?: 'horizontal' | 'vertical' | 'inline';
+  },
   fieldDecorator?: FieldDecoratorType;
 }
 
@@ -98,7 +109,7 @@ export interface FormItemInputGroupType extends FormItemBaseType {
 }
 
 
-export interface DyanmicFormArrayType extends DynamicFormAnyType {
+export interface DyanmicFormArrayType extends DynamicFormAnyType, DyanmicLayoutType {
   type: 'formArray' | 'table';
   fieldDecorator?: {
     initialValue: any[];
@@ -118,6 +129,21 @@ export interface DyanmicFormTableType extends DyanmicFormArrayType {
   columns: object[];
 }
 
+export interface DyanmicUploadType extends FormItemBaseType {
+  key: 'upload';
+  props: UploadType;
+}
+
+export interface DynamicContainerFormType extends FormItemBaseType {
+  type: 'container';
+  template: string;
+}
+
+export interface ContainerFormType extends FormItemBaseType {
+  key: 'container';
+  props: ContainerType;
+}
+
 export interface DyanmicLayoutType {
   col?: number;
   spanCol?: number;
@@ -126,6 +152,7 @@ export interface DyanmicLayoutType {
 
 export type FormItemType = FormItemOrdinaryType | FormItemSelectType | FormItemTextType |
   FormItemRadioType | FormItemInputGroupType | FormItemIconType | FormItemButtonType | 
-  DyanmicFormArrayType | DyanmicFormGroupType | DyanmicFormTableType;
+  DyanmicFormArrayType | DyanmicFormGroupType | DyanmicFormTableType | DyanmicUploadType |
+  ContainerFormType | DynamicContainerFormType;
 
 export type DynamicConfigType = DyanmicLayoutType | FormItemType;

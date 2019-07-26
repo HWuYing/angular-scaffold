@@ -31,15 +31,11 @@ export class DynamicLayout {
     };
   }
 
-  /**
-   * 获取布局的template
-   */
-  public getTemplate(): string {
+  public getChildrenTemplate(): string {
     const children = this.children;
     const getNzSpan = this.getNzSpan();
-    let template = ``;
     let isShowProps = ``;
-    template += `<div nz-row>`;
+    let template = ``;
     children.forEach((child: any) => {
       isShowProps = ``;
       if (child.getIsShowTemplate) {
@@ -49,6 +45,18 @@ export class DynamicLayout {
       template += child.getTemplate();
       template += `</div>`;
     });
+
+    return template;
+  }
+
+  /**
+   * 获取布局的template
+   */
+  public getTemplate(): string {
+    const col = this.col;
+    let template = ``;
+    template += `<div nz-row class="dynamic-layout-${col}">`;
+    template += this.getChildrenTemplate();
     template += `</div>`;
     return template;
   }

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl,  FormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { SerializationConfig } from './serialization-config';
@@ -8,7 +8,7 @@ import { SerializationConfig } from './serialization-config';
  * @param config 表单配置
  * @param layout 表单布局
  */
-export const factoryForm = (serializationConfig: SerializationConfig, templateMap?: object) => {
+export const factoryForm = (serializationConfig: SerializationConfig) => {
   class TemComponent implements OnInit, OnDestroy {
     @Output() readonly dynamicSubmit: EventEmitter<any> = new EventEmitter();
     @Output() readonly valueChanges: EventEmitter<any> = new EventEmitter();
@@ -16,7 +16,6 @@ export const factoryForm = (serializationConfig: SerializationConfig, templateMa
     @Input() templateMap: object;
     @Input() set fieldStore(value: object) {
       this.underFieldStore = value || {};
-      this.resetValidateForm();
     }
     private underFieldStore: any = {};
     private subscription: Subscription = new Subscription();
@@ -43,7 +42,7 @@ export const factoryForm = (serializationConfig: SerializationConfig, templateMa
      */
     private eachForm(validateForm: FormGroup | FormControl | FormArray, back: (control?: AbstractControl) => void): boolean {
       if (validateForm instanceof FormArray) {
-        validateForm.value.forEach((v: any, i: number) => this.eachForm(validateForm.get(i.toString()) as any, back));
+        validateForm.controls.forEach((v: any) => this.eachForm(v, back));
       } else if (validateForm instanceof FormGroup) {
         const { controls } = validateForm;
         Object.keys(controls).forEach((controlKey: string) => {
@@ -64,9 +63,9 @@ export const factoryForm = (serializationConfig: SerializationConfig, templateMa
     private createValidateForm(fieldStore?: any) {
       this.validateForm = this.serialization.generateFormGroup(this.fb, fieldStore);
       this.subscription.add(
-        this.validateForm.valueChanges.subscribe((value: any) => {
-          this.valueChanges.emit(value);
-        })
+        this.validateForm.valueChanges.subscribe((value: any) =>
+          this.valueChanges.emit(value)
+        )
       );
     }
 
@@ -123,28 +122,43 @@ export const factoryForm = (serializationConfig: SerializationConfig, templateMa
       if (fieldStore) {
         this.underFieldStore = fieldStore;
       }
-      const underFieldStore = this.underFieldStore;
-      if (this.validateForm && !this.serialization.typeOrInclude(['formArray', 'table'])) {
-        this.validateForm.reset(underFieldStore);
-      } else {
-        this.createValidateForm(underFieldStore);
-      }
+      this.createValidateForm(this.underFieldStore);
+      // const underFieldStore = this.underFieldStore;
+      // if (this.validateForm && !this.serialization.typeOrInclude(['formArray', 'table'])) {
+      //   this.validateForm.reset(underFieldStore);
+      // } else {
+      //   this.createValidateForm(underFieldStore);
+      // }
     }
 
     /**
-     * 获取表单数据
+     * 获取表单数据 排除disable
      */
     getFormValue(): object {
-      return this.validateForm.value;
+      return this.validateForm ? this.validateForm.value : {};
+    }
+
+    /**
+     * 获取所有数据 包含disabled
+     */
+    getRawValue(): object {
+      return this.validateForm ? this.validateForm.getRawValue() : {};
     }
 
     get initialValues() {
       return this.serialization.initialValues;
     }
+
+    get fieldStore() {
+      return this.underFieldStore;
+    }
   }
 
   return  Component({
     template: serializationConfig.generateTemplate(), // 获取动态的template
-    providers: [FormBuilder]
+    providers: [FormBuilder],
+    host: {
+      '[class.dynamic-form]': `this.serialization.layout.nzLayout !== 'inline'`
+    }
   })(TemComponent);
 };

@@ -17,7 +17,7 @@ import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.servi
 @Component({
   selector: 'app-dynamic-form',
   templateUrl: './dynamic-form.component.html',
-  styleUrls: ['./dynamic-form.component.scss'],
+  styleUrls: ['./dynamic-form.component.less'],
   providers: [DynamicFormService]
 })
 export class DynamicFormComponent implements OnInit, OnDestroy {
@@ -35,10 +35,12 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     this.setConfig(value);
   }
   @Input() set fieldStore(value: object) {
+    this._fieldStore = value;
     this.resetFormFieldStore(value);
   }
   @Output() readonly dynamicSubmit: EventEmitter<any> = new EventEmitter();
   @Output() readonly valueChanges: EventEmitter<any> = new EventEmitter();
+  private _fieldStore: object;
   private cmpRef: ComponentRef<any>;
   constructor(
     private dynamicFormService: DynamicFormService,
@@ -46,7 +48,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     private _m: NgModuleRef<any>
   ) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ngOnDestroy() {
     this.destroyCmpRef();
@@ -69,10 +71,12 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
    */
   private mergeInstance(): object {
     if (!this.cmpRef) {
-      return {};
+      return this._fieldStore ? {
+        fieldStore: this._fieldStore
+      } : undefined;
     }
     return {
-      fieldStore: this.value
+      fieldStore: this.allValue
     };
   }
 
@@ -91,9 +95,10 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   /**
    * 程序调用表单提交
    */
-  submit(): void {
-    const dynamicForm = (this.cmpRef as any)._component;
-    (dynamicForm as any).onSubmit();
+  submit(): boolean | object {
+    const dynamicForm: any = (this.cmpRef as any)._component;
+    dynamicForm.onSubmit();
+    return !this.valid ? false : this.value;
   }
 
   /**
@@ -117,27 +122,24 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
    * 加载动态组件
    */
   loadDynamicForm(): void {
-    console.log('loadDynamicForm');
     const date = new Date().getTime();
     this.dynamicFormService.loadModule().then(([f, serialization, templateMap]: [any, SerializationConfig, any]) => {
       const injector = Injector.create({ providers: [], parent: this._injector });
       const cmpRef = f.create(injector, [], null, this._m);
       this.destroyCmpRef();
       this.tplRef.clear();
-      this.tplRef.insert(cmpRef.hostView);
       const mergeInstance: any = this.mergeInstance();
       const instance = {
         ...cmpRef.instance,
         ...mergeInstance,
         ...serialization ? { serialization } : {},
-        ...templateMap ? { template: templateMap } : {},
+        ...templateMap ? { templateMap } : {}
       };
       Object.keys(instance).forEach((key: string) => cmpRef.instance[key] = instance[key]);
       cmpRef.instance.dynamicSubmit.subscribe(($event: object) => this.dynamicSubmit.emit($event));
       cmpRef.instance.valueChanges.subscribe(($event: object) => this.valueChanges.emit($event));
-
+      this.tplRef.insert(cmpRef.hostView);
       this.cmpRef = cmpRef;
-      console.log(new Date().getTime() - date);
     });
   }
 
@@ -165,5 +167,13 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     }
 
     return (this.cmpRef as any)._component.getFormValue();
+  }
+
+  get allValue(): object {
+    if (!this.cmpRef) {
+      return {};
+    }
+
+    return (this.cmpRef as any)._component.getRawValue();
   }
 }

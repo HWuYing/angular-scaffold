@@ -70,7 +70,7 @@ export class SerializationBase {
    * @param item 配置
    */
   private isSerializationItemConfig(item: any): boolean {
-    return this.isDyanmicFormArray(item) || this.isDynamicFormGroup(item);
+    return this.isDyanmicTable(item) || this.isDyanmicFormArray(item) || this.isDynamicFormGroup(item) || this.isDyanmicContainer(item);
   }
 
   /**
@@ -135,8 +135,8 @@ export class SerializationBase {
     } else if (this.isDynamicLayoutConfig(item)) {
       // 是布局
       exp = new DynamicLayout({
-        ...item,
-        nzLayout: this.layout.nzLayout
+        nzLayout: this.layout.nzLayout,
+        ...item
       }, this.privateSerialization(item.decorator, propsKey) as any);
     } else {
       // 不是布局（formItem）
@@ -149,9 +149,13 @@ export class SerializationBase {
         question,
         this
       );
+
       question.setFormControlValidate((exp as any).controlValidate);
       question.setControlInitialValue(exp.initialValue);
       question.setFormControlKey(exp.controlKey, (exp as any).controlParentKey);
+      question.setIsArrayChildren(['table', 'formArray'].includes(this.type), (this as any).ngForKey);
+      // 设置formItem 的name
+      exp.setQuestionName(question.name);
 
       // 加入propsmap 最后动态模版中需要
       this.serializationProps[(question as BaseQuestion).propsKey] = (question as BaseQuestion).props;
@@ -175,7 +179,7 @@ export class SerializationBase {
         const { name } = formItem;
         return {
           ...o,
-          ...formItem.generateFormControlName(underFieldStore[name], fb)
+          ...formItem.generateFormControlName(name ? underFieldStore[name] : underFieldStore, fb)
         };
       }, {})
     );
@@ -218,6 +222,14 @@ export class SerializationBase {
    */
   protected isDyanmicTable(item: any) {
     return item.type === 'table';
+  }
+
+  /**
+   * container动态配置
+   * @param item 配置
+   */
+  protected isDyanmicContainer(item: any) {
+    return item.type === 'container';
   }
 
   /**

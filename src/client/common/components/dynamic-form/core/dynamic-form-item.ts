@@ -11,26 +11,29 @@ export class DynamicFormItem extends GenerateProps {
   public validate: any;
   public layout: any;
   public type: string;
+  public label: string | object;
   /**
    * @param config formItem配置
    * @param question 内部的form节点【input， select 等】
    */
   constructor(config: any, question: BaseQuestion, parentSerialization: any) {
     super();
-    const { fieldDecorator, layout, isShow } = config;
+    const { fieldDecorator = {}, layout, isShow } = config;
+    const { label } = fieldDecorator;
     this.layout = {
       labelStyle: `width: 70px;`,
       ...layout
     };
     this.type = 'formItem';
     this.isShow = isShow;
-    this.fieldDecorator = fieldDecorator || {};
+    this.fieldDecorator = fieldDecorator;
+    this.label = label ? typeof label === 'string' ? { text: label, title: label } : label : null;
     this.question = question;
     this.controlValidate = fieldDecorator.validate;
     this.validate = [];
     this.parentSerialization = parentSerialization;
     this.controlParentKey = `validateForm${this.getValidateFormControlName()}`;
-    this.controlKey = `${this.controlParentKey}?.get('${this.name}')`;
+    this.controlKey = `${this.controlParentKey}?.get('${this.question.name}')`;
   }
 
   /**
@@ -40,8 +43,9 @@ export class DynamicFormItem extends GenerateProps {
    */
   protected isChangeShow(validateForm: FormGroup, control?: FormControl, parentGroup?: FormGroup): boolean {
     const isShow = super.isChangeShow(validateForm, control, parentGroup);
-    this.toggerControl(
-      this.generateFormControlName(undefined, this.fb),
+    this.toggleControl(
+      this.generateFormControlName.bind(this),
+      control,
       !!(isShow && parentGroup),
       parentGroup
     );
@@ -56,8 +60,8 @@ export class DynamicFormItem extends GenerateProps {
     const nameArray = [];
     let isArrayControl: boolean;
     while (!!parentSerialization && !!parentSerialization.name) {
-      isArrayControl = ['formArray', 'table'].includes(parentSerialization.type );
-      nameArray.unshift(`get('${parentSerialization.name}')${isArrayControl ? `?.get(i.toString())` : ''}`);
+      isArrayControl = ['formArray', 'table'].includes(parentSerialization.type);
+      nameArray.unshift(`get('${parentSerialization.name}')${isArrayControl ? `?.get(${parentSerialization.ngForKey}.toString())` : ''}`);
       parentSerialization = parentSerialization.parentSerialization;
     }
     if (nameArray.length) {
@@ -74,9 +78,10 @@ export class DynamicFormItem extends GenerateProps {
     const validate = (this.question as any).controlValidate;
     const validateTemplate: string[] = [];
     const childrenTemplate: string[] = [];
-    let ifTemplate: any = {};
-    if (validate) {
+    let ifTemplate: any = ``;
+    if (validate && !!validate.length) {
       this.validate = [];
+      ifTemplate = {};
       validate.forEach((vali: any) => {
         const underControlKey = vali.controlKey || controlKey;
         if (vali.patter) {
@@ -85,12 +90,10 @@ export class DynamicFormItem extends GenerateProps {
         if (!ifTemplate[underControlKey]) {
           ifTemplate[underControlKey] = `${underControlKey}?.dirty && ${underControlKey}?.errors`;
         }
-        childrenTemplate.push(`<ng-container *ngIf="${underControlKey}?.hasError('${vali.isError}')">${vali.message}</ng-container>`);
+        childrenTemplate.push(`<ng-container *ngIf="${underControlKey}?.hasError('${vali.isError}')">{{ '${vali.message}' |  translate}}</ng-container>`);
       });
       ifTemplate = Object.keys(ifTemplate).map((key: string) => `(${ifTemplate[key]})`).join(' || ');
-      validateTemplate.push(`<nz-form-explain *ngIf="${ifTemplate}">`);
       validateTemplate.push(childrenTemplate.join(`&nbsp;&nbsp;`));
-      validateTemplate.push(`</nz-form-explain>`);
     }
     return {
       validateTemplate: validateTemplate.join(``),
@@ -101,23 +104,28 @@ export class DynamicFormItem extends GenerateProps {
   /**
    * 获取formItem的template
    */
-  public getTemplate(isLastCol?: boolean) {
+  public getTemplate() {
     const { labelStyle, nzLayout } = this.layout;
-    const fieldDecorator = this.fieldDecorator;
     const question = this.question;
-    const { label } = fieldDecorator;
+    const label: any = this.label;
     const { validateTemplate, validateStatusTemplate } = this.validateTemplate();
     const isRequire = this.validate.includes(Validators.required);
-    const hasLabel = fieldDecorator && !!label;
-    return `<nz-form-item [nzFlex]="${nzLayout !== 'vertical'}" [style.marginRight]="'16px'">
+    const propsKey = this.question.propsKey;
+    const hasLabel = !!label;
+    const isSelfNzLayout = this.parentSerialization.layout.nzLayout !== nzLayout && nzLayout;
+    return `<nz-form-item ${isSelfNzLayout ? `class="ant-form-${nzLayout}"` : ``} [nzFlex]="${nzLayout !== 'vertical'}">
               ${
                 hasLabel
-                  ? `<nz-form-label style="${labelStyle}" ${isRequire ? 'nzRequired' : ''} nzFor="${this.name}">${label}</nz-form-label>`
+                  ? `<nz-form-label style="${labelStyle}" ${isRequire ? 'nzRequired' : ''} nzFor="${this.name}" title="${label.title}">
+                      ${label.text}
+                    </nz-form-label>`
                   : ''
               }
-              <nz-form-control style="flex: 1;" ${validateStatusTemplate ? `[class.has-error]="${validateStatusTemplate}"` : ``}>
+              ${validateStatusTemplate ? `<ng-template #error_tip_${propsKey}>${validateTemplate}</ng-template>` : ``}
+              <nz-form-control style="flex: 1;"
+                ${validateStatusTemplate ? `[nzErrorTip]="error_tip_${propsKey}" [nzValidateStatus]="${validateStatusTemplate} ? 'error' : 'success'"` : ``}
+              >
                 ${question.getTemplate()}
-                ${validateTemplate}
               </nz-form-control>
             </nz-form-item>`;
   }
@@ -144,12 +152,12 @@ export class DynamicFormItem extends GenerateProps {
     return this.question.generateFormControlInfo(field, fb);
   }
 
-  get initialValue() {
-    return (this.question as any).initialValue || this.fieldDecorator.initialValue;
+  public setQuestionName(name: string) {
+    this.name = name;
   }
 
-  get name() {
-    return this.question.name;
+  get initialValue() {
+    return (this.question as any).initialValue || this.fieldDecorator.initialValue;
   }
 
   get spanCol() {

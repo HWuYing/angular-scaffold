@@ -1,22 +1,27 @@
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 
 export class GenerateProps {
+  public name: string;
   protected isShow: boolean;
   protected propsExclude: string[] = ['*ngIf'];
   protected transformProps: any = {
-    ngModelChange: '(ngModelChange)',
     style: '[ngStyle]',
     htmlStyle: 'style',
     class: '[ngClass]',
     isShow: '*ngIf',
     click: '(click)',
-    disabled: 'attr.disabled'
+    blur: '(blur)',
+    ngModelChange: '(ngModelChange)',
+    disabled: 'dynamicDisable'
+    // disabled: 'attr.disabled'
   };
   protected controlValidate: any[] = [];
   protected initialValue: any;
   protected controlKey: string;
   protected controlParentKey: string;
   protected fb: FormBuilder;
+  protected isArrayChildren: boolean = false;
+  protected ngForKey: string;
   constructor(defaultProps?: any) {
     const underDefaultProps = defaultProps || {};
     this.isShow = underDefaultProps.isShow;
@@ -41,7 +46,7 @@ export class GenerateProps {
         value = underValue;
         break;
       case 'string':
-        value = `'${underValue}'`;
+        value = `'${underValue}' | translate`;
         break;
     }
     return value;
@@ -71,7 +76,6 @@ export class GenerateProps {
     const props = {
       ...config
     };
-
     if (![null, undefined].includes(isShow)) {
       props[this.getTransformProps('isShow')] = (validateForm: any, control: FormControl, propsGroup?: FormGroup) => this.isChangeShow(validateForm, control, propsGroup);
     }
@@ -98,10 +102,23 @@ export class GenerateProps {
    */
   protected functionValue(key: string, value: string) {
     let underValue: string;
+    const isArrayChildren = this.isArrayChildren;
     if (/^\*ngIf$/.test(key)) {
       underValue = this.getNgIfProps(value);
+      return underValue;
+    }
+    const paramsObject = `{
+      ${this.controlKey ? `control: ${this.controlKey},` : ``}
+      ${isArrayChildren ? `data: data, ngForKey: ${this.ngForKey},` : ``}
+      form: validateForm,
+      parentForm: ${this.controlParentKey}
+    }`;
+    if (/\[[\s\S]+\]/.test(key)) {
+      underValue = `${value}`;
+    } else if (/\([\s\S]+\)/.test(key)) {
+      underValue = `${value}($event, ${paramsObject})`;
     } else {
-      underValue = `${value}($event, ${this.controlKey ? `${this.controlKey}` : 'null'}, validateForm, ${this.controlParentKey})`;
+      underValue = `${value}(${paramsObject})`;
     }
     return underValue;
   }
@@ -119,13 +136,7 @@ export class GenerateProps {
    * @param key string
    */
   protected isExcludeKey(key: string, value: any): boolean {
-    let status = this.propsExclude.includes(key);
-    if (!status) {
-      switch (key) {
-        case 'disabled': value === true ? status = false : status = true; break;
-      }
-    }
-    return status;
+    return this.propsExclude.includes(key);
   }
 
   /**
@@ -134,17 +145,28 @@ export class GenerateProps {
    * @param addStatus isadd
    * @param parentGroup FormGroup
    */
-  protected toggerControl(controlOption: any, addStatus: boolean, parentGroup: FormGroup) {
+  protected toggleControl(generateFormControlName: any, control: FormControl, addStatus: boolean, parentGroup: FormGroup) {
+    if (!parentGroup || control && addStatus || !control && !addStatus) {
+      return ;
+    }
+    const controlOption = generateFormControlName(undefined, this.fb);
     Object.keys(controlOption).forEach((name: string) => {
-      if (addStatus) {
-        if (!parentGroup.get(name)) {
-          const option = controlOption[name];
-          parentGroup.addControl(name, this.fb.control(option[0], option[1]));
-        }
-      } else if (parentGroup.get(name)) {
+      if (addStatus && !parentGroup.get(name)) {
+        const option = controlOption[name];
+        parentGroup.addControl(name, this.fb.control(option[0], option[1]));
+      } else if (!addStatus && parentGroup.get(name)) {
         parentGroup.removeControl(name);
       }
     });
+  }
+
+  /**
+   * 是否时formArray下的控件
+   * @param isArrayChildren boolean
+   */
+  public setIsArrayChildren(isArrayChildren: boolean, ngForKey: string) {
+    this.isArrayChildren = isArrayChildren;
+    this.ngForKey = ngForKey;
   }
 
   /**

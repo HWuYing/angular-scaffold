@@ -1,9 +1,10 @@
-import { md5 } from './md5';
 import { DyanmicFormArray } from './dynamic-form-array';
+import { DyanmicFormContainer } from './dynamic-form-container';
 import { DynamicFormGroup } from './dynamic-form-group';
 import { DynamicFormItem } from './dynamic-form-item';
 import { DynamicLayout } from './dynamic-layout';
 import { DyanmicTable } from './dynamic-table';
+import { md5 } from './md5';
 import { SerializationBase } from './serialization-base';
 
 export class SerializationConfig extends SerializationBase {
@@ -41,7 +42,7 @@ export class SerializationConfig extends SerializationBase {
    * @param item configItem
    */
   public privateSerializationItemConfig(propsKey: string, item: any): any {
-    let exp: DynamicFormItem | DynamicLayout | DynamicFormGroup | DyanmicFormArray;
+    let exp: DynamicFormItem | DynamicLayout | DynamicFormGroup | DyanmicFormArray | DyanmicFormContainer;
     if (this.isDynamicFormGroup(item)) {
       // 是formgroup
       exp = new DynamicFormGroup(this.layout, propsKey, item, this);
@@ -51,6 +52,9 @@ export class SerializationConfig extends SerializationBase {
     } else if (this.isDyanmicTable(item)) {
       // 是table
       exp = new DyanmicTable(this.layout, propsKey, item, this);
+    } else if (this.isDyanmicContainer(item)) {
+      // 是container
+      exp = new DyanmicFormContainer(this.layout, propsKey, item);
     } else {
       exp = super.privateSerializationItemConfig(propsKey, item);
     }
@@ -68,14 +72,12 @@ export class SerializationConfig extends SerializationBase {
     let template = `<form nz-form ${nzLayout ? `nzLayout="${nzLayout}"` : ''} (ngSubmit)="onSubmit($event)" [formGroup]="validateForm" autocomplete="off">`;
     template += this.serializationConfig.getTemplate();
     template += `</form>`;
-    this.template = template;
-    this.underHashKey = md5(template);
     return template;
   }
 
   get hashKey() {
     if (!this.underHashKey) {
-      this.generateTemplate();
+      this.underHashKey = md5(this.generateTemplate());
     }
     return this.underHashKey;
   }
@@ -92,5 +94,5 @@ export class SerializationConfig extends SerializationBase {
       nzLayout,
       ...layout
     });
-  };
+  }
 }

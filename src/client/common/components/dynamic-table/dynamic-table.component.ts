@@ -1,12 +1,15 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   EventEmitter,
   HostListener,
   Input,
+  OnChanges,
   OnInit,
   Output,
+  SimpleChanges,
   TemplateRef,
   ViewChild
 } from '@angular/core';
@@ -17,7 +20,7 @@ import { NzTableComponent } from 'ng-zorro-antd';
   templateUrl: './dynamic-table.component.html',
   styleUrls: ['./dynamic-table.component.scss']
 })
-export class DynamicTableComponent implements OnInit, AfterViewInit {
+export class DynamicTableComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() total: number;
   @Input() dataSource: any[];
   @Input() templateMap: object; // 对应的template缓存 key对应为属性值
@@ -26,6 +29,9 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   @Input() showCheckbox: boolean = false; // 显示checkbox
   @Input() showPagination: boolean = true; // 显示分页
   @Input() isSerial: boolean = false; // 数据的序号
+  @Input() borderd: boolean = true; // 是否有边框
+  @Input() title: string | TemplateRef<void>; // 表格头
+  @Input() footer: string | TemplateRef<void>; // 表格尾
   @Input() trTemplateRef: TemplateRef<any>; // tr的templateRef 存在就采用传入的处理
   @Input() tdTemplateRef: TemplateRef<any>; // td的templateRef 存在就采用传入的处理
   @Input() pageSize: number = 20; // 每页调数
@@ -38,8 +44,10 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
     this.resetMaxWidth();
     this.resetWidthConfig();
   }
-  @Input() set theadColumn(value: any[]) {
-    console.log(value);
+  @Input() set theadColumns(value: any[]) {
+    if (value && !!value.length) {
+      this._theadColumns = value;
+    }
   }
   @ViewChild(NzTableComponent, { static: true }) table: NzTableComponent;
   @Output() readonly paginationChange: EventEmitter<any> = new EventEmitter(); // 分页信息改变事件
@@ -47,7 +55,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   @Output() readonly checkChange: EventEmitter<any> = new EventEmitter(); // 选择数据改变事件
   private _serialColumn: object = { title: '序号', width: 70, isSerial: true };
   private _maxWidth: any; // 最大宽对
-  private _theadColumn: any[] = [];
+  private _theadColumns: any[] = [];
   private _widthConfig: string[] = [];
   private _columns: any[] = []; // 配置对象
   private _defaultColumnWidth: number = 120; // 默认每列宽度
@@ -69,8 +77,48 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
 
   ngOnInit() { }
 
+  ngOnChanges(changes: SimpleChanges ) {
+  }
+
   ngAfterViewInit() {
     this._resetScroll(this.isHeadFixed);
+  }
+
+  /**
+   * 选中数据
+   * @param checkList 选中key列表
+   */
+  checkRows(checkList: any, isNotMerge?: boolean) {
+    if ([null, undefined].includes(checkList)) {
+      return ;
+    }
+    const checks = Array.isArray(checkList) ? checkList : [checkList];
+    const mapOfCheckedId = checks.reduce((o: object, key: string) => ({
+      ...o,
+      [key.toString()]: true
+    }), {});
+    this.mapOfCheckedId = isNotMerge ? mapOfCheckedId : {
+      ...this.mapOfCheckedId,
+      ...mapOfCheckedId
+    };
+    this._rowCheckChange();
+  }
+
+  /**
+   * 清除数据
+   * @param clearList 清除列表
+   */
+  clearCheckRows(clearList: any) {
+    const clears = (Array.isArray(clearList) ? clearList : [clearList]).map((key: any) => String(key));
+    this.checkRows(Object.keys(this.mapOfCheckedId)
+      .filter((key: string) => !(clears.includes(key) || !this.mapOfCheckedId[key])), true);
+  }
+
+  /**
+   * 选中所有选项
+   */
+  checkAll() {
+    this._checkAll(true);
   }
 
   /**
@@ -80,13 +128,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
     if (!this._selectedRowKeys.length) {
       return;
     }
-
-    this.mapOfCheckedId = this.dataSource.reduce(
-      (o: object, item: any, index: number) => ({
-        ...o,
-        [this.getRowKey(item, index)]: false
-      }), {});
-    this._rowCheckChange();
+    this._checkAll(false);
   }
 
   /**
@@ -103,10 +145,12 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       const { nativeElement } = this.elementRef;
       const thead = nativeElement.querySelector('thead');
+      const title = nativeElement.querySelector('.ant-table-title');
+      const titleHeight = title ? title.offsetHeight : 0;
       const theadHeight = thead ? thead.offsetHeight : 0;
       const rootHeight = nativeElement.parentNode.offsetHeight;
       this.scroll = {
-        y: `${rootHeight - (this.showPagination ? 64 : 0) - theadHeight}px`
+        y: `${rootHeight - (this.showPagination ? 64 : 0) - theadHeight - titleHeight}px`
       };
     });
   }
@@ -168,7 +212,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   _checkAll(checkd: boolean) {
     this.mapOfCheckedId = this.dataSource.reduce((o: object, item: any, index: number) => ({
       ...o,
-      [this.getRowKey(item, index)]: !item.disabled ? checkd : false
+      [this.getRowKey(index, item)]: !item.disabled ? checkd : false
     }), {});
     this._rowCheckChange();
   }
@@ -179,7 +223,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   _rowCheckChange() {
     const _dataSource = this.dataSource.filter((_data: any) => !_data.disabled);
     this._selectedRowKeys = Object.keys(this.mapOfCheckedId).filter((key: string) => this.mapOfCheckedId[key]);
-    this._selectedRows = _dataSource.filter((_data: any, index: number) => this._selectedRowKeys.includes(this.getRowKey(_data, index)));
+    this._selectedRows = _dataSource.filter((_data: any, index: number) => this._selectedRowKeys.includes(this.getRowKey(index, _data)));
     this.isAllDisplayDataChecked = this._selectedRowKeys.length !== 0 && this._selectedRowKeys.length === _dataSource.length;
     this.isIndeterminate = this._selectedRowKeys.length !== 0 && !this.isAllDisplayDataChecked;
     this._checkChange();
@@ -193,7 +237,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
     if (this.isHeadFixed) {
       _maxWidth = this.columns.reduce((sum: number, column: any) => {
         return sum + (column.width ? Number(column.width) : this._defaultColumnWidth);
-      }, 70);
+      }, this.showCheckbox ? 70 : 0);
     }
     this._maxWidth = _maxWidth;
   }
@@ -203,6 +247,9 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
    */
   resetWidthConfig() {
     this._widthConfig = this.columns.map((column: any) => this.getWdith(column));
+    if (this.showCheckbox) {
+      this._widthConfig.unshift(this.getWdith({ width: 70 }));
+    }
   }
 
   /**
@@ -228,7 +275,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
       return void 0;
     }
     const width = ['string', 'number'].includes(typeof column) ? column : column.width;
-    return ((width || this._defaultColumnWidth) / this._maxWidth) * 100 + '%';
+    return (width || this._defaultColumnWidth) / this._maxWidth * 100 + '%';
   }
 
   /**
@@ -255,8 +302,25 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
    * @param data 数据
    * @param index 索引
    */
-  getRowKey(data: any, index: number) {
+  getRowKey(index: number, data: any) {
     return data.rowKey || index.toString();
+  }
+
+  /**
+   * 获取checkbox禁用
+   * @param data 数据
+   */
+  getDisabled(index: any) {
+    return this.dataSource[index].disabled;
+  }
+
+  /**
+   * 优化column循环
+   * @param index number
+   * @param column column
+   */
+  trackByColumn(index: number, column: any) {
+    return column.key || index;
   }
 
   /**
@@ -270,7 +334,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   }
 
   get isTheadGroup(): boolean {
-    return !!(this._theadColumn && this._theadColumn.length);
+    return !!(this._theadColumns && this._theadColumns.length);
   }
 
   /**
@@ -284,7 +348,7 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   /**
    * 获取选择信息
    */
-  get checkedOption(): object {
+  get checkedOption(): { selectedRowKeys: string[], selectedRows: any[] } {
     return {
       selectedRowKeys: this._selectedRowKeys,
       selectedRows: this._selectedRows
@@ -294,8 +358,8 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
   /**
    * 获取表头单独配置信息
    */
-  get theadColumn(): any[] {
-    return this._theadColumn;
+  get theadColumns(): any[] {
+    return this._theadColumns;
   }
 
   /**
@@ -303,6 +367,11 @@ export class DynamicTableComponent implements OnInit, AfterViewInit {
    */
   get columns(): any[] {
     return this._columns;
+  }
+
+  set page(page: any) {
+    this.pageNum = page.pageNum || 1;
+    this.pageSize = page.pageSize || 20;
   }
 
   /**
