@@ -46,7 +46,7 @@ export class GenerateProps {
         value = underValue;
         break;
       case 'string':
-        value = `'${underValue}' | translate`;
+        value = `'${underValue}'`;
         break;
     }
     return value;

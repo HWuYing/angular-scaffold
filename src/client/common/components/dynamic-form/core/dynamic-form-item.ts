@@ -90,7 +90,7 @@ export class DynamicFormItem extends GenerateProps {
         if (!ifTemplate[underControlKey]) {
           ifTemplate[underControlKey] = `${underControlKey}?.dirty && ${underControlKey}?.errors`;
         }
-        childrenTemplate.push(`<ng-container *ngIf="${underControlKey}?.hasError('${vali.isError}')">{{ '${vali.message}' |  translate}}</ng-container>`);
+        childrenTemplate.push(`<ng-container *ngIf="${underControlKey}?.hasError('${vali.isError}')">{{ '${vali.message}'}}</ng-container>`);
       });
       ifTemplate = Object.keys(ifTemplate).map((key: string) => `(${ifTemplate[key]})`).join(' || ');
       validateTemplate.push(childrenTemplate.join(`&nbsp;&nbsp;`));

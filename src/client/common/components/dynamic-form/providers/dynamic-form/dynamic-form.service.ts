@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Compiler, Inject, Injectable, NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
 import { factoryForm } from '../../core/dynamic-form';
 import { SerializationConfig } from '../../core/serialization-config';
 import { DirectivesModule } from '../../directives/directives.module';
@@ -27,7 +26,6 @@ export class DynamicFormService {
       imports: [
         CommonModule,
         ReactiveFormsModule,
-        TranslateModule,
         DirectivesModule,
         ...NzZorroImport
       ]

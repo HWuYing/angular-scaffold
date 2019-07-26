@@ -9,7 +9,7 @@
 >
   <ng-content></ng-content>
   <ng-template #modalFooter>
-    <button *ngIf="isShowCancel" nz-button nzType="default" (click)="eventOnCancel()">{{cancelText | translate}}</button>
-    <button *ngIf="isShowOk" nz-button nzType="primary" [nzLoading]="loading" (click)="eventOnOk()">{{okText | translate}}</button>
+    <button *ngIf="isShowCancel" nz-button nzType="default" (click)="eventOnCancel()">{{cancelText}}</button>
+    <button *ngIf="isShowOk" nz-button nzType="primary" [nzLoading]="loading" (click)="eventOnOk()">{{okText}}</button>
   </ng-template>
 </nz-modal>
