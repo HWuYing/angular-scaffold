@@ -12,7 +12,7 @@ import {
   ContainerType
 } from '../question/question';
 
-type keyType = | 'textarea' | 'input' | 'inputNumber' |  'monthPicker' | 'timePicker' | 'datePicker' | 'checkboxGroup' | 'rangePicker';
+type keyType = 'textarea' | 'input' | 'inputNumber' |  'monthPicker' | 'timePicker' | 'datePicker' | 'checkboxGroup' | 'rangePicker';
 
 type QuestionType = QuestionBaseType | QuestionSelectType | QuestionTextType;
 

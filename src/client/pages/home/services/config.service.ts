@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { FormGroup, FormControl, Validators  } from '@angular/forms';
 import { Options } from '../../../common/components/dynamic-form/question/question';
 import { DynamicConfigType } from '../../../common/components/dynamic-form/dynamic-form';
 
@@ -48,8 +47,7 @@ export class ConfigService {
           props: {
             name: 'groupInput',
             format: (value: string) => {
-              console.log(value);
-              return (value || '').indexOf('金额：') !== -1 ? value : ('金额：' + (value || ''));
+              return String(value).indexOf('金额：') !== -1 ? value : ('金额：' + (value || ''));
             },
             style: { width: '70%' },
             placeholder: '测试group',

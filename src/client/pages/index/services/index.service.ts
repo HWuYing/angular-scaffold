@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { FormGroup, FormControl, Validators  } from '@angular/forms';
+import { Validators  } from '@angular/forms';
+import { Options } from '../../../common/components/dynamic-form/question/question';
+import { DynamicConfigType } from '../../../common/components/dynamic-form/dynamic-form';
 
 @Injectable()
 export class ConfigService {
@@ -8,7 +10,7 @@ export class ConfigService {
   /**
    * 查询条件表单配置
    */
-  get searchForm(): any {
+  get searchForm(): DynamicConfigType[] {
     return [{
       key: 'radioGroup',
       props: {
@@ -33,8 +35,8 @@ export class ConfigService {
           props: {
             name: 'groupSelect',
             style: { width: '30%' },
-            ngModelChange: (value: any, control: FormControl, validateForm: FormGroup) => {
-              validateForm.get('groupInput').setValue(value);
+            ngModelChange: (value: any, { form: validateForm, control }: Options) => {
+              validateForm.get('groupInput').setValue(control.value);
             },
             children: [{ label: '全部', value: '' }, { label: '正常', value: 0 }, { label: '异常', value: 1 }],
           }
@@ -42,15 +44,15 @@ export class ConfigService {
           key: 'input',
           fieldDecorator: {
             initialValue: '',
-            validate: {
+            validate: [{
               isError: 'required',
               patter: Validators.required,
               message: "groupInput不能为空",
-            },
+            }],
           },
           props: {
             name: 'groupInput',
-            format: (value: string) => (value || '').indexOf('金额：') !== -1 ? value : ('金额：' + value),
+            format: (value: string) => String(value).indexOf('金额：') !== -1 ? value : ('金额：' + value),
             style: { width: '70%' },
             placeholder: '测试group',
           }
@@ -83,11 +85,11 @@ export class ConfigService {
       isShow: (validateForm: any) => validateForm.value.checkResult === '0',
       fieldDecorator: {
         label: '用户信息',
-        validate: {
+        validate: [{
           isError: 'required',
           patter: Validators.required,
           message: "用户信息不能为空",
-        },
+        }],
       },
       props: {
         name: 'keyWord',
