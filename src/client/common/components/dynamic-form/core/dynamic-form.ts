@@ -132,6 +132,16 @@ export const factoryForm = (serializationConfig: SerializationConfig) => {
     }
 
     /**
+     * 合并设置表单值
+     */
+    patchValue(value: { [key: string]: any; }, options?: {
+      onlySelf?: boolean;
+      emitEvent?: boolean;
+    }): void {
+      this.validateForm.patchValue(value, options);
+    }
+
+    /**
      * 获取表单数据 排除disable
      */
     getFormValue(): object {

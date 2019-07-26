@@ -22,6 +22,7 @@ import { DynamicFormService } from '../providers/dynamic-form/dynamic-form.servi
 })
 export class DynamicFormComponent implements OnInit, OnDestroy {
   @ViewChild('tplRef', { read: ViewContainerRef, static: true }) tplRef: ViewContainerRef;
+  @Input() isSyncLoad: boolean = true;
   @Input() set templateMap(value: object) {
     this.dynamicFormService.templateMap = value;
   }
@@ -93,6 +94,20 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * 合并设置表单值
+   */
+  patchValuepatchValue(value: { [key: string]: any; }, options?: {
+    onlySelf?: boolean;
+    emitEvent?: boolean;
+  }): void {
+    if (!this.cmpRef) {
+      return;
+    }
+    const dynamicForm = (this.cmpRef as any)._component;
+    dynamicForm.patchValue(value, options);
+  }
+
+  /**
    * 程序调用表单提交
    */
   submit(): boolean | object {
@@ -123,24 +138,36 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
    */
   loadDynamicForm(): void {
     const date = new Date().getTime();
-    this.dynamicFormService.loadModule().then(([f, serialization, templateMap]: [any, SerializationConfig, any]) => {
-      const injector = Injector.create({ providers: [], parent: this._injector });
-      const cmpRef = f.create(injector, [], null, this._m);
-      this.destroyCmpRef();
-      this.tplRef.clear();
-      const mergeInstance: any = this.mergeInstance();
-      const instance = {
-        ...cmpRef.instance,
-        ...mergeInstance,
-        ...serialization ? { serialization } : {},
-        ...templateMap ? { templateMap } : {}
-      };
-      Object.keys(instance).forEach((key: string) => cmpRef.instance[key] = instance[key]);
-      cmpRef.instance.dynamicSubmit.subscribe(($event: object) => this.dynamicSubmit.emit($event));
-      cmpRef.instance.valueChanges.subscribe(($event: object) => this.valueChanges.emit($event));
-      this.tplRef.insert(cmpRef.hostView);
-      this.cmpRef = cmpRef;
+    if (this.isSyncLoad) {
+      return this.loadComponentForm(this.dynamicFormService.loadModuleSync());
+    }
+    this.dynamicFormService.loadModule().then((result: [any, SerializationConfig, any]) => {
+      this.loadComponentForm(result);
     });
+  }
+
+  /**
+   * 加载form
+   * @param options [any, SerializationConfig, any]
+   */
+  loadComponentForm(options: [any, SerializationConfig, any]): void {
+    const [f, serialization, templateMap] = options;
+    const injector = Injector.create({ providers: [], parent: this._injector });
+    const cmpRef = f.create(injector, [], null, this._m);
+    this.destroyCmpRef();
+    this.tplRef.clear();
+    const mergeInstance: any = this.mergeInstance();
+    const instance = {
+      ...cmpRef.instance,
+      ...mergeInstance,
+      ...serialization ? { serialization } : {},
+      ...templateMap ? { templateMap } : {}
+    };
+    Object.keys(instance).forEach((key: string) => cmpRef.instance[key] = instance[key]);
+    cmpRef.instance.dynamicSubmit.subscribe(($event: object) => this.dynamicSubmit.emit($event));
+    cmpRef.instance.valueChanges.subscribe(($event: object) => this.valueChanges.emit($event));
+    this.tplRef.insert(cmpRef.hostView);
+    this.cmpRef = cmpRef;
   }
 
   /**

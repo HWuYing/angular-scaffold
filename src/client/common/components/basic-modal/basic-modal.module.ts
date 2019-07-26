@@ -9,7 +9,7 @@ import { BasicModalComponent } from './basic-modal.component';
   imports: [
     CommonModule,
     NzModalModule,
-    NzButtonModule
+    NzButtonModule,
   ],
   exports: [
     BasicModalComponent

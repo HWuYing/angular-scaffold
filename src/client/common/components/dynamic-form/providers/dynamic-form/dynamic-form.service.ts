@@ -35,17 +35,32 @@ export class DynamicFormService {
   /**
    * 价值NgModule
    */
-  async loadModule(): Promise<any> {
+  loadModuleSync(): [any, SerializationConfig, any] {
     const serialization = SerializationConfig.factorySerializationConfig(this.config, this.layout, this.nzLayout);
     const hashKey = serialization.hashKey;
     if (temComponentFactoryCache[hashKey]) {
-      return Promise.resolve([temComponentFactoryCache[hashKey], serialization, this.templateMap]);
-    }
-    const factories = this._compiler.compileModuleAndAllComponentsAsync(this.factoryModule(serialization));
-    return factories.then((f: any) => {
-      temComponentFactoryCache[hashKey] = f.componentFactories.slice(-1)[0];
       return [temComponentFactoryCache[hashKey], serialization, this.templateMap];
-    });
+    }
+    const factories = this._compiler.compileModuleAndAllComponentsSync(this.factoryModule(serialization));
+    temComponentFactoryCache[hashKey] = factories.componentFactories.slice(-1)[0];
+    return [temComponentFactoryCache[hashKey], serialization, this.templateMap];
+  }
+
+  /**
+   * 价值NgModule
+   */
+  async loadModule(): Promise<any> {
+    return Promise.resolve(this.loadModuleSync());
+    // const serialization = SerializationConfig.factorySerializationConfig(this.config, this.layout, this.nzLayout);
+    // const hashKey = serialization.hashKey;
+    // if (temComponentFactoryCache[hashKey]) {
+    //   return Promise.resolve([temComponentFactoryCache[hashKey], serialization, this.templateMap]);
+    // }
+    // const factories = this._compiler.compileModuleAndAllComponentsAsync(this.factoryModule(serialization));
+    // return factories.then((f: any) => {
+    //   temComponentFactoryCache[hashKey] = f.componentFactories.slice(-1)[0];
+    //   return [temComponentFactoryCache[hashKey], serialization, this.templateMap];
+    // });
   }
 
   set templateMap(map: any) {
