@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { FormGroup, FormControl, Validators  } from '@angular/forms';
+import { Options } from '../../../common/components/dynamic-form/question/question';
+import { DynamicConfigType } from '../../../common/components/dynamic-form/dynamic-form';
 
 @Injectable()
 export class ConfigService {
@@ -8,7 +10,7 @@ export class ConfigService {
   /**
    * 查询条件表单配置
    */
-  get searchForm(): any {
+  get searchForm(): DynamicConfigType[] {
     return [{
       key: 'radioGroup',
       props: {
@@ -33,7 +35,7 @@ export class ConfigService {
           props: {
             name: 'groupSelect',
             style: { width: '30%' },
-            ngModelChange: (value: any, control: FormControl, validateForm: FormGroup) => {
+            ngModelChange: (value: any, { form: validateForm }: Options) => {
               validateForm.get('groupInput').setValue(value);
             },
             children: [{ label: '全部', value: '' }, { label: '正常', value: 0 }, { label: '异常', value: 1 }],
@@ -42,11 +44,6 @@ export class ConfigService {
           key: 'input',
           fieldDecorator: {
             initialValue: '',
-            validate: {
-              isError: 'required',
-              patter: Validators.required,
-              message: "groupInput不能为空",
-            },
           },
           props: {
             name: 'groupInput',
@@ -86,11 +83,6 @@ export class ConfigService {
       isShow: (validateForm: any) => validateForm.value.checkResult === '',
       fieldDecorator: {
         label: '用户信息',
-        validate: {
-          isError: 'required',
-          patter: Validators.required,
-          message: "用户信息不能为空",
-        },
       },
       props: {
         name: 'keyWord',
