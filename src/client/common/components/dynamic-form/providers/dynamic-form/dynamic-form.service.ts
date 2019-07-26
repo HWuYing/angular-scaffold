@@ -3,7 +3,7 @@ import { Compiler, Inject, Injectable, NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { factoryForm } from '../../core/dynamic-form';
 import { SerializationConfig } from '../../core/serialization-config';
-import { DirectivesModule } from '../../directives/directives.module';
+// import { DirectivesModule } from '../../directives/directives.module';
 import { DynamicCompilerToken } from '../dynamic-compiler-provider';
 import { NzZorroImport } from '../nz-zorro-lazy';
 
@@ -26,8 +26,8 @@ export class DynamicFormService {
       imports: [
         CommonModule,
         ReactiveFormsModule,
-        DirectivesModule,
-        ...NzZorroImport
+        // DirectivesModule,
+        ...NzZorroImport,
       ]
     })(class {});
   }

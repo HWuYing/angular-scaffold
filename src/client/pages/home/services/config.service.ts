@@ -21,6 +21,14 @@ export class ConfigService {
         initialValue: '',
       },
     }, {
+      key: 'upload',
+      fieldDecorator: {
+        label: 'upload',
+      },
+      props: {
+        name: 'upload'
+      }
+    }, {
       key: 'inputGroup',
       fieldDecorator: {
         label: 'group',

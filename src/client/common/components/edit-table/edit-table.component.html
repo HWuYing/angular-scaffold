@@ -17,13 +17,11 @@
 <ng-template 
   #isFixedHeightTemplate
   let-columns="columns"
-  let-trTemplateRef="trTemplate"
   let-tdTemplateMap="tdTemplateMap"
 >
   <div [style.minHeight]="height" [style.maxHeight]="height" [style.height]="height">
     <ng-container *ngTemplateOutlet="editTableTemplate; context: { 
       columns: columns,
-      trTemplate: trTemplate,
       tdTemplateMap: tdTemplateMap
     }"></ng-container>
   </div>

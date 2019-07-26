@@ -19,7 +19,7 @@ export class HomeComponent implements OnInit {
 
   fetchRecords(fields?: any) {
     setTimeout(() => {
-      this.dataSource = new Array(300).join(',').split(',').map((item, index) => ({
+      this.dataSource = new Array(50).join(',').split(',').map((item, index) => ({
         name: index
       }));
       this.total = 300;
