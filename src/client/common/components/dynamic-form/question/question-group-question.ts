@@ -17,7 +17,7 @@ export class QuestionGroupQuestion extends BaseQuestion {
     return children.map((child: any, index: number) => {
       const { fieldDecorator, ...props } = child;
       const question = this.getQuestion(`${this.propsKey}.children${index}`, props);
-      (question as this).propsExclude = (question as this).propsExclude.filter((underKey: string) => underKey !== '*ngIf');
+      (question as this).propsExclude = (question as this).propsExclude.filter((underKey: string) => underKey !== this.transformProps.isShow);
       if (fieldDecorator) {
         question.setControlInitialValue(fieldDecorator.initialValue);
         question.setFormControlValidate(fieldDecorator.validate);
@@ -66,7 +66,7 @@ export class QuestionGroupQuestion extends BaseQuestion {
   }
 
   /**
-   * 是否时formArray下的控件
+   * 是否是formArray下的控件
    * @param isArrayChildren boolean
    */
   public setIsArrayChildren(isArrayChildren: boolean, ngForKey: string) {

@@ -1,40 +1,17 @@
-<nz-table 
-  #basicTable
-  nzShowSizeChanger
-  [nzTitle]="title"
-  [nzFooter]="footer"
-  [nzFrontPagination]="false"
-  [nzPageSizeOptions]="pageSizeOptions" 
-  [nzPageIndex]="pageNum" 
-  [nzPageSize]="pageSize" 
-  [nzTotal]="total"
-  [nzData]="dataSource"
-  [nzLoading]="loading" 
-  [nzScroll]="scroll" 
-  [nzWidthConfig]="widthConfig"
-  [nzShowPagination]="showPagination" 
-  [nzShowTotal]="showTotal" 
-  [nzBordered]="borderd"
-  (nzPageIndexChange)="_paginationIndexChange($event)" 
-  (nzPageSizeChange)="_paginationSizeChange($event)"
-  (nzCurrentPageDataChange)="_pageDataChange($event)"
->
+<nz-table #basicTable nzShowSizeChanger [nzTitle]="title" [nzFooter]="footer" [nzFrontPagination]="false"
+  [nzPageSizeOptions]="pageSizeOptions" [nzPageIndex]="pageNum" [nzPageSize]="pageSize" [nzTotal]="total"
+  [nzData]="dataSource" [nzLoading]="loading" [nzScroll]="scroll" [nzWidthConfig]="widthConfig"
+  [nzShowPagination]="showPagination" [nzShowTotal]="showTotal" [nzBordered]="borderd"
+  (nzPageIndexChange)="_paginationIndexChange($event)" (nzPageSizeChange)="_paginationSizeChange($event)"
+  (nzCurrentPageDataChange)="_pageDataChange($event)">
   <thead>
     <!-- 头部模版 -->
     <ng-template #th let-columns let-thRowNumber="thRowNumber" let-index="index">
-      <th 
-        *ngIf="showCheckbox && index === 0" nzShowCheckbox [attr.rowspan]="thRowNumber || 1"
-        [(nzChecked)]="isAllDisplayDataChecked" 
-        [nzIndeterminate]="isIndeterminate"
-        (nzCheckedChange)="_checkAll($event)"
-      ></th>
-      <th 
-        *ngFor="let column of columns" 
-        [attr.rowspan]="column.rowSpan || 1" 
-        [attr.colspan]="column.colSpan || 1"
-        [nzWidth]="getWdith(column)" 
-        [ngClass]="'cell-align-'+ column.align"
-      >{{ column.title }}</th>
+      <th *ngIf="showCheckbox && index === 0" nzShowCheckbox [attr.rowspan]="thRowNumber || 1"
+        [(nzChecked)]="isAllDisplayDataChecked" [nzIndeterminate]="isIndeterminate"
+        (nzCheckedChange)="_checkAll($event)"></th>
+      <th [class.td]="isHeadFixed" *ngFor="let column of columns" [attr.rowspan]="column.rowSpan || 1" [attr.colspan]="column.colSpan || 1"
+        [nzWidth]="getWdith(column)" [ngClass]="'cell-align-'+ column.align">{{ column.title }}</th>
     </ng-template>
     <ng-container *ngIf="isTheadGroup">
       <tr *ngFor="let columns of theadColumns; index as index; trackBy: trackByColumn">
@@ -64,15 +41,10 @@
 </nz-table>
 
 <ng-template #tr let-data let-index="index">
-  <td 
-    *ngIf="showCheckbox" 
-    nzShowCheckbox 
-    [nzDisabled]="getDisabled(index)"
-    [(nzChecked)]="mapOfCheckedId[getRowKey(index, data)]" 
-    (nzCheckedChange)="_rowCheckChange()"
-  ></td>
+  <td *ngIf="showCheckbox" nzShowCheckbox [nzDisabled]="getDisabled(index)"
+    [(nzChecked)]="mapOfCheckedId[getRowKey(index, data)]" (nzCheckedChange)="_rowCheckChange()"></td>
   <ng-container *ngIf="!tdTemplateRef">
-    <td class="td" *ngFor="let column of columns; trackBy: trackByColumn" [ngClass]="'cell-align-'+ column.align">
+    <td [class.td]="isHeadFixed" *ngFor="let column of columns; trackBy: trackByColumn" [ngClass]="'cell-align-'+ column.align">
       <ng-container *ngTemplateOutlet="td, context: { $implicit: data, column: column, index: index }"></ng-container>
     </td>
   </ng-container>
@@ -89,9 +61,12 @@
   <ng-container *ngIf="!column.template">
     <!-- 单元格标签点击 -->
     <ng-container *ngIf="isClickCeel(data, column)">
-      <a (click)="column.click(data, column)">{{ column.isSerial ? index + 1 : column.render ? column.render(data, index) : data[column.key]}}</a>
+      <a
+        (click)="column.click(data, column)">{{ column.isSerial ? index + 1 : column.render ? column.render(data[column.key], data, index) : data[column.key]}}</a>
     </ng-container>
-    <ng-container *ngIf="!isClickCeel(data, column)">{{ column.isSerial ? index + 1 : column.render ? column.render(data, index) : data[column.key]}}</ng-container>
+    <ng-container *ngIf="!isClickCeel(data, column)">
+      {{ column.isSerial ? index + 1 : column.render ? column.render(data[column.key], data, index) : data[column.key]}}
+    </ng-container>
   </ng-container>
   <ng-container *ngIf="column.template">
     <ng-container *ngTemplateOutlet="templateMap[column.template];

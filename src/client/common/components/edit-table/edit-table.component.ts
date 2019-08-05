@@ -53,6 +53,10 @@ export class EditTableComponent implements OnInit {
     return this.entryConfig;
   }
 
+  resizeChange() {
+    this.dynamicTable.resizeChange();
+  }
+
   /**
    * 选中数据
    * @param checkList 选中key列表
@@ -99,7 +103,7 @@ export class EditTableComponent implements OnInit {
    * @param column any
    */
   removeEdit(column: any, data: any) {
-    if (typeof column.isEditor === 'function' && column.isEditor(data)) {
+    if (typeof column.isEditor === 'function' && !column.isEditor(data)) {
       return Object.keys(column).filter((key: string) => key !== 'template').reduce((o: object, key: string) => ({
         ...o,
         [key]: column[key]

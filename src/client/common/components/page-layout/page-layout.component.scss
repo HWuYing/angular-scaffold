@@ -1,13 +1,12 @@
 .page-container {
   display: flex;
   flex-direction: column;
-  padding: 0 15px;
   height: 100%;
-  overflow: hidden;
 }
 
 .table-container {
   margin: 25px 0 15px 0;
   background: #fff;
   flex: 1;
+  overflow: auto;
 }

@@ -2,7 +2,7 @@
   [nzAccept]="nzAccept"
   [nzAction]="nzAction"
   [nzDirectory]="nzDirectory"
-  [nzBeforeUpload]="beforeUpload"
+  [nzBeforeUpload]="beforeUpload.bind(this)"
   [nzCustomRequest]="nzCustomRequest"
   [nzData]="nzData"
   [nzDisabled]="nzDisabled"
@@ -21,8 +21,9 @@
   [nzPreview]="nzPreview"
   [nzRemove]="remove.bind(this)"
   (nzChange)="change($event)"
+  [class.hide-upload-btn]="maxFile && maxFile <= nzFileList.length"
 >
-  <button nz-button type="button">
+  <button nz-button class="upload-btn" type="button">
     <i nz-icon nzType="upload"></i>
     <span>{{ uploadText }}</span>
   </button>

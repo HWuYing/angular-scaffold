@@ -8,8 +8,8 @@ export class RadioGroupQuestion extends BaseQuestion {
 
   public getTemplate(): string {
     let template = `<nz-radio-group ${this.serializationProps()}>`;
-    template += `<label nz-radio *ngFor="let child of ${this.privateProps}.children;"
-      [nzValue]="child.value">{{ child.label }}</label>`;
+    template += `<label nz-radio *ngFor="let c of ${this.privateProps}.children;"
+      [nzValue]="c.value">{{ c.label }}</label>`;
     template += `</nz-radio-group>`;
     return template;
   }

@@ -41,6 +41,9 @@ export class ConfigService {
           },
           props: {
             name: 'groupSelect',
+            disabled: () => {
+              return true;
+            },
             style: { width: '30%' },
             ngModelChange: (value: any, { form: validateForm }: Options) => {
               validateForm.get('groupInput').setValue(value);

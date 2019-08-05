@@ -3,8 +3,7 @@ import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 export class GenerateProps {
   public name: string;
   protected isShow: boolean;
-  protected propsExclude: string[] = ['*ngIf'];
-  protected transformProps: any = {
+  protected transformProps: any = { // 指令映射
     style: '[ngStyle]',
     htmlStyle: 'style',
     class: '[ngClass]',
@@ -13,15 +12,17 @@ export class GenerateProps {
     blur: '(blur)',
     ngModelChange: '(ngModelChange)',
     disabled: 'dynamicDisable'
-    // disabled: 'attr.disabled'
   };
-  protected controlValidate: any[] = [];
-  protected initialValue: any;
-  protected controlKey: string;
-  protected controlParentKey: string;
+  protected propsExclude: string[] = [ // 不进行序列化的属性
+    this.transformProps.isShow
+  ];
+  protected controlValidate: any[] = []; // 验证数组
+  protected initialValue: any; //  初始值
+  protected controlKey: string; // 控制器 key
+  protected controlParentKey: string; // 上一级控制key
   protected fb: FormBuilder;
-  protected isArrayChildren: boolean = false;
-  protected ngForKey: string;
+  protected isArrayChildren: boolean = false; // 数组下的控件
+  protected ngForKey: string; // 数组下的控件 当前的index
   constructor(defaultProps?: any) {
     const underDefaultProps = defaultProps || {};
     this.isShow = underDefaultProps.isShow;
@@ -77,7 +78,7 @@ export class GenerateProps {
       ...config
     };
     if (![null, undefined].includes(isShow)) {
-      props[this.getTransformProps('isShow')] = (validateForm: any, control: FormControl, propsGroup?: FormGroup) => this.isChangeShow(validateForm, control, propsGroup);
+      props.isShow = (validateForm: any, control: FormControl, propsGroup?: FormGroup) => this.isChangeShow(validateForm, control, propsGroup);
     }
 
     if (props.style && props.style.width && !props.htmlStyle) {
@@ -102,17 +103,11 @@ export class GenerateProps {
    */
   protected functionValue(key: string, value: string) {
     let underValue: string;
-    const isArrayChildren = this.isArrayChildren;
     if (/^\*ngIf$/.test(key)) {
       underValue = this.getNgIfProps(value);
       return underValue;
     }
-    const paramsObject = `{
-      ${this.controlKey ? `control: ${this.controlKey},` : ``}
-      ${isArrayChildren ? `data: data, ngForKey: ${this.ngForKey},` : ``}
-      form: validateForm,
-      parentForm: ${this.controlParentKey}
-    }`;
+    const paramsObject = this.getParamsObject();
     if (/\[[\s\S]+\]/.test(key)) {
       underValue = `${value}`;
     } else if (/\([\s\S]+\)/.test(key)) {
@@ -121,6 +116,21 @@ export class GenerateProps {
       underValue = `${value}(${paramsObject})`;
     }
     return underValue;
+  }
+
+  /**
+   * 获取事件传入参数
+   */
+  protected getParamsObject() {
+    const isArrayChildren = this.isArrayChildren;
+    const paramsObject = `{
+      ${this.controlKey && this.name ? `control: ${this.controlKey},` : ``}
+      ${isArrayChildren ? `data: data, ngForKey: ${this.ngForKey},` : ``}
+      form: validateForm,
+      $implicit: validateForm,
+      parentForm: ${this.controlParentKey}
+    }`;
+    return paramsObject;
   }
 
   /**
@@ -202,9 +212,9 @@ export class GenerateProps {
    * 获取ngIf 显示隐藏信息
    */
   public getIsShowTemplate(props: any, privateProps: string) {
-    if (!props || !props['*ngIf']) {
+    if (!props || !props.isShow) {
       return ``;
     }
-    return `*ngIf="${this.parsetPropsValue('*ngIf', props['*ngIf'], privateProps)}"`;
+    return `*ngIf="${this.getNgIfProps(`${privateProps}.isShow`)}"`;
   }
 }

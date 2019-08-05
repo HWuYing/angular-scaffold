@@ -5,6 +5,7 @@
   nzWrapClassName="vertical-center-modal"
   [nzFooter]="footer || modalFooter"
   [nzBodyStyle]="bodyStyle"
+  [nzMaskClosable]="maskClosable"
   (nzOnCancel)="eventOnCancel()"
 >
   <ng-content></ng-content>

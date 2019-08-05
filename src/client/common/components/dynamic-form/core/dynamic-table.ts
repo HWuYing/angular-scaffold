@@ -36,22 +36,11 @@ export class DyanmicTable extends DyanmicFormArray {
    */
   protected serialization(config?: any): any[] {
     const { props, columns } = config;
-    const name = this.name;
-    const decorator = this.decorator;
-    const parentSerialization = this.parentSerialization;
-    this.types = [];
-    const children = this.privateSerialization(decorator, this.propsKey);
-    parentSerialization.serializationProps = {
-      ...parentSerialization.serializationProps,
-      ...this.serializationProps
-    };
+    const children = super.serialization(config);
     this.rootParent.serializationProps[this.propsKey] = {
       ...props,
-      columns,
-      dataSource: this.initialValues
+      columns
     };
-    (parentSerialization as this).serializationFormItem.push(this);
-    parentSerialization.privateInitialValue[name] = this.initialValues;
     return children;
   }
 

@@ -41,6 +41,7 @@ export class UploadComponent implements ControlValueAccessor, OnInit {
   @Input() nzPreview: (file: UploadFile) => void;
   @Input() nzRemove: (file: UploadFile) => boolean | Observable<boolean>;
   @Input() uploadText: string = 'Upload';
+  @Input() maxFile: number;
   @Output() readonly nzChange: EventEmitter<UploadChangeParam> = new EventEmitter();
   @Output() readonly nzStart: EventEmitter<UploadFile> = new EventEmitter();
   @Output() readonly nzSuccess: EventEmitter<UploadFile> = new EventEmitter();
@@ -72,9 +73,17 @@ export class UploadComponent implements ControlValueAccessor, OnInit {
 
   beforeUpload(file: UploadFile, fileList: UploadFile[]) {
     const nzBeforeUpload = this.nzBeforeUpload;
+    let status = true;
     if (nzBeforeUpload) {
-      nzBeforeUpload.apply(this, [file, fileList]);
+      // this._nzFileList = fileList;
+      status = nzBeforeUpload.apply(this, [file, fileList]);
     }
+
+    if (!status) {
+      this.change({ type: 'success', file, fileList });
+    }
+
+    return status;
   }
 
   remove (file: UploadFile) {

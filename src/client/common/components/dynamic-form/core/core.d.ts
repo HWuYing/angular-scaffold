@@ -12,7 +12,7 @@ import {
   ContainerType
 } from '../question/question';
 
-type keyType = 'textarea' | 'input' | 'inputNumber' |  'monthPicker' | 'timePicker' | 'datePicker' | 'checkboxGroup' | 'rangePicker';
+type keyType = | 'textarea' | 'input' | 'inputNumber' |  'monthPicker' | 'timePicker' | 'datePicker' | 'checkboxGroup' | 'rangePicker';
 
 type QuestionType = QuestionBaseType | QuestionSelectType | QuestionTextType;
 
@@ -32,7 +32,7 @@ interface FieldDecoratorType extends FieldDecoratorBaseType {
   validate?: any[];
 }
 
-interface DynamicFormAnyType {
+interface DynamicFormAnyType extends DyanmicLayoutType {
   type: string;
   props?: {
     name: string;
@@ -109,7 +109,7 @@ export interface FormItemInputGroupType extends FormItemBaseType {
 }
 
 
-export interface DyanmicFormArrayType extends DynamicFormAnyType, DyanmicLayoutType {
+export interface DyanmicFormArrayType extends DynamicFormAnyType {
   type: 'formArray' | 'table';
   fieldDecorator?: {
     initialValue: any[];

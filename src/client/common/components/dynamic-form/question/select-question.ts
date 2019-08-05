@@ -12,8 +12,8 @@ export class SelectQuestion extends BaseQuestion {
 
   public getTemplate(): string {
     let template = `<nz-select ${this.serializationProps()}>`;
-    template += `<nz-option *ngFor="let child of ${this.privateProps}.children;"
-      nzLabel="{{child.label}}" [nzValue]="child.value"></nz-option>`;
+    template += `<nz-option *ngFor="let c of ${this.privateProps}.children;"
+      nzLabel="{{c.label}}" [nzValue]="c.value"></nz-option>`;
     template += `</nz-select>`;
     return template;
   }

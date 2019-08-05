@@ -96,7 +96,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   /**
    * 合并设置表单值
    */
-  patchValuepatchValue(value: { [key: string]: any; }, options?: {
+  patchValue(value: { [key: string]: any; }, options?: {
     onlySelf?: boolean;
     emitEvent?: boolean;
   }): void {

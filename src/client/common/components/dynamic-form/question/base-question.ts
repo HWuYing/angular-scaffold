@@ -3,27 +3,23 @@ import { GenerateProps } from './generate-props';
 import { Options } from './question';
 
 export class BaseQuestion extends GenerateProps {
-  public key: string;
-  public props: object;
-  public propsKey: string;
-  public privateProps: string;
+  public key: string; // 控件key
+  public props: object; // 控件的属性集合
+  public propsKey: string; // 控件对应的组件中属性key
+  public privateProps: string; // 获取控件props的属性
   protected isAddFormControlName: boolean = true;
-  protected value: any;
   protected underNgModelChange: any;
   protected format: (value: any) => any | void;
-  protected controlKey: string;
   constructor(key: string, propsKey: string, props: any) {
     super({ isShow: props. isShow });
-    const { name, format, isShow, enableIsShow, ...config } = props;
+    const { name, isShow, enableIsShow, ...config } = props;
     this.key = key;
-    this.format = format;
     this.propsKey = propsKey;
     this.name = name;
     this.props = this.initProps(config || {});
-    this.underNgModelChange = props.ngModelChange || (() => {});
     this.privateProps = `serialization.serializationProps.${this.propsKey}`;
     if (enableIsShow) {
-      this.propsExclude = this.propsExclude.filter((underKey: string) => underKey !== '*ngIf');
+      this.propsExclude = this.propsExclude.filter((underKey: string) => underKey !== this.transformProps.isShow);
     }
   }
 
@@ -33,12 +29,11 @@ export class BaseQuestion extends GenerateProps {
    * @param isFormat 是否格式化值
    */
   protected initProps(config: any): object {
-    const format = this.format;
-    const isFormat = !!format;
-    const props = { ...config };
-    if (isFormat) {
-      props.ngModelChange = ($event: any, options: Options) =>
-        this.ngModelChange($event, options);
+    const { format, ...props } = config;
+    if (!!format) {
+      this.format = format;
+      this.underNgModelChange = props.ngModelChange || (() => {});
+      props.ngModelChange = ($event: any, options: Options) => this.ngModelChange($event, options);
     }
     return super.initProps(props);
   }
@@ -49,17 +44,13 @@ export class BaseQuestion extends GenerateProps {
    */
   protected ngModelChange(value: any, options: Options) {
     const { control } = options;
-    const format = this.format;
-    if (this.value === value) {
-      return;
+    let underValue = this.format(value);
+    underValue = [null, undefined].includes(underValue) ? value : underValue;
+    if (underValue !== control.value && control) {
+      control.setValue(underValue);
+    } else {
+      this.underNgModelChange(underValue, options);
     }
-    const underNgModelChange = this.underNgModelChange;
-    const underValue = format(value);
-    this.value = [null, undefined].includes(underValue) ? value : underValue;
-    if (control) {
-      control.setValue(this.value);
-    }
-    underNgModelChange(this.value, options);
   }
 
 /**
@@ -105,8 +96,8 @@ export class BaseQuestion extends GenerateProps {
     return Object.keys(props)
       .reduce(
         (propsArr: any[], key: string) => {
-          if (!this.isExcludeKey(key, props[key])) {
-            const transformKey = this.getTransformProps(key);
+          const transformKey = this.getTransformProps(key);
+          if (!this.isExcludeKey(transformKey, props[key])) {
             const bindKey = this.parsePropsKey(transformKey);
             propsArr.push(`${bindKey}="${this.parsetPropsValue(key, props[key])}"`);
           }
@@ -139,7 +130,7 @@ export class BaseQuestion extends GenerateProps {
    */
   public generateFormControlInfo(field: any, fb?: FormBuilder) {
     const name = this.name;
-    this.fb = fb;
+    this.fb = fb || this.fb;
     const disabled = (this.props as any).disabled;
     let value = field || field === 0 || field === '' ? field : this.initialValue;
     if (disabled === true) {
@@ -154,7 +145,7 @@ export class BaseQuestion extends GenerateProps {
    * @param value value
    */
   private isNotDealValue(key: string, value: any): boolean {
-    return ['htmlStyle'].includes(key) && ['string', 'number', 'boolean'].includes(typeof value);
+    return ['htmlStyle'].includes(key) || ['number', 'boolean'].includes(typeof value);
   }
 
   /**

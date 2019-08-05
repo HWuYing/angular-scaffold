@@ -9,7 +9,8 @@ export class UploadQuestion extends BaseQuestion {
       action: 'nzAction',
       data: 'nzData',
       success: '(nzSuccess)',
-      error: '(nzError)'
+      error: '(nzError)',
+      nzBeforeUpload: '[nzBeforeUpload]'
     };
   }
   public getTemplate(): string {

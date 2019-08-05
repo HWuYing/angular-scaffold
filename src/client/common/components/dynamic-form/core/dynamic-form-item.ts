@@ -32,7 +32,7 @@ export class DynamicFormItem extends GenerateProps {
     this.controlValidate = fieldDecorator.validate;
     this.validate = [];
     this.parentSerialization = parentSerialization;
-    this.controlParentKey = `validateForm${this.getValidateFormControlName()}`;
+    this.controlParentKey = `validateForm${this.parentSerialization.getValidateFormControlName.call(this, true)}`;
     this.controlKey = `${this.controlParentKey}?.get('${this.question.name}')`;
   }
 
@@ -50,24 +50,6 @@ export class DynamicFormItem extends GenerateProps {
       parentGroup
     );
     return isShow;
-  }
-
-  /**
-   * 获取存储结构
-   */
-  private getValidateFormControlName() {
-    let parentSerialization = this.parentSerialization;
-    const nameArray = [];
-    let isArrayControl: boolean;
-    while (!!parentSerialization && !!parentSerialization.name) {
-      isArrayControl = ['formArray', 'table'].includes(parentSerialization.type);
-      nameArray.unshift(`get('${parentSerialization.name}')${isArrayControl ? `?.get(${parentSerialization.ngForKey}.toString())` : ''}`);
-      parentSerialization = parentSerialization.parentSerialization;
-    }
-    if (nameArray.length) {
-      nameArray.unshift('');
-    }
-    return nameArray.join('?.');
   }
 
   /**
@@ -138,7 +120,7 @@ export class DynamicFormItem extends GenerateProps {
       return ``;
     }
     const props = this.initProps({});
-    const ngIf = this.getTransformProps('isShow');
+    const ngIf = 'isShow';
     this.question.props[ngIf] = props[ngIf];
     return super.getIsShowTemplate(props, this.question.privateProps);
   }
@@ -148,7 +130,7 @@ export class DynamicFormItem extends GenerateProps {
    * @param field 表单节点值
    */
   public generateFormControlName(field: any, fb?: FormBuilder): object {
-    this.fb = fb;
+    this.fb = fb || this.fb;
     return this.question.generateFormControlInfo(field, fb);
   }
 

@@ -8,7 +8,8 @@ export class ButtonQuestion extends BaseQuestion {
     this.isAddFormControlName = false;
     this.transformProps = {
       ...this.transformProps,
-      type: 'nzType'
+      type: 'nzType',
+      htmlType: 'attr.type'
     };
   }
 

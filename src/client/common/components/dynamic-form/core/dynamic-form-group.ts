@@ -1,9 +1,11 @@
 import { FormBuilder } from '@angular/forms';
+import { DynamicLayout } from './dynamic-layout';
 import { SerializationBase } from './serialization-base';
 
 export class DynamicFormGroup extends SerializationBase {
   private privateInitialValues: any;
   public children: any[];
+  public dynamicLayout: DynamicLayout;
   constructor(layout: any, propsKey: string, config: any, parentSerialization: SerializationBase) {
     const { type, props = {}, decorator, layout: itemLayout, fieldDecorator = {} } = config;
     super({ ...layout, ...itemLayout });
@@ -14,19 +16,21 @@ export class DynamicFormGroup extends SerializationBase {
     this.privateInitialValues = fieldDecorator.initialValue;
     this.setParentSerialization(parentSerialization);
     this.children = this.serialization();
+    this.dynamicLayout = new DynamicLayout({
+      ...layout,
+      ...config
+    }, this.children);
   }
 
   /**
    * 获取模版html
    */
   public getTemplate() {
-    const name = this.name;
-    let template = `<ng-container formGroupName="${name}">`;
-    template += this.children.reduce((underTemplate: string, child: any) => {
-      return underTemplate + child.getTemplate();
-    }, ``);
-    template += `</ng-container>`;
-    return template;
+    const template = [];
+    template.push(`<ng-container formGroupName="${this.name}">`);
+    template.push(this.dynamicLayout.getTemplate());
+    template.push(`</ng-container>`);
+    return template.join('');
   }
 
   /**
@@ -44,5 +48,9 @@ export class DynamicFormGroup extends SerializationBase {
       ...this.privateInitialValues,
       ...this.privateInitialValue
     };
+  }
+
+  get spanCol() {
+    return this.dynamicLayout.spanCol;
   }
 }

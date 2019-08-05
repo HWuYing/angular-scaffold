@@ -14,6 +14,7 @@ export class BasicModalComponent implements OnInit {
   @Input() cancelText: string = 'cancel';
   @Input() okText: string = 'submit';
   @Input() footer: TemplateRef<void>;
+  @Input() maskClosable: boolean = true;
   @Output() readonly nzOnOk: EventEmitter<any> = new EventEmitter();
   @Output() readonly nzOnCancel: EventEmitter<any> = new EventEmitter();
   @Input() openLoading: boolean = false;

@@ -8,7 +8,7 @@ const objectType = (o: object) => Object.prototype.toString.call(o).replace(/^\[
 export class SerializationBase {
   protected rootParent: SerializationBase;
   protected decorator: any[];
-  protected parentSerialization: SerializationBase;
+  protected parentSerialization: any;
   protected layout: any;
   protected controlKey: string;
   public propsKey: string;
@@ -24,13 +24,17 @@ export class SerializationBase {
 
   /**
    * 设置父类
-   * @param parentSerialization 父累
+   * @param parentSerialization 父类
    */
   public setParentSerialization(parentSerialization: SerializationBase) {
     this.parentSerialization = parentSerialization;
     let rootParent = parentSerialization;
-    while (!!rootParent.parentSerialization) {
-      rootParent = rootParent.parentSerialization;
+    if (rootParent.rootParent) {
+      rootParent = rootParent.rootParent;
+    } else {
+      while (!!rootParent.parentSerialization) {
+        rootParent = rootParent.parentSerialization;
+      }
     }
     this.rootParent = rootParent;
   }
@@ -70,7 +74,10 @@ export class SerializationBase {
    * @param item 配置
    */
   private isSerializationItemConfig(item: any): boolean {
-    return this.isDyanmicTable(item) || this.isDyanmicFormArray(item) || this.isDynamicFormGroup(item) || this.isDyanmicContainer(item);
+    return this.isDyanmicTable(item) ||
+           this.isDyanmicFormArray(item) ||
+           this.isDynamicFormGroup(item) ||
+           this.isDyanmicContainer(item);
   }
 
   /**
@@ -82,15 +89,27 @@ export class SerializationBase {
     const nameArray = [];
     let isArrayControl: boolean;
     while (!!parentSerialization && !!parentSerialization.name) {
-      isArrayControl = parentSerialization.type === 'formArray';
-      nameArray.unshift(`${!isGet ? parentSerialization.name : `get('${parentSerialization.name}')`}
-        ${isArrayControl ? `?.get(i.toString())` : ''}`);
+      isArrayControl = ['formArray', 'table'].includes(parentSerialization.type);
+      nameArray.unshift(`${!isGet ? parentSerialization.name : `get('${parentSerialization.name}')`}${isArrayControl ? `?.get(${parentSerialization.ngForKey}.toString())` : ''}`);
       parentSerialization = parentSerialization.parentSerialization;
     }
     if (nameArray.length) {
       nameArray.unshift('');
     }
     return nameArray.join('?.');
+  }
+
+  /**
+   * 获取template的参数信息
+   */
+  protected getTemplateContext() {
+    const isArrayChildren = ['formArray', 'table'].includes(this.parentSerialization.type);
+    return `{
+      ${isArrayChildren ? `data: data, ngForKey: ${this.parentSerialization.ngForKey},` : ``}
+      $implicit: validateForm,
+      form: validateForm,
+      parentForm: validateForm${this.getValidateFormControlName(true)}
+    }`;
   }
 
   /**

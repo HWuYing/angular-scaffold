@@ -3,7 +3,8 @@ import { DynamicLayout } from './dynamic-layout';
 import { SerializationBase } from './serialization-base';
 
 const getNgForKey = (() => {
-  const keys = ['i', 'j', 'k', 'z', 'ii', 'jj', 'kk', 'zz', 'iii', 'jjj', 'zzz'];
+  const keys = new Array(26).fill('')
+    .map((item: any, index: number) => `ngFor${String.fromCharCode(index + 97)}`);
   let cursor = 0;
   return () => {
     const ngKey = keys[cursor];
@@ -40,17 +41,13 @@ export class DyanmicFormArray extends SerializationBase {
    * 获取模版数据
    */
   public getTemplate() {
-    const name = this.name;
-    const controlKey = this.controlKey;
     const ngForKey = this.ngForKey;
     const template = [];
-    template.push(`<ng-container formArrayName="${name}">`);
-    template.push(`<div nz-row class="dynamic-layout-${this.dynamicLayout.col}">`);
-    template.push(`<ng-container *ngFor="let control of ${controlKey}.controls; let ${ngForKey} = index" [formGroupName]="${ngForKey}">`);
+    template.push(`<div nz-row formArrayName="${this.name}" class="dynamic-layout-${this.dynamicLayout.col}">`);
+    template.push(`<ng-container *ngFor="let control of ${this.controlKey}.controls; let ${ngForKey} = index" [formGroupName]="${ngForKey}">`);
     template.push(this.dynamicLayout.getChildrenTemplate());
     template.push(`</ng-container>`);
     template.push(`</div>`);
-    template.push(`</ng-container>`);
     return template.join(``);
   }
 
@@ -77,5 +74,9 @@ export class DyanmicFormArray extends SerializationBase {
       ...this.privateInitialValue,
       ...store
     }));
+  }
+
+  get spanCol() {
+    return this.dynamicLayout.spanCol;
   }
 }

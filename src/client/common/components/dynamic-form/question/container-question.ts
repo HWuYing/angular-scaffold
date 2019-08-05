@@ -8,9 +8,7 @@ export class ContainerQuestion extends BaseQuestion {
     this.templateName = template;
   }
   public getTemplate(): string {
-    return `<ng-container *ngTemplateOutlet="templateMap.${this.templateName};context:{
-      ${this.isArrayChildren ? `ngForKey: ${this.ngForKey},` : ``}
-      $implicit: validateForm
-    }"></ng-container>`;
+    const paramsObject = this.getParamsObject();
+    return `<ng-container *ngTemplateOutlet="templateMap.${this.templateName};context: ${paramsObject}"></ng-container>`;
   }
 }

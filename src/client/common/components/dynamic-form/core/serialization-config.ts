@@ -19,7 +19,7 @@ export class SerializationConfig extends SerializationBase {
   constructor(config: any, layout?: any) {
     super(layout);
     this.config = config;
-    this.layout = layout;
+    this.layout = { col: 3, ...layout };
     this.serializationConfig = this.serialization(config);
   }
 
@@ -33,7 +33,7 @@ export class SerializationConfig extends SerializationBase {
     this.serializationFormItem = [];
     this.types = [];
     const serialization = this.privateSerialization(config, 'props');
-    return new DynamicLayout({ col: layout && layout.col ? layout.col : 3 }, serialization);
+    return new DynamicLayout({ col: layout.col }, serialization);
   }
 
   /**
@@ -54,7 +54,7 @@ export class SerializationConfig extends SerializationBase {
       exp = new DyanmicTable(this.layout, propsKey, item, this);
     } else if (this.isDyanmicContainer(item)) {
       // 是container
-      exp = new DyanmicFormContainer(this.layout, propsKey, item);
+      exp = new DyanmicFormContainer(this.layout, propsKey, item, this);
     } else {
       exp = super.privateSerializationItemConfig(propsKey, item);
     }
