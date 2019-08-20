@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
 import { DynamicConfigType } from '../dynamic-form/dynamic-form';
-import { DynamicFormComponent } from '../dynamic-form/container/dynamic-form.component';
+import { DynamicFormComponent } from '../dynamic-form/enquire/dynamic-form.component';
 import { Options } from '../dynamic-form/question/question';
 import { DynamicTableComponent } from '../dynamic-table/dynamic-table.component';
 

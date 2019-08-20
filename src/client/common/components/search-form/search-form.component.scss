@@ -1,11 +1,12 @@
 .search {
+  margin-bottom: 20px;
+
   &-container {
     flex: 1;
   }
 
   &-button-container {
     padding-top: 4px;
-    text-align: right;
 
     > button {
       margin-left: 12px;

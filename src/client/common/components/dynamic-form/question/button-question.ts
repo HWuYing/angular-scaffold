@@ -4,13 +4,9 @@ export class ButtonQuestion extends BaseQuestion {
   constructor(key: string, propsKey: string, props: any) {
     const { ...other } = props;
     super(key, propsKey, other);
-    this.propsExclude = ['text'];
     this.isAddFormControlName = false;
-    this.transformProps = {
-      ...this.transformProps,
-      type: 'nzType',
-      htmlType: 'attr.type'
-    };
+    this.mergeTransformProps({ type: 'nzType', htmlType: 'attr.type' });
+    this.mergePropsExtends('text');
   }
 
   public getTemplate(): string {

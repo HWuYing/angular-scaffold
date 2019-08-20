@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewContainerRef } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl,  FormGroup } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
+import { filter, startWith, switchMap, take, tap } from 'rxjs/operators';
+import { angularMetadata } from '../providers/metadata';
 import { SerializationConfig } from './serialization-config';
 
 /**
@@ -19,20 +21,42 @@ export const factoryForm = (serializationConfig: SerializationConfig) => {
     }
     private underFieldStore: any = {};
     private subscription: Subscription = new Subscription();
+    private subject: Subject<void> = new Subject();
+    private submicAsync: Subscription;
     public validateForm: FormGroup;
     private fb: FormBuilder;
-    constructor() {
+    constructor(
+      private viewContainerRef: ViewContainerRef
+    ) {
       this.fb = new FormBuilder();
     }
 
     ngOnInit() {
+      console.log(this.viewContainerRef);
       if (!this.validateForm) {
         this.resetValidateForm();
       }
+      this.initAsyncSubmit();
     }
 
     ngOnDestroy() {
       this.subscription.unsubscribe();
+      this.subject.unsubscribe();
+    }
+
+    /**
+     * 初始化异步验证器
+     */
+    private initAsyncSubmit() {
+      this.subscription.add(this.subject.pipe(
+        tap(() => this.validateForm.markAsDirty()),
+        switchMap(() => this.validateForm.statusChanges.pipe(
+          startWith(this.validateForm.status),
+          filter((status => status !== 'PENDING')),
+          take(1)
+        )),
+        filter(status => status === 'VALID')
+      ).subscribe((valid: string) => this.dynamicSubmit.emit(this.validateForm.value)));
     }
 
     /**
@@ -83,16 +107,29 @@ export const factoryForm = (serializationConfig: SerializationConfig) => {
      * 表单提交 对应onSubmit事件
      * @param event MoustEvent
      */
-    onSubmit(event?: any) {
+    onSubmit(event?: any, isAsync?: boolean) {
       const validateForm = this.validateForm;
       if (event && event.preventDefault) {
         event.preventDefault();
       }
       // 验证表单
       this.validationForm();
-      if (validateForm.valid) {
-        this.dynamicSubmit.emit(validateForm.value);
-      }
+      isAsync ? this.subject.next() : this.dynamicSubmit.emit(validateForm.value);
+    }
+
+    /**
+     * 异步校验
+     * @param event 事件
+     */
+    onSubmitAsync(event?: any) {
+      this.onSubmit(event, true);
+    }
+
+    /**
+     * 同步Submit
+     */
+    onSubmitSync(event?: any) {
+      this.onSubmit(event);
     }
 
     /**
@@ -164,11 +201,12 @@ export const factoryForm = (serializationConfig: SerializationConfig) => {
     }
   }
 
-  return  Component({
+  return angularMetadata(Component({
     template: serializationConfig.generateTemplate(), // 获取动态的template
     providers: [FormBuilder],
     host: {
-      '[class.dynamic-form]': `this.serialization.layout.nzLayout !== 'inline'`
+      '[class.dynamic-form]': `serialization.layout.nzLayout !== 'inline'`,
+      '[class.dynamic-size-small]': `serialization.layout.size === 'small'`
     }
-  })(TemComponent);
+  }), TemComponent, [ViewContainerRef]);
 };

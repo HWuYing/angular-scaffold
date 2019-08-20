@@ -11,10 +11,12 @@ export class GenerateProps {
     click: '(click)',
     blur: '(blur)',
     ngModelChange: '(ngModelChange)',
-    disabled: 'dynamicDisable'
+    disabled: 'dynamicDisable',
+    size: 'nzSize'
   };
   protected propsExclude: string[] = [ // 不进行序列化的属性
-    this.transformProps.isShow
+    this.transformProps.isShow,
+    'updateOn'
   ];
   protected controlValidate: any[] = []; // 验证数组
   protected initialValue: any; //  初始值
@@ -86,6 +88,22 @@ export class GenerateProps {
     }
 
     return props;
+  }
+
+  /**
+   * props 不进行序列化的排除合并
+   * @param exclude 排除项
+   */
+  protected mergePropsExtends(exclude: string | string[]) {
+    this.propsExclude = [].concat(this.propsExclude, exclude);
+  }
+
+  /**
+   * 合并props映射对象
+   * @param transformProps 映射对象
+   */
+  protected mergeTransformProps(transformProps: object) {
+    this.transformProps = { ...this.transformProps, ...transformProps };
   }
 
   /**
@@ -163,7 +181,7 @@ export class GenerateProps {
     Object.keys(controlOption).forEach((name: string) => {
       if (addStatus && !parentGroup.get(name)) {
         const option = controlOption[name];
-        parentGroup.addControl(name, this.fb.control(option[0], option[1]));
+        parentGroup.addControl(name, this.fb.control(option[0], option[1], option[2]));
       } else if (!addStatus && parentGroup.get(name)) {
         parentGroup.removeControl(name);
       }

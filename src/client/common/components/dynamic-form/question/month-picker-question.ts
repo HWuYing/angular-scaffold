@@ -10,10 +10,7 @@ export class MonthPickerQuestion extends BaseQuestion {
       ...MonthPickerQuestion.defaultProps,
       ...props
     });
-    this.transformProps = {
-      ...this.transformProps,
-      placeholder: 'nzPlaceholder'
-    };
+    this.mergeTransformProps({ placeholder: 'nzPlaceholder' });
   }
 
   public getTemplate(): string {

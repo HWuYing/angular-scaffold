@@ -1,21 +1,23 @@
-<nz-collapse>
+<nz-collapse class="search">
   <nz-collapse-panel
     [nzHeader]="title"
     [nzActive]="true"
   >
-    <div class="search-container">
+    <div class="search-container" [style.width]="width">
       <app-dynamic-form
         #dynamicForm
-        nzLayout="inline"
+        [nzLayout]="nzLayout"
         [layout]="layout"
         [config]="config"
         [fieldStore]="fieldStore"
+        [templateMap]="templateMap"
         (valueChanges)="valueChanges.emit($event)"
-        (dynamicSubmit)="searchSubmit.emit($event)">
+        (dynamicSubmit)="searchSubmit.emit($event)"
+      >
       </app-dynamic-form>
     </div>
     <div class="search-button-container">
-      <button nz-button nzType="primary" (click)="dynamicForm.submit()">查询</button>
+      <button *ngIf="isSubmit" nz-button nzType="primary" (click)="dynamicForm.submit()">Submit</button>
       <ng-content></ng-content>
     </div>
   </nz-collapse-panel>

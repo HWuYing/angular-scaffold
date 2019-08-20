@@ -3,11 +3,8 @@ import { BaseQuestion } from './base-question';
 export class SelectQuestion extends BaseQuestion {
   constructor(key: string, propsKey: string, props: any) {
     super(key, propsKey, props);
-    this.propsExclude = [ ...this.propsExclude, 'children' ];
-    this.transformProps = {
-      ...this.transformProps,
-      placeholder: 'nzPlaceHolder'
-    };
+    this.mergePropsExtends('children');
+    this.mergeTransformProps({ placeholder: 'nzPlaceHolder' });
   }
 
   public getTemplate(): string {

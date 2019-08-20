@@ -7,10 +7,8 @@ export class IconQuestion extends BaseQuestion {
     super(key, propsKey, other);
     this.target = target || 'i';
     this.isAddFormControlName = false;
-    this.transformProps = {
-      ...this.transformProps,
-      type: 'nzType'
-    };
+    this.mergePropsExtends(this.transformProps.size);
+    this.mergeTransformProps({ type: 'nzType' });
   }
 
   public getTemplate(): string {

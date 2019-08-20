@@ -112,7 +112,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
    */
   submit(): boolean | object {
     const dynamicForm: any = (this.cmpRef as any)._component;
-    dynamicForm.onSubmit();
+    dynamicForm.onSubmitAsync();
     return !this.valid ? false : this.value;
   }
 

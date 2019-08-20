@@ -134,9 +134,10 @@ export interface DyanmicUploadType extends FormItemBaseType {
   props: UploadType;
 }
 
-export interface DynamicContainerFormType extends FormItemBaseType {
+export interface DynamicContainerFormType extends FormItemBaseType, DyanmicLayoutType {
   type: 'container';
   template: string;
+  decorator?: DynamicConfigType[];
 }
 
 export interface ContainerFormType extends FormItemBaseType {

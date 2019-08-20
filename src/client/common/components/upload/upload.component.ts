@@ -28,7 +28,7 @@ export class UploadComponent implements ControlValueAccessor, OnInit {
   @Input() nzData: object | ((file: UploadFile) => object);
   @Input() nzDisabled: boolean = false;
   @Input() nzLimit: number = 0;
-  @Input() nzSize: number = 0;
+  @Input() nzSize: 'large' | 'small' | 'default';
   @Input() nzFileType: string = '';
   @Input() nzFilter: UploadFilter[] = [];
   @Input() nzHeaders: object | ((file: UploadFile) => object);

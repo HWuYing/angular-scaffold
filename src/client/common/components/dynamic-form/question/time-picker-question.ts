@@ -4,10 +4,7 @@ import { BaseQuestion } from './base-question';
 export class TimePickerQuestion extends BaseQuestion {
   constructor(key: string, propsKey: string, props: any) {
     super(key, propsKey, props);
-    this.transformProps = {
-      ...this.transformProps,
-      placeholder: 'nzPlaceholder'
-    };
+    this.mergeTransformProps({ placeholder: 'nzPlaceholder' });
   }
 
   public getTemplate(): string {

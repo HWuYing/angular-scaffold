@@ -36,9 +36,11 @@ export class DynamicTableComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() tdTemplateRef: TemplateRef<any>; // td的templateRef 存在就采用传入的处理
   @Input() pageSize: number = 20; // 每页调数
   @Input() cellAlign: string = 'center'; // 单元格对齐方式 center left right
+  @Input() size: string = 'small'; // 表格类型
   @Input() set columns(value: any[]) {
     this._columns = [].concat(this.isSerial ? this._serialColumn : [], value).map((_column: object) => ({
       align: this.cellAlign,
+      getTableSpan: () => () => ({ }),
       ..._column
     }));
     this.resetMaxWidth();
@@ -73,7 +75,9 @@ export class DynamicTableComponent implements OnInit, AfterViewInit, OnChanges {
     this._resetScroll(this.isHeadFixed);
   }
 
-  constructor(private elementRef: ElementRef) {}
+  constructor(
+    private elementRef: ElementRef,
+  ) {}
 
   ngOnInit() { }
 

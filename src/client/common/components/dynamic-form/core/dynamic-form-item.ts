@@ -61,25 +61,33 @@ export class DynamicFormItem extends GenerateProps {
     const validateTemplate: string[] = [];
     const childrenTemplate: string[] = [];
     let ifTemplate: any = ``;
+    let ifTemplatePending: any = ``;
     if (validate && !!validate.length) {
       this.validate = [];
       ifTemplate = {};
+      ifTemplatePending = {};
       validate.forEach((vali: any) => {
         const underControlKey = vali.controlKey || controlKey;
         if (vali.patter) {
           this.validate.push(vali.patter);
+        }
+        if (vali.isAsync && !ifTemplatePending[underControlKey]) {
+          ifTemplatePending[underControlKey] = `${underControlKey}?.dirty && ${underControlKey}?.pending`;
         }
         if (!ifTemplate[underControlKey]) {
           ifTemplate[underControlKey] = `${underControlKey}?.dirty && ${underControlKey}?.errors`;
         }
         childrenTemplate.push(`<ng-container *ngIf="${underControlKey}?.hasError('${vali.isError}')">{{ '${vali.message}'}}</ng-container>`);
       });
-      ifTemplate = Object.keys(ifTemplate).map((key: string) => `(${ifTemplate[key]})`).join(' || ');
-      validateTemplate.push(childrenTemplate.join(`&nbsp;&nbsp;`));
+      ifTemplate = Object.keys(ifTemplate).map((key: string) => `${ifTemplate[key]}`).join(' || ');
+      ifTemplatePending = Object.keys(ifTemplatePending).map((key: string) => `${ifTemplatePending[key]}`).join(' || ');
+      validateTemplate.push(childrenTemplate.join(``));
     }
     return {
       validateTemplate: validateTemplate.join(``),
-      validateStatusTemplate: ifTemplate
+      validateStatusTemplate: ifTemplate,
+      validatePendingTemplate: ifTemplatePending,
+      nzValidateStatus: `${ifTemplate} ? 'error'${ifTemplatePending ? ` : ${ifTemplatePending} ? 'validating'` : ''} : 'success'`
     };
   }
 
@@ -90,7 +98,7 @@ export class DynamicFormItem extends GenerateProps {
     const { labelStyle, nzLayout } = this.layout;
     const question = this.question;
     const label: any = this.label;
-    const { validateTemplate, validateStatusTemplate } = this.validateTemplate();
+    const { validateTemplate, validateStatusTemplate, validatePendingTemplate, nzValidateStatus } = this.validateTemplate();
     const isRequire = this.validate.includes(Validators.required);
     const propsKey = this.question.propsKey;
     const hasLabel = !!label;
@@ -105,7 +113,8 @@ export class DynamicFormItem extends GenerateProps {
               }
               ${validateStatusTemplate ? `<ng-template #error_tip_${propsKey}>${validateTemplate}</ng-template>` : ``}
               <nz-form-control style="flex: 1;"
-                ${validateStatusTemplate ? `[nzErrorTip]="error_tip_${propsKey}" [nzValidateStatus]="${validateStatusTemplate} ? 'error' : 'success'"` : ``}
+                ${validateStatusTemplate ? `[nzErrorTip]="error_tip_${propsKey}" [nzValidateStatus]="${nzValidateStatus}"` : ``}
+                ${validatePendingTemplate ? 'nzHasFeedback' : ''}
               >
                 ${question.getTemplate()}
               </nz-form-control>

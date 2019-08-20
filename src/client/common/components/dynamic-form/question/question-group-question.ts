@@ -14,9 +14,16 @@ export class QuestionGroupQuestion extends BaseQuestion {
   }
 
   getChildren(children: any[]): any[] {
+    const selfProps = this.props as any;
     return children.map((child: any, index: number) => {
-      const { fieldDecorator, ...props } = child;
-      const question = this.getQuestion(`${this.propsKey}.children${index}`, props);
+      const { fieldDecorator, props, ...other } = child;
+      const question = this.getQuestion(`${this.propsKey}.children${index}`, {
+        ...other,
+        props: {
+          ...props,
+          ...selfProps.size ? { size: selfProps.size } : {}
+        }
+      });
       (question as this).propsExclude = (question as this).propsExclude.filter((underKey: string) => underKey !== this.transformProps.isShow);
       if (fieldDecorator) {
         question.setControlInitialValue(fieldDecorator.initialValue);

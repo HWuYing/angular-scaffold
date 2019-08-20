@@ -65,7 +65,9 @@ export class SerializationBase {
       ...this.serializationProps
     };
     (parentSerialization as this).serializationFormItem.push(this);
-    parentSerialization.privateInitialValue[name] = this.initialValues;
+    if (name) {
+      parentSerialization.privateInitialValue[name] = this.initialValues;
+    }
     return children;
   }
 
@@ -102,10 +104,11 @@ export class SerializationBase {
   /**
    * 获取template的参数信息
    */
-  protected getTemplateContext() {
+  protected getTemplateContext(mergeProps?: string) {
     const isArrayChildren = ['formArray', 'table'].includes(this.parentSerialization.type);
     return `{
       ${isArrayChildren ? `data: data, ngForKey: ${this.parentSerialization.ngForKey},` : ``}
+      ${mergeProps}
       $implicit: validateForm,
       form: validateForm,
       parentForm: validateForm${this.getValidateFormControlName(true)}
@@ -153,13 +156,19 @@ export class SerializationBase {
       }
     } else if (this.isDynamicLayoutConfig(item)) {
       // 是布局
-      exp = new DynamicLayout({
-        nzLayout: this.layout.nzLayout,
-        ...item
-      }, this.privateSerialization(item.decorator, propsKey) as any);
+      const selfLayout = this.layout;
+      this.layout = item.layout || this.layout;
+      exp = new DynamicLayout({ nzLayout: this.layout.nzLayout, ...item }, this.privateSerialization(item.decorator, propsKey) as any);
+      this.layout = selfLayout;
     } else {
       // 不是布局（formItem）
-      const question = getQuestion(propsKey, item);
+      const question = getQuestion(propsKey, {
+        ...item,
+        props: {
+          ...item.props,
+          ...this.layout.size ? { size: this.layout.size } : {}
+        }
+      });
       exp = new DynamicFormItem(
         {
           layout: { ...this.layout },

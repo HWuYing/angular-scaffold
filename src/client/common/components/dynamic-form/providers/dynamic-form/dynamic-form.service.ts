@@ -3,8 +3,8 @@ import { Compiler, Inject, Injectable, NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { factoryForm } from '../../core/dynamic-form';
 import { SerializationConfig } from '../../core/serialization-config';
-import { DirectivesModule } from '../../directives/directives.module';
 import { DynamicCompilerToken } from '../dynamic-compiler-provider';
+import { angularMetadata } from '../metadata';
 import { NzZorroImport } from '../nz-zorro-lazy';
 
 const temComponentFactoryCache = {};
@@ -15,28 +15,33 @@ export class DynamicFormService {
   private underLayout: any; // 表单布局配置
   private underNzLayout: string;
   private underTemplateMap: object;
-  constructor(@Inject(DynamicCompilerToken) private _compiler: Compiler) { }
+
+  constructor(
+    @Inject(DynamicCompilerToken) private _compiler: Compiler,
+  ) { }
 
   /**
    * 创建动态组件的NgModule
    */
   private factoryModule(serialization: SerializationConfig) {
-    return NgModule({
+    return angularMetadata(NgModule({
       declarations: [factoryForm(serialization)],
       imports: [
         CommonModule,
         ReactiveFormsModule,
-        DirectivesModule,
         ...NzZorroImport
       ]
-    })(class {});
+    }), class {}, []);
   }
 
   /**
    * 价值NgModule
    */
   loadModuleSync(): [any, SerializationConfig, any] {
-    const serialization = SerializationConfig.factorySerializationConfig(this.config, this.layout, this.nzLayout);
+    const serialization = SerializationConfig.factorySerializationConfig(this.config, {
+      size: 'small',
+      ...this.layout
+    }, this.nzLayout);
     const hashKey = serialization.hashKey;
     if (temComponentFactoryCache[hashKey]) {
       return [temComponentFactoryCache[hashKey], serialization, this.templateMap];

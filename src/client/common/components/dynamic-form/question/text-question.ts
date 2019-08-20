@@ -5,9 +5,9 @@ export class TextQuestion extends BaseQuestion {
   constructor(key: string, propsKey: string, props: any) {
     const { target, ...other } = props;
     super(key, propsKey, other);
-    this.propsExclude = ['text', 'placeholder'];
     this.target = target || 'span';
     this.isAddFormControlName = false;
+    this.mergePropsExtends(['text', 'placeholder', this.transformProps.size]);
   }
 
   public getTemplate(): string {

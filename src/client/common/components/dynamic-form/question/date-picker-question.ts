@@ -7,11 +7,7 @@ export class DatePickerQuestion extends BaseQuestion {
       ...props,
       nzStyle: { width: '100%'}
     });
-    this.transformProps = {
-      ...this.transformProps,
-      disabledDate: '[nzDisabledDate]',
-      placeholder: 'nzPlaceholder'
-    };
+    this.mergeTransformProps({ disabledDate: '[nzDisabledDate]', placeholder: 'nzPlaceholder' });
   }
 
   public getTemplate(): string {

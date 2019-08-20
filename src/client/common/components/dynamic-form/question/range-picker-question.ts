@@ -10,10 +10,7 @@ export class RangePickerQuestion extends BaseQuestion {
       ...RangePickerQuestion.defaultProps,
       ...props
     });
-    this.transformProps = {
-      ...this.transformProps,
-      placeholder: 'nzPlaceholder'
-    };
+    this.mergeTransformProps({ placeholder: 'nzPlaceholder' });
   }
 
   public getTemplate(): string {

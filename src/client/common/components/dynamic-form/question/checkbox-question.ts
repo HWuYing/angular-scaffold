@@ -6,6 +6,7 @@ export class CheckBoxQuestion extends BaseQuestion {
     const { text, ...config } = props;
     super(key, propsKey, config);
     this.text = text;
+    this.mergePropsExtends(this.transformProps.size);
   }
 
   public getTemplate(): string {

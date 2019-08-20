@@ -9,18 +9,18 @@ export class BaseQuestion extends GenerateProps {
   public privateProps: string; // 获取控件props的属性
   protected isAddFormControlName: boolean = true;
   protected underNgModelChange: any;
-  protected format: (value: any) => any | void;
+  protected format: (value: any, options: Options) => any | void;
   constructor(key: string, propsKey: string, props: any) {
     super({ isShow: props. isShow });
     const { name, isShow, enableIsShow, ...config } = props;
     this.key = key;
     this.propsKey = propsKey;
     this.name = name;
-    this.props = this.initProps(config || {});
     this.privateProps = `serialization.serializationProps.${this.propsKey}`;
     if (enableIsShow) {
       this.propsExclude = this.propsExclude.filter((underKey: string) => underKey !== this.transformProps.isShow);
     }
+    this.props = this.initProps(config || {});
   }
 
   /**
@@ -44,7 +44,7 @@ export class BaseQuestion extends GenerateProps {
    */
   protected ngModelChange(value: any, options: Options) {
     const { control } = options;
-    let underValue = this.format(value);
+    let underValue = this.format(value, options);
     underValue = [null, undefined].includes(underValue) ? value : underValue;
     if (underValue !== control.value && control) {
       control.setValue(underValue);
@@ -130,13 +130,20 @@ export class BaseQuestion extends GenerateProps {
    */
   public generateFormControlInfo(field: any, fb?: FormBuilder) {
     const name = this.name;
+    const updateOn = (this.props as any).updateOn;
     this.fb = fb || this.fb;
     const disabled = (this.props as any).disabled;
     let value = field || field === 0 || field === '' ? field : this.initialValue;
     if (disabled === true) {
       value = { value, disabled };
     }
-    return name ? { [name]: [value, (this.controlValidate || []).map((val: any) => val.patter)] } : {};
+    return name ? { [name]: [
+      value, {
+        validators: (this.controlValidate || []).filter((val: any) => !val.isAsync).map((val: any) => val.patter),
+        asyncValidators: (this.controlValidate || []).filter((val: any) => val.isAsync).map((val: any) => val.patter),
+        ...updateOn ? { updateOn } : {} // 'change'|'blur'|'submit'
+      }
+    ] } : {};
   }
 
   /**
