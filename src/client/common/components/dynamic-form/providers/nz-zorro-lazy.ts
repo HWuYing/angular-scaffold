@@ -10,6 +10,7 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTimePickerModule } from 'ng-zorro-antd/time-picker';
 import { UploadModule } from '../../upload/upload.module';
+import { DirectivesModule } from '../directives/directives.module';
 
 export const NzZorroImport = [
   NzButtonModule,
@@ -23,5 +24,6 @@ export const NzZorroImport = [
   NzCheckboxModule,
   NzInputNumberModule,
   NzTimePickerModule,
-  UploadModule
+  UploadModule,
+  DirectivesModule
 ];

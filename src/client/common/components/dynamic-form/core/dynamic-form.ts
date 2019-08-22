@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewContainerRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, EventEmitter, Input, NgModuleRef, OnDestroy, OnInit, Output, ViewContainerRef } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl,  FormGroup } from '@angular/forms';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { filter, startWith, switchMap, take, tap } from 'rxjs/operators';
@@ -22,17 +22,13 @@ export const factoryForm = (serializationConfig: SerializationConfig) => {
     private underFieldStore: any = {};
     private subscription: Subscription = new Subscription();
     private subject: Subject<void> = new Subject();
-    private submicAsync: Subscription;
     public validateForm: FormGroup;
-    private fb: FormBuilder;
+
     constructor(
-      private viewContainerRef: ViewContainerRef
-    ) {
-      this.fb = new FormBuilder();
-    }
+      private fb: FormBuilder
+    ) { }
 
     ngOnInit() {
-      console.log(this.viewContainerRef);
       if (!this.validateForm) {
         this.resetValidateForm();
       }
@@ -208,5 +204,5 @@ export const factoryForm = (serializationConfig: SerializationConfig) => {
       '[class.dynamic-form]': `serialization.layout.nzLayout !== 'inline'`,
       '[class.dynamic-size-small]': `serialization.layout.size === 'small'`
     }
-  }), TemComponent, [ViewContainerRef]);
+  }), TemComponent, [FormBuilder]);
 };

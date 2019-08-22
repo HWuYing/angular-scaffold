@@ -38,10 +38,7 @@ export class DynamicFormService {
    * 价值NgModule
    */
   loadModuleSync(): [any, SerializationConfig, any] {
-    const serialization = SerializationConfig.factorySerializationConfig(this.config, {
-      size: 'small',
-      ...this.layout
-    }, this.nzLayout);
+    const serialization = SerializationConfig.factorySerializationConfig(this.config, this.layout, this.nzLayout);
     const hashKey = serialization.hashKey;
     if (temComponentFactoryCache[hashKey]) {
       return [temComponentFactoryCache[hashKey], serialization, this.templateMap];
