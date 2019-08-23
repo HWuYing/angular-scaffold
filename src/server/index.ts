@@ -1,5 +1,6 @@
 import path from 'path';
 import express, { Request, Response, NextFunction} from 'express';
+import './vpn';
 import { renderServer } from './render/renderApp';
 import serializationSource, { Source } from './render/serializationSource';
 
