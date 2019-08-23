@@ -8,7 +8,7 @@ export const isArray = isType('Array');
 export type Handler = (...arg: any[]) => void;
 
 export class EventEmitter {
-  private events:  {[key: string]: any[]} = {};
+  protected events:  {[key: string]: any[]} = {};
   constructor() { }
 
   on(key: string, handler: Handler) {
