@@ -14,6 +14,7 @@ export const EVENT = {
 
 export class PackageManage {
   protected cursor: number = 0;
+  protected  isEnd: boolean = false;
   constructor(
     protected uid: string,
     protected packageSeparation: PackageSeparation,
@@ -24,10 +25,12 @@ export class PackageManage {
    * socket end事件注册
    * @param uid
    */
-  endCall = () => () => {
+  endCall = (sourceMap: Map) => () => {
     this.packageSeparation.immediatelySend(this.uid);
     // console.log(`------${this.type} end ${this.uid}------`);
-    this.packageSeparation.linkTitle(EVENT.END, uid, Buffer.alloc(0));
+    if (!this.isEnd) {
+      this.packageSeparation.linkTitle(EVENT.END, uid, Buffer.alloc(0));
+    }
   };
 
   /**
@@ -37,6 +40,7 @@ export class PackageManage {
   closeCall = (sourceMap: Map) => () => {
     // console.log(`------${this.type} close ${this.uid}------`);
     // this.packageSeparation.linkTitle(EVENT.CLOSE, uid, Buffer.alloc(0));
+    sourceMap.delete(this.uid);
   };
 
   /**
@@ -45,7 +49,9 @@ export class PackageManage {
    */
   errorCall = () => () => {
     // console.log(`------${this.type} error ${this.uid}------`);
-    this.packageSeparation.linkTitle(EVENT.ERROR, uid, Buffer.alloc(0));
+    if (!this.isEnd) {
+      this.packageSeparation.linkTitle(EVENT.ERROR, uid, Buffer.alloc(0));
+    }
   };
 
   distributeCall = (proxySocket: ProxySocket, sourceMap: Map) => ({ uid, data, type, cursor }: any) => {
@@ -62,6 +68,7 @@ export class PackageManage {
     }
 
     if (![EVENT.LINK, EVENT.DATA].includes(type)) {
+      this.isEnd = true;
       // console.log(`------${this.type} ${['link', 'data', 'close', 'error', 'end'][type]} ${cursor} ${uid}------`);
       sourceMap.delete(uid);
     }

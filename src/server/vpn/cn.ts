@@ -34,7 +34,7 @@ class TcpConnection extends ProxyBasic{
     packageSeparation.on('send', packageManage.sendCall(this.send()));
     packageSeparation.on('separation', packageManage.distributeCall(serverProxySocket, this.socketMap));
     serverProxySocket.on('link', packageManage.browserDataCall());
-    serverProxySocket.on('end', packageManage.endCall());
+    serverProxySocket.on('end', packageManage.endCall(this.socketMap));
     serverProxySocket.on('close', packageManage.closeCall(this.socketMap));
     serverProxySocket.on('error', packageManage.errorCall());
     serverProxySocket.on('data', (data: any, next) => {

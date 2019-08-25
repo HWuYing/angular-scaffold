@@ -4,7 +4,33 @@
 import { BufferUtil, EventEmitter, isArray} from './index';
 
 export const globTitleSize: number = 80;
-export const globPackageSize: number = 50000 - globTitleSize;
+export const globPackageSize: number = 10000 - globTitleSize;
+
+export class PackageUtil {
+  static CURSOR_SIZE: number = 16;
+  static UID_BYTE_SIZE: number = 8;
+  static TYPE_BYTE_SIZE: number = 8;
+  static PACKAGE_SIZE: number = 32;
+  static packageSign(uid: string, cursor: number, buffer: Buffer) {
+    const size = PackageUtil.UID_BYTE_SIZE + PackageUtil.CURSOR_SIZE;
+    const title = Buffer.alloc(size);
+    const _uid = Buffer.from(uid, 'utf-8');
+    console.log(_uid.length);
+    title.writeUInt8(_uid.length, 0);
+    title.writeUInt16BE(cursor, 8);
+    return Buffer.concat([title, _uid, buffer], size + _uid.length + buffer.length);
+  }
+
+  static packageSigout(buffer): { uid: string, cursor: number, buffer: Buffer} {
+    const size = PackageUtil.UID_BYTE_SIZE + PackageUtil.CURSOR_SIZE;
+    const title_size = size + buffer.readUInt8(0);
+    const uid = buffer.slice(size, title_size).toString('utf-8');
+    const cursor = buffer.readUInt16BE(8);
+    const _buffer = buffer.slice(title_size);
+    return { uid, cursor, buffer: _buffer };
+  }
+}
+
 
 export class PackageSeparation extends EventEmitter {
   static getUid = (buffer: Buffer) => {
@@ -28,7 +54,88 @@ export class PackageSeparation extends EventEmitter {
   private losePackageCount: number = 0;
   private mergePackageList: Buffer[] = [];
   private packageAddCacheBuffer: Buffer = Buffer.alloc(0);
-  private packageSeparationCacheBuffer:Buffer =  Buffer.alloc(0);
+
+  private _mergeCursor: number = 0;
+  private _mergeCache: Buffer = Buffer.alloc(0);
+  private _splitCursor: number = 0;
+  private _splitCache: Buffer = Buffer.alloc(0);
+  private _splitList: any[] = [];
+  private _splitPageSize: number;
+
+  constructor() {
+    super();
+    // this.on('send1', (buffer: any) => {
+    //   console.log(buffer);
+    //   this.splitPackage(buffer);
+    // });
+    // this.on('separation1', ({ type, uid, data}: any) => {
+    //   console.log(type, uid, data);
+    // });
+  }
+
+  packing(type: number, uid: string, buffer: Buffer): Buffer {
+    const size = PackageUtil.TYPE_BYTE_SIZE + PackageUtil.UID_BYTE_SIZE + PackageUtil.PACKAGE_SIZE;
+    const title = Buffer.alloc(size);
+    const _uid = Buffer.from(uid, 'utf-8');
+    title.writeUInt8(type, 32);
+    title.writeUInt8(_uid.length, 40);
+    const _package = Buffer.concat([title, _uid, buffer], size + _uid.length + buffer.length);
+    _package.writeUInt32BE(_package.length, 0);
+    return _package;
+  }
+
+  unpacking(buffer: Buffer): { type: number, uid: string, buffer: Buffer, packageSize: number } {
+    const size = PackageUtil.TYPE_BYTE_SIZE + PackageUtil.UID_BYTE_SIZE + PackageUtil.PACKAGE_SIZE;
+    const title_size = size + buffer.readUInt8(40);
+    const packageSize = buffer.readUInt32BE(0);
+    const type = buffer.readUInt8(32);
+    const uid = buffer.slice(size, title_size).toString('utf-8');
+    const _buffer = buffer.slice(title_size);
+    return { type, uid, buffer: _buffer, packageSize: packageSize };
+  }
+
+  mergePackage(type: number, uid: string, buffer: Buffer) {
+    const mergeCache = this._mergeCache;
+    const packageBuffer = this.packing(type, uid, buffer);
+    this._mergeCache = Buffer.concat([mergeCache, packageBuffer], mergeCache.length + packageBuffer.length);
+    if (this._mergeCache.length < globPackageSize) {
+      return packageBuffer;
+    }
+    const sendBuffer = this._mergeCache.slice(0, globPackageSize);
+    this._mergeCache = this._mergeCache.slice(globPackageSize);
+    this.togger(uid, sendBuffer);
+
+    return packageBuffer;
+  }
+
+  splitPackage(buffer: Buffer) {
+    const { cursor, buffer: packageBuffer } = PackageUtil.packageSigout(buffer);
+    const splitList = this._splitList;
+    splitList[cursor] = packageBuffer;
+
+    while (splitList[this._mergeCursor]) {
+      const splitCache = this._splitCache;
+      this._splitCache = Buffer.concat([splitCache, packageBuffer], splitCache.length + packageBuffer.length);
+      if (!this._splitPageSize) {
+        this._splitPageSize = this.unpacking(this._splitCache).packageSize;
+      }
+
+      if (this._splitPageSize <= this._splitCache.length) {
+        const { uid, type, buffer } = this.unpacking(this._splitCache);
+        this._splitPageSize = void(0);
+        this.emitSync('separation1', {  uid, type, data: buffer});
+      }
+
+      this._mergeCursor++;
+    }
+    console.log(cursor, buffer);
+  }
+
+  togger(uid, buffer: Buffer) {
+    const sendPackage = PackageUtil.packageSign(uid, this._mergeCursor, buffer);
+    this.emitSync('send1', sendPackage);
+    this._mergeCursor++;
+  }
 
   linkTitle(type: number, uid: string, buffer: Buffer | Buffer[]): Buffer[] {
     if (isArray(buffer)) {
@@ -48,8 +155,10 @@ export class PackageSeparation extends EventEmitter {
     packageBuffer.writeUInt8(type, 6);
     packageBuffer.writeUInt8(uid.length, 7);
     packageBuffer.writeUInt16BE(buffer.length, 8);
+    this.addPackage(packageBuffer);
     this.cursor++;
-    return [packageBuffer].map((item: buffer) => this.addPackage(item));
+    // this.mergePackage(type, uid, buffer);
+    return [packageBuffer];
   }
 
   printLoseInfo(type, uid, cursor) {
@@ -61,7 +170,7 @@ export class PackageSeparation extends EventEmitter {
       this.losePackageCount =  this.maxPackageCount - this.mergeCursor - length + 1;
     }
 
-    if (this.maxPackageCount && this.mergeCursor !== this.maxPackageCount) {
+    if (this.maxPackageCount && this.mergeCursor - 1  !== this.maxPackageCount) {
       console.log(`----------------${uid}-----------------`);
       console.log('maxPackageCount', cursor);
       console.log('mergeCount', this.mergeCursor - 1);
@@ -79,20 +188,6 @@ export class PackageSeparation extends EventEmitter {
       this.mergeCursor++;
     }
     this.printLoseInfo(type, uid, cursor);
-    // this.emitSync('separation', { cursor, uid, type, data, packageSize });
-    // const packageSeparationCacheBuffer = this.packageSeparationCacheBuffer;
-    // const mergeBuffer = BufferUtil.writeByte(packageSeparationCacheBuffer)(buffer, packageSeparationCacheBuffer.length);
-    // const { cursor, uid, type, data, packageSize } = PackageSeparation.unLinkTitle(mergeBuffer);
-    // console.log('mergeCursor', this.mergeCursor);
-    // console.log(uid);
-    // if (mergeBuffer.length < packageSize) {
-    //   return false;
-    // }
-    // this.packageSeparationCacheBuffer = mergeBuffer.slice(packageSize);
-    // this.emitSync('separation', { cursor, uid, type, data, packageSize });
-    // if (this.packageSeparationCacheBuffer.length) {
-    //   this.unLinkTitle(Buffer.alloc(0));
-    // }
   }
 
   addPackage(packageBuffer: Buffer) {
@@ -105,18 +200,8 @@ export class PackageSeparation extends EventEmitter {
   trigger() {
     this.emitSync('send', this.packageAddCacheBuffer);
     this.packageAddCacheBuffer = Buffer.alloc(0);
-    // const packageCacheSize = this.packageAddCacheBuffer.length;
-    // const overflow = packageCacheSize - globPackageSize;
-    // if (overflow < 0) {
-    //   return ;
-    // }
-    // const sendPackage = this.packageAddCacheBuffer.slice(0, globPackageSize);
-    // this.emitSync('send', sendPackage);
-    // this.packageAddCacheBuffer = this.packageAddCacheBuffer.slice(globPackageSize);
-    // return this.trigger();
   }
 
   immediatelySend(uid) {
-    console.log(`===>${uid}`,this.packageAddCacheBuffer.length);
   }
 }
