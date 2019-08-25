@@ -4,7 +4,7 @@
 import { BufferUtil, EventEmitter, isArray} from './index';
 
 export const globTitleSize: number = 80;
-export const globPackageSize: number = 9000 - globTitleSize;
+export const globPackageSize: number = 50000 - globTitleSize;
 
 export class PackageSeparation extends EventEmitter {
   static getUid = (buffer: Buffer) => {
@@ -24,9 +24,11 @@ export class PackageSeparation extends EventEmitter {
 
   private cursor: number = 0;
   private mergeCursor: number = 0;
+  private maxPackageCount: number;
+  private losePackageCount: number = 0;
   private mergePackageList: Buffer[] = [];
   private packageAddCacheBuffer: Buffer = Buffer.alloc(0);
-  private packageSeparationCacheBuffer: Buffer = Buffer.alloc(0);
+  private packageSeparationCacheBuffer:Buffer =  Buffer.alloc(0);
 
   linkTitle(type: number, uid: string, buffer: Buffer | Buffer[]): Buffer[] {
     if (isArray(buffer)) {
@@ -47,25 +49,36 @@ export class PackageSeparation extends EventEmitter {
     packageBuffer.writeUInt8(uid.length, 7);
     packageBuffer.writeUInt16BE(buffer.length, 8);
     this.cursor++;
-    return [packageBuffer].map((item: buffer) => this.addPackage(item, type));
+    return [packageBuffer].map((item: buffer) => this.addPackage(item));
   }
 
-  unLinkTitle(buffer: Buffer, isLog) {
-    const { cursor, uid, type, data, packageSize } = PackageSeparation.unLinkTitle(buffer);
-    this.mergePackageList[cursor] = { cursor, uid, type, data, packageSize };
-    if (isLog) {
-      console.log(uid);
-      console.log(cursor);
-      console.log(data.toString('utf-8'));
+  printLoseInfo(type, uid, cursor) {
+    if (type === 4 || this.maxPackageCount) {
+      if (type === 4) {
+        this.maxPackageCount = cursor;
+      }
+      const length = this.mergePackageList.filter((item) => !!item).length;
+      this.losePackageCount =  this.maxPackageCount - this.mergeCursor - length + 1;
     }
 
+    if (this.maxPackageCount && this.mergeCursor !== this.maxPackageCount) {
+      console.log(`----------------${uid}-----------------`);
+      console.log('maxPackageCount', cursor);
+      console.log('mergeCount', this.mergeCursor - 1);
+      console.log('losePackage', this.losePackageCount);
+    }
+  }
+
+  unLinkTitle(buffer: Buffer) {
+    const { cursor, uid, type, data, packageSize } = PackageSeparation.unLinkTitle(buffer);
+    this.mergePackageList[cursor] = { cursor, uid, type, data, packageSize };
+
     while (this.mergePackageList[this.mergeCursor]) {
-      if (isLog) {
-        // console.log(`--------------cn  cursor:${cursor} type:${['link', 'data', 'close', 'error', 'end'][type]}  ${uid}--------------------------`);
-      }
       this.emitSync('separation', this.mergePackageList[this.mergeCursor]);
+      this.mergePackageList[this.mergeCursor] = void(0);
       this.mergeCursor++;
     }
+    this.printLoseInfo(type, uid, cursor);
     // this.emitSync('separation', { cursor, uid, type, data, packageSize });
     // const packageSeparationCacheBuffer = this.packageSeparationCacheBuffer;
     // const mergeBuffer = BufferUtil.writeByte(packageSeparationCacheBuffer)(buffer, packageSeparationCacheBuffer.length);
@@ -82,17 +95,14 @@ export class PackageSeparation extends EventEmitter {
     // }
   }
 
-  addPackage(packageBuffer: Buffer, type) {
+  addPackage(packageBuffer: Buffer) {
     const writeByte = BufferUtil.writeByte(this.packageAddCacheBuffer);
     this.packageAddCacheBuffer = writeByte(packageBuffer, this.packageAddCacheBuffer.length);
-    this.trigger(type);
+    this.trigger();
     return packageBuffer;
   }
 
-  trigger(type) {
-    if (type === 0) {
-      // console.log(this.events);
-    }
+  trigger() {
     this.emitSync('send', this.packageAddCacheBuffer);
     this.packageAddCacheBuffer = Buffer.alloc(0);
     // const packageCacheSize = this.packageAddCacheBuffer.length;
@@ -102,15 +112,11 @@ export class PackageSeparation extends EventEmitter {
     // }
     // const sendPackage = this.packageAddCacheBuffer.slice(0, globPackageSize);
     // this.emitSync('send', sendPackage);
-    // const newCacheBuffer = Buffer.alloc(overflow);
-    // this.packageAddCacheBuffer.copy(newCacheBuffer, 0, overflow, packageCacheSize);
-    // this.packageAddCacheBuffer = newCacheBuffer;
+    // this.packageAddCacheBuffer = this.packageAddCacheBuffer.slice(globPackageSize);
+    // return this.trigger();
   }
 
-  immediatelySend() {
-    if (this.packageAddCacheBuffer.length) {
-      this.emitSync('send', this.packageAddCacheBuffer);
-      this.packageAddCacheBuffer = Buffer.alloc(0);
-    }
+  immediatelySend(uid) {
+    console.log(`===>${uid}`,this.packageAddCacheBuffer.length);
   }
 }
