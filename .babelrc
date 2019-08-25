@@ -13,15 +13,15 @@
   "plugins": [
     "@babel/plugin-syntax-dynamic-import",
     "@babel/plugin-syntax-import-meta",
-    "@babel/proposal-class-properties",
-    "@babel/proposal-object-rest-spread",
-    "@babel/plugin-transform-typescript",
     [
       "@babel/plugin-proposal-decorators",
       {
         "legacy": true
       }
-    ]
+    ],
+    "@babel/proposal-object-rest-spread",
+    "@babel/plugin-transform-typescript",
+    ["@babel/proposal-class-properties", { "loose" : true}]
   ],
   "sourceMaps": "inline",
   "retainLines": true

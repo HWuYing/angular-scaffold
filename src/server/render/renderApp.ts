@@ -20,11 +20,11 @@ export const renderServer = async (req: Request, res: Response, document: string
   const startTimer = new Date().getTime();
   return new Promise((resolve, reject) => render(req.path, { req, res,  document } as any, (error: any, html: string) => {
     if (error) {
-      console.log(error);
+      // console.log(error);
       next(error);
     } else {
-      console.log('[page path]:    '+ req.path);
-      console.log('[render timer]: ' + (new Date().getTime() - startTimer) + 'ms');
+      // console.log('[page path]:    '+ req.path);
+      // console.log('[render timer]: ' + (new Date().getTime() - startTimer) + 'ms');
       resolve(html);
     }
   }));

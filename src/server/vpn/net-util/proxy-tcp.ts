@@ -5,7 +5,7 @@ import { ProxySocket } from './proxy-socket';
 export class ProxyTcp extends ProxyEventEmitter {
   static createTcpServer = (port: number, connectListener: (socket: ProxySocket) => void) => {
     return new ProxyTcp(port, connectListener);
-  }
+  };
 
   private tcpServer: Server = this.source as Server;
 

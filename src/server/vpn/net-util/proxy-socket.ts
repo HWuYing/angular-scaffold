@@ -2,45 +2,37 @@ import { createConnection, Socket } from 'net';
 import { ProxyEventEmitter } from './proxy-event-emitter';
 
 export class ProxySocket extends ProxyEventEmitter {
-  static pipeFns: string[] = ['destroy', 'address'];
+  static pipeFns: string[] = ['destroy', 'address', 'write'];
+  static interceptEvents: string[] = ['data', 'end', 'error', 'close', 'connect'];
   static createSocketClient = (host: string, port: number): ProxySocket => {
     return new ProxySocket(createConnection({ host, port }));
-  }
+  };
   private socketEmit: (event: string, data: Buffer) => void;
+  private ended: boolean = false;
   [x: string]: any;
+
   constructor(public socket: Socket) {
     super(socket, ProxySocket.pipeFns);
     this.onInit();
-    this.associatedListener(['data', 'end', 'error', 'close']);
-    this.associatedListener('connect', true);
+    this.associatedListener(['data']);
+    this.associatedListener(['end', 'error', 'close', 'connect'], true);
     this.socketEmit = this.socket.emit;
     Object.defineProperty(this.socket, 'emit', {
-      get: () => {
-        return (...arg: any[]) => this.proxyEmit.apply(this, arg);
-      }
+      get: () => (...arg: any[]) => this.proxyEmit.apply(this, arg)
     });
   }
 
   private onInit() {
-    this.on('connect', () => console.log('proxy-->sock','连接成功'));
+    // this.on('connect', () => console.log('proxy-->sock','连接成功'));
   }
 
   private proxyEmit(event: string, data: Buffer) {
-    if (event === 'data') {
-      console.log(data);
-      console.log(this.emitAsync);
-      this.emitAsync(event, data);
+    if (ProxySocket.interceptEvents.includes(event)) {
+      // const result = this.emitSync(event, data);
+      event !== 'error' && this.socketEmit.call(this.socket, event, data);
     } else {
       this.socketEmit.call(this.socket, event, data);
     }
-  }
-
-  write(data: Buffer) {
-    this.socket.write(data);
-  }
-
-  end(data?: Buffer) {
-    this.socket.end(data);
   }
 
   pipe(proxySocket: ProxySocket | Socket) {
@@ -49,5 +41,12 @@ export class ProxySocket extends ProxyEventEmitter {
     } else {
       this.socket.pipe(proxySocket);
     }
+  }
+
+  end() {
+    if (!this.ended) {
+      this.socket.end();
+    }
+    this.ended = true;
   }
 }
