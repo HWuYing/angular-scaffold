@@ -17,7 +17,7 @@ export class ProxyUdpSocket extends ProxyEventEmitter {
   };
 
   private onInit() {
-    console.log('socket', this.socket.connect);
+    // console.log('socket', this.socket.connect);
     // this.socket.connect(this.port, this.host, (error: Error) => {
     //   this.emitSync('error', error);
     //   this.socket.disconnect();
