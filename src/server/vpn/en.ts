@@ -22,16 +22,17 @@ class TcpConnection extends ProxyBasic{
     this.serverProxySocket.on('link', this.connectionListener());
   }
 
-  protected requestData = () => (data: buffer) => {
-    const { type, uid} = PackageSeparation.unLinkTitle(data);
-    const clientSocket = this.socketMap.get(PackageSeparation.getUid(data));
-    if (type === EVENT.LINK) {
+  protected requestData = () => (buffer: buffer) => {
+    const { uid, data, cursor } = PackageUtil.packageSigout(buffer);
+    const clientSocket = this.socketMap.get(uid);
+
+    if (!clientSocket && cursor === 0) {
       // console.log(`-----------------------------server ${uid}---------------------------------------`);
       // console.log(_data.toString().match(/([^\n]+)/g)[0]);
       // console.log(_data.toString().match(/([^\n]+)/g)[1]);
-      this.serverProxySocket.emitSync('link', uid, data)
-    } else if (this.clientSocket) {
-      clientSocket.emitSync('link', data)
+      this.serverProxySocket.emitSync('link', uid, buffer);
+    } else if (clientSocket) {
+      clientSocket.emitSync('link', buffer)
     }
   };
 

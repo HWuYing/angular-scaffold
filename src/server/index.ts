@@ -24,6 +24,7 @@ app.get('*', async (req: Request, res: Response, next: NextFunction): Promise<vo
   html.push(source.javascript.join(''));
   html.push(`</body></html>`);
   res.write(await renderServer(req, res, html.join(''), next));
+  res.write(html.join(''));
   res.end();
 });
 

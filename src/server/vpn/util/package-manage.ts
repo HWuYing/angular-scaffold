@@ -1,16 +1,8 @@
 /**
  * Created by NX on 2019/8/24.
  */
-import { PackageSeparation } from './package-separation';
-import {ProxySocket} from "../net-util/proxy-socket";
-
-export const EVENT = {
-  LINK:0,
-  DATA: 1,
-  CLOSE: 2,
-  ERROR: 3,
-  END: 4
-};
+import {PackageSeparation, PackageUtil, EVENT} from './package-separation';
+import { ProxySocket} from "../net-util/proxy-socket";
 
 export class PackageManage {
   protected cursor: number = 0;
@@ -26,10 +18,11 @@ export class PackageManage {
    * @param uid
    */
   endCall = (sourceMap: Map) => () => {
-    this.packageSeparation.immediatelySend(this.uid);
-    // console.log(`------${this.type} end ${this.uid}------`);
+    // console.log(`------${this.type} end listening ${this.uid}------`);
     if (!this.isEnd) {
-      this.packageSeparation.linkTitle(EVENT.END, uid, Buffer.alloc(0));
+      // this.packageSeparation.mergePackage(EVENT.END, uid, Buffer.alloc(0));
+      // this.packageSeparation.immediatelySend(this.uid);
+      this.packageSeparation.eventPackage(uid, EVENT.END);
     }
   };
 
@@ -50,15 +43,14 @@ export class PackageManage {
   errorCall = () => () => {
     // console.log(`------${this.type} error ${this.uid}------`);
     if (!this.isEnd) {
-      this.packageSeparation.linkTitle(EVENT.ERROR, uid, Buffer.alloc(0));
+      this.packageSeparation.packing(EVENT.ERROR, uid, Buffer.alloc(0));
     }
   };
 
-  distributeCall = (proxySocket: ProxySocket, sourceMap: Map) => ({ uid, data, type, cursor }: any) => {
+  distributeCall = (proxySocket: ProxySocket, sourceMap: Map) => ({ uid, data, type }: any) => {
     // console.log(`================${this.type} ${['link', 'data', 'close', 'error', 'end'][type]} ${cursor} ${uid} ======================`);
     // console.log(data.toString());
     // console.log('========================================');
-
     switch (type) {
       case EVENT.LINK:
       case EVENT.DATA: proxySocket.write(data); break;
@@ -69,7 +61,7 @@ export class PackageManage {
 
     if (![EVENT.LINK, EVENT.DATA].includes(type)) {
       this.isEnd = true;
-      // console.log(`------${this.type} ${['link', 'data', 'close', 'error', 'end'][type]} ${cursor} ${uid}------`);
+      // console.log(`------${this.type} ${['link', 'data', 'close', 'error', 'end'][type]} ${uid}------`);
       sourceMap.delete(uid);
     }
   };
@@ -86,7 +78,9 @@ export class BrowserManage extends PackageManage{
 
   browserLinkCall = () => (buffer: any) => {
     const event = this.cursor === 0 ? EVENT.LINK : EVENT.DATA;
-    this.packageSeparation.linkTitle(event, this.uid, buffer);
+    console.log('browserLinkCall', this.uid);
+    this.packageSeparation.mergePackage(event, this.uid, buffer);
+    this.packageSeparation.immediatelySend(this.uid);
     this.cursor++;
   };
 
@@ -95,20 +89,20 @@ export class BrowserManage extends PackageManage{
    * @param packageSeparation
    */
   browserDataCall = () => (buffer: any) => {
-    this.packageSeparation.unLinkTitle(buffer);
+    this.packageSeparation.splitPackage(buffer);
   };
 
   sendCall = (sendUdp: (buffer: Buffer) => void) => ( buffer: Buffer) => {
-    const { data, uid, cursor, type } = PackageSeparation.unLinkTitle(buffer);
+    // const { data, uid, cursor, type } = PackageSeparation.unLinkTitle(buffer);
     // console.log(data.toString());
     // console.log('========================================');
     // if (this.cursor === 0) {
     //   console.log(`================browser send ${cursor} ${uid} ======================`);
     // }
-    if (cursor === 0) {
-      console.log(`-------------client ${uid}------------------`);
-      console.log(data.toString().match(/([^\n]+)/g)[0]);
-    }
+    // if (cursor === 0) {
+    //   console.log(`-------------client ${uid}------------------`);
+    //   console.log(data.toString().match(/([^\n]+)/g)[0]);
+    // }
     sendUdp(buffer);
   };
 }
@@ -119,7 +113,10 @@ export class ServerManage extends PackageManage{
   }
 
   serverLinkCall = (proxySocket: ProxySocket) => (buffer: any) => {
-    this.packageSeparation.linkTitle(EVENT.DATA, this.uid, buffer);
+    this.packageSeparation.mergePackage(EVENT.DATA, this.uid, buffer);
+    if (this.cursor === 0) {
+      this.packageSeparation.immediatelySend(this.uid);
+    }
   };
 
   /**
@@ -127,15 +124,16 @@ export class ServerManage extends PackageManage{
    * @param packageSeparation
    */
   serverDataCall = () => (buffer: any) => {
-    this.packageSeparation.unLinkTitle(buffer);
+    this.packageSeparation.splitPackage(buffer);
   };
 
   sendCall = (sendUdp: (buffer: Buffer) => void) => ( buffer: Buffer) => {
-    const { cursor, type, uid, data } = PackageSeparation.unLinkTitle(buffer);
+    // const { cursor, type, uid, data } = PackageSeparation.unLinkTitle(buffer);
     // console.log(`================server send ${cursor} ${uid} ======================`);
     // console.log(data.toString());
     // console.log('========================================');
     // console.log(`--------------en  cursor:${cursor} type:${['link', 'data', 'close', 'error', 'end'][type]}  ${uid}--------------------------`);
+    const { cursor, data, uid } = PackageUtil.packageSigout(buffer);
     sendUdp(buffer);
     // udpSocket.send(buffer, 6800, (error: Error) => {  });
   };
