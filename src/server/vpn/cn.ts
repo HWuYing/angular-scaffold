@@ -9,7 +9,7 @@ class TcpConnection extends ProxyBasic{
   private socketMap: Map =  new Map();
   constructor() {
     super();
-    this.createUdpSocket(6800, 10)
+    this.createUdpSocket(6800, 6900, 10)
   }
 
   responseData = () => (data: Buffer) => {
@@ -19,8 +19,8 @@ class TcpConnection extends ProxyBasic{
     }
   };
 
-  protected createUdpSocket(port: number, count: number) {
-    super.createUdpSocket(port, count);
+  protected createUdpSocket(port: number, connectPort: number, count: number) {
+    super.createUdpSocket(port, connectPort, count);
     this.udpServerList.forEach((server: ProxyUdpServer) => {
       server.on('data', this.responseData());
     });
@@ -31,7 +31,6 @@ class TcpConnection extends ProxyBasic{
     const packageSeparation = new PackageSeparation();
     const packageManage = new BrowserManage(uid, packageSeparation);
     this.socketMap.set(uid, serverProxySocket);
-
     packageSeparation.on('send', packageManage.sendCall(this.send()));
     packageSeparation.on('separation', packageManage.distributeCall(serverProxySocket, this.socketMap));
     serverProxySocket.on('link', packageManage.browserDataCall());
@@ -39,9 +38,9 @@ class TcpConnection extends ProxyBasic{
     serverProxySocket.on('close', packageManage.closeCall(this.socketMap));
     serverProxySocket.on('error', packageManage.errorCall());
     serverProxySocket.on('data', (data: any, next) => {
-      console.log(`-----------------------------client ${uid}---------------------------------------`);
-      console.log(data.toString().match(/([^\n]+)/g)[0]);
-      console.log(data.toString().match(/([^\n]+)/g)[1]);
+      // console.log(`-------------client ${uid}------------------`);
+      // console.log(data.toString().match(/([^\n]+)/g)[0]);
+      // console.log(data.toString().match(/([^\n]+)/g)[1]);
       next(data);
     });
     serverProxySocket.on('data', packageManage.browserLinkCall());

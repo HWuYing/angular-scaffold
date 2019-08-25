@@ -10,10 +10,10 @@ export class ProxyBasic {
   protected udpClientList: ProxyUdpSocket[] = [];
   constructor() { }
 
-  protected createUdpSocket(port: number, count: number) {
-    new Array(count).fill(port).map((item: number, index: number) => {
-      this.udpServerList.push(createUdpServer(port + index));
-      this.udpClientList.push(createSocketClient('127.0.0.1', 6900 + index));
+  protected createUdpSocket(listeningPort: number, connectPort: number, count: number) {
+    new Array(count).fill(listeningPort).map((item: number, index: number) => {
+      this.udpServerList.push(createUdpServer(item + index));
+      this.udpClientList.push(createSocketClient('127.0.0.1', connectPort + index));
     });
   }
 

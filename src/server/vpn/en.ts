@@ -11,11 +11,11 @@ class TcpConnection extends ProxyBasic{
 
   constructor() {
     super();
-    this.createUdpSocket(6900, 10);
+    this.createUdpSocket(6900, 6800, 10);
   }
 
-  protected createUdpSocket(port: number, count: number) {
-    super.createUdpSocket(port, count);
+  protected createUdpSocket(port: number, connectPort: number, count: number) {
+    super.createUdpSocket(port, connectPort, count);
     this.udpServerList.forEach((server: ProxyUdpServer) => {
       server.on('data', this.requestData());
     });
@@ -26,9 +26,9 @@ class TcpConnection extends ProxyBasic{
     const { type, uid, data: _data } = PackageSeparation.unLinkTitle(data);
     const clientSocket = this.socketMap.get(PackageSeparation.getUid(data));
     if (type === EVENT.LINK) {
-      console.log(`-----------------------------server ${uid}---------------------------------------`);
-      console.log(_data.toString().match(/([^\n]+)/g)[0]);
-      console.log(_data.toString().match(/([^\n]+)/g)[1]);
+      // console.log(`-----------------------------server ${uid}---------------------------------------`);
+      // console.log(_data.toString().match(/([^\n]+)/g)[0]);
+      // console.log(_data.toString().match(/([^\n]+)/g)[1]);
     }
     type === EVENT.LINK ? this.serverProxySocket.emitSync('link', uid, data) : clientSocket.emitSync('link', data);
   };
