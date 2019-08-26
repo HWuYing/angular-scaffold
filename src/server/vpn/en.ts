@@ -10,7 +10,7 @@ class TcpConnection extends ProxyBasic{
 
   constructor() {
     super('en');
-    this.createUdpSocket(6900, 6800, 10);
+    this.createUdpSocket(6900, 6800, 7);
   }
 
   protected createUdpSocket(port: number, connectPort: number, count: number) {

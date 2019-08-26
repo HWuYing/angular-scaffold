@@ -4,7 +4,6 @@
 import { ProxyUdpServer, createUdpServer  } from './net-util/proxy-udp';
 import { ProxyUdpSocket, createSocketClient } from './net-util/proxy-udp-socket';
 import { ProxySocket } from './net-util';
-import { buffer } from 'rxjs/operators';
 import { PackageUtil } from './util/package-separation';
 
 export class ProxyBasic {
@@ -31,7 +30,6 @@ export class ProxyBasic {
   }
 
   protected send = () => (data: Buffer | Buffer[]) => {
-    console.log(++this.count);
     data.forEach((buffer: any, index: number) => {
       this.write(buffer, this.getCursor());
     });

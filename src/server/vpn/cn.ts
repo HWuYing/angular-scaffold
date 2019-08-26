@@ -8,7 +8,7 @@ import { ProxyBasic } from './proxy-basic';
 class TcpConnection extends ProxyBasic{
   constructor() {
     super('cn');
-    this.createUdpSocket(6800, 6900, 10);
+    this.createUdpSocket(6800, 6900, 7);
   }
 
   responseData = () => (buffer: Buffer) => {
@@ -40,7 +40,7 @@ class TcpConnection extends ProxyBasic{
     serverProxySocket.on('data', (data: any, next) => {
       const matchList = data.toString().match(/([^\n\r]+)/g);
       console.log(`-------------client ${uid}------------------`);
-      console.log(matchList[1] + ' '+ matchList[0]);
+      // console.log(matchList[1] + ' '+ matchList[0]);
       next(data);
     });
     serverProxySocket.on('data', packageManage.browserLinkCall());
