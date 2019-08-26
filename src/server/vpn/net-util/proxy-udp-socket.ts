@@ -13,16 +13,7 @@ export class ProxyUdpSocket extends ProxyEventEmitter {
   constructor(public host: string, public port: number) {
     super(createSocket("udp4"));
     this.associatedListener(['connect', 'error'], true);
-    this.onInit();
   };
-
-  private onInit() {
-    // console.log('socket', this.socket.connect);
-    // this.socket.connect(this.port, this.host, (error: Error) => {
-    //   this.emitSync('error', error);
-    //   this.socket.disconnect();
-    // });
-  }
 
   write(buffer: Buffer | Buffer[]) {
     this.socket.send(buffer, this.port, this.host, (error: Error) => {

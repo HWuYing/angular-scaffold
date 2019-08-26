@@ -6,13 +6,7 @@ import { EventEmitter} from './index';
 export const globTitleSize: number = 80;
 export const globPackageSize: number = 4000 - globTitleSize;
 
-export const EVENT = {
-  LINK:0,
-  DATA: 1,
-  CLOSE: 2,
-  ERROR: 3,
-  END: 4
-};
+export const EVENT = { LINK:0, DATA: 1, CLOSE: 2, ERROR: 3, END: 4 };
 
 export class PackageUtil {
   static CURSOR_SIZE: number = 16;
@@ -81,7 +75,7 @@ export class PackageSeparation extends EventEmitter {
   private mergeCache: Buffer = Buffer.alloc(0);
   private splitCursor: number = 0;
   private splitCache: Buffer = Buffer.alloc(0);
-  private splitList: any[] = [];
+  private splitList: Map<number, Buffer> = new Map();
   private splitPageSize: number;
   private lossPacketCount: number;
   private maxPackageCount: number;
@@ -99,12 +93,13 @@ export class PackageSeparation extends EventEmitter {
     const mergeCache = this.mergeCache;
     const packageBuffer = this.packing(type, uid, buffer);
     this.mergeCache = Buffer.concat([mergeCache, packageBuffer], mergeCache.length + packageBuffer.length);
+    const mergeList: Buffer[] = [];
     while (this.mergeCache.length > globPackageSize) {
       const sendBuffer = this.mergeCache.slice(0, globPackageSize);
       this.mergeCache = this.mergeCache.slice(globPackageSize);
-      this.send(uid, sendBuffer);
+      mergeList.push(sendBuffer);
     }
-
+    mergeList.length !== 0 ?this.send(uid, mergeList) : null;
     return packageBuffer;
   }
 
@@ -114,10 +109,10 @@ export class PackageSeparation extends EventEmitter {
     const splitList = this.splitList;
     const size = PackageUtil.TYPE_BYTE_SIZE + PackageUtil.UID_BYTE_SIZE + PackageUtil.PACKAGE_SIZE;
     const type = isEvent ? PackageUtil.unEventPackage(data) : void(0);
-    splitList[cursor] = !isEvent ? data : this.packing(type, uid, Buffer.alloc(0));
-    while (splitList[this.splitCursor]) {
+    splitList.set(cursor, !isEvent ? data : this.packing(type, uid, Buffer.alloc(0)));
+    while (splitList.has(this.splitCursor)) {
       const splitCache = this.splitCache;
-      const packageBuffer = splitList[this.splitCursor];
+      const packageBuffer = splitList.get(this.splitCursor);
       this.splitCache = Buffer.concat([splitCache, packageBuffer], splitCache.length + packageBuffer.length);
 
       if (!this.splitPageSize && this.splitCache.length >= size) {
@@ -133,18 +128,20 @@ export class PackageSeparation extends EventEmitter {
           this.splitPageSize = this.unpacking(this.splitCache).packageSize;
         }
       }
-      this.splitList[this.splitCursor] = void(0);
+      this.splitList.delete(this.splitCursor);
       this.splitCursor++;
     }
     this.printLoseInfo(uid, cursor, type);
   }
 
-  send(uid: string, buffer: Buffer) {
-    if (buffer.length !== 0) {
-      const sendPackage = PackageUtil.packageSign(uid, this.mergeCursor, buffer);
-      this.emitSync('send', sendPackage);
+  send(uid: string, buffer: Buffer | Buffer[]) {
+    const bufferList = (Array.isArray(buffer) ? buffer : [buffer]).filter(_buffer => _buffer.length !== 0).map((_buffer) => {
+      const sendPackage = PackageUtil.packageSign(uid, this.mergeCursor, _buffer);
+      // this.emitSync('send', sendPackage);
       this.mergeCursor++;
-    }
+      return sendPackage;
+    });
+    this.emitSync('send', bufferList);
   }
 
   eventPackage(uid: string, type: number) {
@@ -156,9 +153,8 @@ export class PackageSeparation extends EventEmitter {
   printLoseInfo(uid: string, cursor: number, type?: number) {
     if (type === 4 || this.maxPackageCount) {
       if (type === 4) {
-        const length = this.splitList.filter((item) => !!item).length;
         this.maxPackageCount = cursor;
-        this.lossPacketCount =  this.maxPackageCount - this.splitCursor - length + 1;
+        this.lossPacketCount =  this.maxPackageCount - this.splitCursor - this.splitList.size + 1;
       } else {
         this.lossPacketCount--;
       }
@@ -167,8 +163,9 @@ export class PackageSeparation extends EventEmitter {
     if (this.maxPackageCount && this.splitCursor  !== this.maxPackageCount) {
       console.log(`----------------${uid}-----------------`);
       console.log('maxPackageCount:', cursor);
-      console.log('splitCursor:', this.splitCursor > 0 ? this.splitCursor - 1 : 0);
+      console.log('receivePackage:', this.maxPackageCount - this.lossPacketCount);
       console.log('losePackage:', this.lossPacketCount);
+      console.log('waitingPackage:', this.maxPackageCount >= this.splitCursor);
     }
   }
 

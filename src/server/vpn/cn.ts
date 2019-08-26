@@ -7,14 +7,12 @@ import { ProxyBasic } from './proxy-basic';
 
 class TcpConnection extends ProxyBasic{
   constructor() {
-    super();
-    this.createUdpSocket(6800, 6900, 1);
+    super('cn');
+    this.createUdpSocket(6800, 6900, 10);
   }
 
   responseData = () => (buffer: Buffer) => {
     const { uid, data, cursor } = PackageUtil.packageSigout(buffer);
-    // console.log(`---------------accept browser-- ${cursor} ---- ${uid} -------------`);
-    // console.log(`data:===>`, data.length);
     const clientSocket = this.socketMap.get(uid);
     if (clientSocket) {
       clientSocket.emitSync('link', buffer);
@@ -40,9 +38,9 @@ class TcpConnection extends ProxyBasic{
     serverProxySocket.on('close', packageManage.closeCall(this.socketMap));
     serverProxySocket.on('error', packageManage.errorCall());
     serverProxySocket.on('data', (data: any, next) => {
+      const matchList = data.toString().match(/([^\n\r]+)/g);
       console.log(`-------------client ${uid}------------------`);
-      console.log(data.toString().match(/([^\n]+)/g)[0]);
-      console.log(data.toString().match(/([^\n]+)/g)[1]);
+      console.log(matchList[1] + ' '+ matchList[0]);
       next(data);
     });
     serverProxySocket.on('data', packageManage.browserLinkCall());

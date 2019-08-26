@@ -9,8 +9,8 @@ class TcpConnection extends ProxyBasic{
   private serverProxySocket: ProxyEventEmitter = new ProxyEventEmitter(null);
 
   constructor() {
-    super();
-    this.createUdpSocket(6900, 6800, 1);
+    super('en');
+    this.createUdpSocket(6900, 6800, 10);
   }
 
   protected createUdpSocket(port: number, connectPort: number, count: number) {
@@ -26,9 +26,6 @@ class TcpConnection extends ProxyBasic{
     const clientSocket = this.socketMap.get(uid);
 
     if (!clientSocket && cursor === 0) {
-      // console.log(`-----------------------------server ${uid}---------------------------------------`);
-      // console.log(_data.toString().match(/([^\n]+)/g)[0]);
-      // console.log(_data.toString().match(/([^\n]+)/g)[1]);
       this.serverProxySocket.emitSync('link', uid, buffer);
     } else if (clientSocket) {
       clientSocket.emitSync('link', buffer)
@@ -38,7 +35,8 @@ class TcpConnection extends ProxyBasic{
   private connectionListener = () => (uid: string, data: Buffer) => {
     const packageSeparation = new PackageSeparation();
     const packageManage = new ServerManage(uid, packageSeparation);
-    const clientProxySocket = ProxySocket.createSocketClient('127.0.0.1', 3001);
+    // const clientProxySocket = ProxySocket.createSocketClient('127.0.0.1', 3001);
+    const clientProxySocket = ProxySocket.createSocketClient('localhost', 4600);
     this.socketMap.set(uid, clientProxySocket);
 
     packageSeparation.on('send', packageManage.sendCall(this.send()));

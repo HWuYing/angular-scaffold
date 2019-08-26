@@ -43,14 +43,11 @@ export class PackageManage {
   errorCall = () => () => {
     // console.log(`------${this.type} error ${this.uid}------`);
     if (!this.isEnd) {
-      this.packageSeparation.packing(EVENT.ERROR, this.uid, Buffer.alloc(0));
+      this.packageSeparation.eventPackage(this.uid, EVENT.ERROR);
     }
   };
 
   distributeCall = (proxySocket: ProxySocket, sourceMap: Map<string, ProxySocket>) => ({ uid, data, type }: any) => {
-    // console.log(`================${this.type} ${['link', 'data', 'close', 'error', 'end'][type]} ${cursor} ${uid} ======================`);
-    // console.log(data.toString());
-    // console.log('========================================');
     switch (type) {
       case EVENT.LINK:
       case EVENT.DATA: proxySocket.write(data); break;
@@ -101,6 +98,8 @@ export class ServerManage extends PackageManage{
 
   serverLinkCall = () => (buffer: any) => {
     this.packageSeparation.mergePackage(EVENT.DATA, this.uid, buffer);
+    this.packageSeparation.immediatelySend(this.uid);
+    
   };
 
   /**
@@ -108,13 +107,12 @@ export class ServerManage extends PackageManage{
    * @param packageSeparation
    */
   serverDataCall = () => (buffer: any) => {
+    const { uid, cursor } = PackageUtil.packageSigout(buffer);
+    console.log(`-------------server ${uid} ${cursor}------------------`);
     this.packageSeparation.splitPackage(buffer);
   };
 
-  sendCall = (sendUdp: (buffer: Buffer) => void) => ( buffer: Buffer) => {
-    const { cursor, data, uid } = PackageUtil.packageSigout(buffer);
-    // console.log(`---en length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
+  sendCall = (sendUdp: (buffer: Buffer[]) => void) => ( buffer: Buffer[]) => {
     sendUdp(buffer);
-    // udpSocket.send(buffer, 6800, (error: Error) => {  });
   };
 }
