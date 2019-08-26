@@ -1,16 +1,16 @@
 import { ProxySocket } from './net-util';
-import { ProxyEventEmitter } from './net-util/proxy-event-emitter';
 import { ServerManage } from './util/package-manage';
 import { PackageSeparation, PackageUtil } from './util/package-separation';
 import { ProxyUdpServer  } from './net-util/proxy-udp';
 import { ProxyBasic } from './proxy-basic';
+import {ProxyTcp} from "./net-util/proxy-tcp";
 
-class TcpConnection extends ProxyBasic{
-  private serverProxySocket: ProxyEventEmitter = new ProxyEventEmitter(null);
-
+class ServerProxy extends ProxyBasic {
+  private tcpEventServer: ProxyTcp;
   constructor() {
     super('en');
-    this.createUdpSocket(6900, 6800, 7);
+    this.createUdpSocket(6900, 6800, 15);
+    this.createTcpEventServer(8000);
   }
 
   protected createUdpSocket(port: number, connectPort: number, count: number) {
@@ -18,25 +18,41 @@ class TcpConnection extends ProxyBasic{
     this.udpServerList.forEach((server: ProxyUdpServer) => {
       server.on('data', this.requestData());
     });
-    this.serverProxySocket.on('link', this.connectionListener());
   }
 
-  protected requestData = () => (buffer: Buffer) => {
-    const { uid, data, cursor } = PackageUtil.packageSigout(buffer);
-    const clientSocket = this.socketMap.get(uid);
+  private createTcpEventServer(port: number) {
+    let count = 0;
+    ProxyTcp.createTcpServer(port, (proxySocket: ProxySocket) => {
+      if (this.tcpEventServer) { }
+      this.tcpEventServer = proxySocket;
+      this.tcpEventServer.on('link', this.connectionListener());
+      this.tcpEventServer.on('data', (buffer: Buffer) => {
+        const { uid } = PackageUtil.packageSigout(buffer);
+        console.log(`--------------server connection ${ uid }----------------`);
+        this.tcpEventServer.emitSync('link', uid, buffer);
+      });
+    });
+  }
 
-    if (!clientSocket && cursor === 0) {
-      this.serverProxySocket.emitSync('link', uid, buffer);
-    } else if (clientSocket) {
+  protected  responseEvent = () => (buffer: Buffer) => {
+
+  };
+
+  protected requestData = () => (buffer: Buffer) => {
+    const { uid } = PackageUtil.packageSigout(buffer);
+    const clientSocket = this.socketMap.get(uid);
+    if (clientSocket) {
       clientSocket.emitSync('link', buffer)
+    } else {
+
     }
   };
 
   private connectionListener = () => (uid: string, data: Buffer) => {
     const packageSeparation = new PackageSeparation();
-    const packageManage = new ServerManage(uid, packageSeparation);
+    const packageManage = new ServerManage(uid, packageSeparation, this.responseEvent());
     // const clientProxySocket = ProxySocket.createSocketClient('127.0.0.1', 3001);
-    const clientProxySocket = ProxySocket.createSocketClient('localhost', 4600);
+    const clientProxySocket = ProxySocket.createSocketClient('localhost', 3001);
     this.socketMap.set(uid, clientProxySocket);
 
     packageSeparation.on('send', packageManage.sendCall(this.send()));
@@ -50,4 +66,4 @@ class TcpConnection extends ProxyBasic{
   };
 }
 
- new TcpConnection();
+new ServerProxy();

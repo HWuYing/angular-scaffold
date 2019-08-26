@@ -10,6 +10,7 @@ export class PackageManage {
   constructor(
     protected uid: string,
     protected packageSeparation: PackageSeparation,
+    protected notice: (buffer: Buffer) => void,
     protected type?: string
   ) { }
 
@@ -65,8 +66,8 @@ export class PackageManage {
 }
 
 export class BrowserManage extends PackageManage{
-  constructor(uid: string, packageSeparation: PackageSeparation) {
-    super(uid, packageSeparation, 'browser');
+  constructor(uid: string, packageSeparation: PackageSeparation, notice: (buffer: Buffer) => void) {
+    super(uid, packageSeparation, notice, 'browser');
   }
 
   browserLinkCall = () => (buffer: any) => {
@@ -87,13 +88,13 @@ export class BrowserManage extends PackageManage{
   };
 
   sendCall = (sendUdp: (buffer: Buffer) => void) => ( buffer: Buffer) => {
-    sendUdp(buffer);
-  }
+    this.cursor === 0 ? this.notice(buffer) : sendUdp(buffer);
+  };
 }
 
 export class ServerManage extends PackageManage{
-  constructor(uid: string,packageSeparation: PackageSeparation) {
-    super(uid, packageSeparation, 'server ');
+  constructor(uid: string,packageSeparation: PackageSeparation, notice: (buffer: Buffer) => void) {
+    super(uid, packageSeparation, notice, 'server ');
   }
 
   serverLinkCall = () => (buffer: any) => {
@@ -108,8 +109,8 @@ export class ServerManage extends PackageManage{
    */
   serverDataCall = () => (buffer: any) => {
     const { uid, cursor } = PackageUtil.packageSigout(buffer);
-    console.log(`-------------server ${uid} ${cursor}------------------`);
     this.packageSeparation.splitPackage(buffer);
+    this.packageSeparation.immediatelySend(this.uid);
   };
 
   sendCall = (sendUdp: (buffer: Buffer[]) => void) => ( buffer: Buffer[]) => {

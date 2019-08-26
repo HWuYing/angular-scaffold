@@ -4,7 +4,7 @@
 import { EventEmitter} from './index';
 
 export const globTitleSize: number = 80;
-export const globPackageSize: number = 4000 - globTitleSize;
+export const globPackageSize: number = 12000 - globTitleSize;
 
 export const EVENT = { LINK:0, DATA: 1, CLOSE: 2, ERROR: 3, END: 4 };
 
