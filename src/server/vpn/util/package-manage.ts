@@ -85,7 +85,7 @@ export class BrowserManage extends PackageManage{
    */
   browserDataCall = () => (buffer: any) => {
     const { cursor, data, uid } = PackageUtil.packageSigout(buffer);
-    console.log(`---cn length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
+    // console.log(`---cn length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
     this.packageSeparation.splitPackage(buffer);
   };
 
@@ -113,7 +113,7 @@ export class ServerManage extends PackageManage{
 
   sendCall = (sendUdp: (buffer: Buffer) => void) => ( buffer: Buffer) => {
     const { cursor, data, uid } = PackageUtil.packageSigout(buffer);
-    console.log(`---en length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
+    // console.log(`---en length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
     sendUdp(buffer);
     // udpSocket.send(buffer, 6800, (error: Error) => {  });
   };

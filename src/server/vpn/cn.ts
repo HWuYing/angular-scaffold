@@ -8,7 +8,7 @@ import { ProxyBasic } from './proxy-basic';
 class TcpConnection extends ProxyBasic{
   constructor() {
     super();
-    this.createUdpSocket(6800, 6900, 1)
+    this.createUdpSocket(6800, 6900, 1);
   }
 
   responseData = () => (buffer: Buffer) => {

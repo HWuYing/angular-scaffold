@@ -4,7 +4,7 @@
 import { EventEmitter} from './index';
 
 export const globTitleSize: number = 80;
-export const globPackageSize: number = 10000 - globTitleSize;
+export const globPackageSize: number = 4000 - globTitleSize;
 
 export const EVENT = {
   LINK:0,
@@ -19,6 +19,30 @@ export class PackageUtil {
   static UID_BYTE_SIZE: number = 8;
   static TYPE_BYTE_SIZE: number = 8;
   static PACKAGE_SIZE: number = 32;
+
+
+  static packing(type: number, uid: string, buffer: Buffer): Buffer {
+    const size = PackageUtil.TYPE_BYTE_SIZE + PackageUtil.UID_BYTE_SIZE + PackageUtil.PACKAGE_SIZE;
+    const title = Buffer.alloc(size);
+    const _uid = Buffer.from(uid, 'utf-8');
+    title.writeUInt8(type, 4);
+    title.writeUInt8(_uid.length, 5);
+    const _package = Buffer.concat([title, _uid, buffer], size + _uid.length + buffer.length);
+    _package.writeUInt32BE(_package.length, 0);
+    return _package;
+  }
+
+  static unpacking(buffer: Buffer): { type: number, uid: string, buffer: Buffer, packageSize: number } {
+    const size = PackageUtil.TYPE_BYTE_SIZE + PackageUtil.UID_BYTE_SIZE + PackageUtil.PACKAGE_SIZE;
+    const packageSize = buffer.readUInt32BE(0);
+    const type = buffer.readUInt8(4);
+    const title_size = size + buffer.readUInt8(5);
+    const uid = buffer.slice(size, title_size).toString('utf-8');
+    const _buffer = buffer.slice(title_size);
+    return { type, uid, buffer: _buffer, packageSize: packageSize };
+  }
+
+
   static packageSign(uid: string, cursor: number, buffer: Buffer) {
     const size = PackageUtil.UID_BYTE_SIZE + PackageUtil.CURSOR_SIZE;
     const title = Buffer.alloc(size);
@@ -59,39 +83,24 @@ export class PackageSeparation extends EventEmitter {
   private splitCache: Buffer = Buffer.alloc(0);
   private splitList: any[] = [];
   private splitPageSize: number;
-  private mergeAll: number = 0;
-  private losePackageCount: number;
+  private lossPacketCount: number;
   private maxPackageCount: number;
+  // private buffer
 
-  packing(type: number, uid: string, buffer: Buffer): Buffer {
-    const size = PackageUtil.TYPE_BYTE_SIZE + PackageUtil.UID_BYTE_SIZE + PackageUtil.PACKAGE_SIZE;
-    const title = Buffer.alloc(size);
-    const _uid = Buffer.from(uid, 'utf-8');
-    title.writeUInt8(type, 4);
-    title.writeUInt8(_uid.length, 5);
-    const _package = Buffer.concat([title, _uid, buffer], size + _uid.length + buffer.length);
-    _package.writeUInt32BE(_package.length, 0);
-    return _package;
+  packing(type: number, uid: string, buffer: Buffer) {
+    return PackageUtil.packing(type, uid, buffer);
   }
 
-  unpacking(buffer: Buffer): { type: number, uid: string, buffer: Buffer, packageSize: number } {
-    const size = PackageUtil.TYPE_BYTE_SIZE + PackageUtil.UID_BYTE_SIZE + PackageUtil.PACKAGE_SIZE;
-    const packageSize = buffer.readUInt32BE(0);
-    const type = buffer.readUInt8(4);
-    const title_size = size + buffer.readUInt8(5);
-    const uid = buffer.slice(size, title_size).toString('utf-8');
-    const _buffer = buffer.slice(title_size);
-    return { type, uid, buffer: _buffer, packageSize: packageSize };
+  unpacking(buffer: Buffer) {
+    return PackageUtil.unpacking(buffer);
   }
 
   mergePackage(type: number, uid: string, buffer: Buffer) {
     const mergeCache = this.mergeCache;
     const packageBuffer = this.packing(type, uid, buffer);
     this.mergeCache = Buffer.concat([mergeCache, packageBuffer], mergeCache.length + packageBuffer.length);
-    this.mergeAll += buffer.length;
     while (this.mergeCache.length > globPackageSize) {
       const sendBuffer = this.mergeCache.slice(0, globPackageSize);
-      console.log(sendBuffer.length);
       this.mergeCache = this.mergeCache.slice(globPackageSize);
       this.send(uid, sendBuffer);
     }
@@ -139,7 +148,6 @@ export class PackageSeparation extends EventEmitter {
   }
 
   eventPackage(uid: string, type: number) {
-    console.log(type);
     this.immediatelySend(uid);
     this.send(uid, PackageUtil.eventPackage(type));
     this.mergeCache = Buffer.alloc(0);
@@ -150,17 +158,17 @@ export class PackageSeparation extends EventEmitter {
       if (type === 4) {
         const length = this.splitList.filter((item) => !!item).length;
         this.maxPackageCount = cursor;
-        this.losePackageCount =  this.maxPackageCount - this.splitCursor - length + 1;
+        this.lossPacketCount =  this.maxPackageCount - this.splitCursor - length + 1;
       } else {
-        this.losePackageCount--;
+        this.lossPacketCount--;
       }
     }
 
     if (this.maxPackageCount && this.splitCursor  !== this.maxPackageCount) {
       console.log(`----------------${uid}-----------------`);
-      console.log('maxPackageCount', cursor);
-      console.log('splitCursor', this.splitCursor > 0 ? this.splitCursor - 1 : 0);
-      console.log('losePackage', this.losePackageCount);
+      console.log('maxPackageCount:', cursor);
+      console.log('splitCursor:', this.splitCursor > 0 ? this.splitCursor - 1 : 0);
+      console.log('losePackage:', this.lossPacketCount);
     }
   }
 

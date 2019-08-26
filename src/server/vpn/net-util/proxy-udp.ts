@@ -15,22 +15,12 @@ export class ProxyUdpServer extends ProxyEventEmitter {
     this.listen(this.port);
     this.associatedListener(['error'], true);
   }
-
   private onInit() {
     this.udpServer.on('message', (msg: Buffer, rinfo: RemoteInfo) => {
       this.emitSync('data', msg, rinfo);
     });
     this.on('error', (error: Error) => {
       this.udpServer.close();
-    });
-  }
-
-  write(buffer: Buffer | Buffer[], port: number, host: string) {
-    this.udpServer.send(buffer, port, host, (error: Error) => {
-      if (error) {
-        console.log(error);
-        this.emitAsync('error', error);
-      }
     });
   }
 

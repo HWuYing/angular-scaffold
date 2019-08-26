@@ -28,8 +28,7 @@ export class ProxyBasic {
       if (cursor >= this.addressList.length) {
         cursor = 0;
       }
-      this.udpServerList[0].write(data, this.addressList[cursor].port, this.addressList[cursor].host);
-      // this.udpClientList[cursor].write(data);
+      this.udpClientList[cursor].write(data);
       cursor++;
     };
   }
