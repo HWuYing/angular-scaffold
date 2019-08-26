@@ -50,7 +50,7 @@ export class EventEmitter {
     return endResult;
   }
 
-  emitAsync(...arg: any[]): Ptomise<any> {
+  emitAsync(...arg: any[]): Promise<any> {
     const key = arg[0];
     if (!hasOwnProperty(this.events, key)) {
       return Promise.resolve(null);
@@ -88,14 +88,14 @@ export class BufferUtil {
     this.encoding = encoding || this.encoding;
   }
 
-  private writeByte(buffer: string | Buffer) {
-    const strBuffer = buffer instanceof Buffer ? buffer : Buffer.from(buffer, this.encoding);
+  private writeByte(buffer: string | Buffer | any[]) {
+    const strBuffer = buffer instanceof Buffer ? buffer : Buffer.from(buffer as string, this.encoding);
     const minByteLength = strBuffer.length + this.writeCursor;
     if (this.buffer.length < minByteLength) {
       this.buffer = Buffer.concat([this.buffer.slice(0, this.writeCursor), strBuffer], minByteLength);
     } else {
       if (strBuffer.length !== 0) {
-        this.buffer.write(strBuffer, this.writeCursor, strBuffer.length);
+        this.buffer.write(strBuffer.toString(this.encoding), this.writeCursor, strBuffer.length);
       }
     }
     this.writeCursor = minByteLength;
@@ -111,7 +111,7 @@ export class BufferUtil {
    * @param offset
    * @returns {Buffer}
    */
-  write(list: (string | Buffer)[], offset?: number) {
+  write(list: (string | Buffer)[], offset?: number): Buffer {
     this.writeCursor = offset || this.writeCursor;
     if(isArray(list)) {
       this.writeByteArray(list);
@@ -127,7 +127,7 @@ export class BufferUtil {
    * @param offset
    * @returns {Buffer}
    */
-  readByte(byteLength: number, offset?: number) {
+  readByte(byteLength: number, offset?: number): Buffer {
     const readCursor = offset || this.readCursor;
     this.readCursor = readCursor + byteLength;
     return this.buffer.slice(readCursor, this.readCursor);

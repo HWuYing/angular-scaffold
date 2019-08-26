@@ -7,8 +7,9 @@ import {ProxyEventEmitter} from "./proxy-event-emitter";
 export const createUdpServer = (port: number): ProxyUdpServer => new ProxyUdpServer(port);
 
 export class ProxyUdpServer extends ProxyEventEmitter {
-  private udpServer: Socket = this.source as Socket;
-  constructor(public port: bumber) {
+  private udpServer: Socket = this.source;
+  
+  constructor(public port: number) {
     super(createSocket('udp4'), ['close']);
     this.onInit();
     this.listen(this.port);
@@ -19,11 +20,24 @@ export class ProxyUdpServer extends ProxyEventEmitter {
     this.udpServer.on('message', (msg: Buffer, rinfo: RemoteInfo) => {
       this.emitSync('data', msg, rinfo);
     });
-    this.on('error', (error: Error) => this.socket.close());
+    this.on('error', (error: Error) => {
+      this.udpServer.close();
+    });
+  }
+
+  write(buffer: Buffer | Buffer[], port: number, host: string) {
+    this.udpServer.send(buffer, port, host, (error: Error) => {
+      if (error) {
+        console.log(error);
+        this.emitAsync('error', error);
+      }
+    });
   }
 
   listen(port: number) {
     this.udpServer.bind(port);
-    this.udpServer.on('listening', () => {  });
+    this.udpServer.on('listening', () => { 
+      console.info(`udp listening port ${port}`);
+    });
   }
 }

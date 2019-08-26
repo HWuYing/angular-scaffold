@@ -1,17 +1,16 @@
 import { ProxySocket } from './net-util';
 import { ProxyEventEmitter } from './net-util/proxy-event-emitter';
-import { ServerManage, EVENT } from './util/package-manage';
+import { ServerManage } from './util/package-manage';
 import { PackageSeparation, PackageUtil } from './util/package-separation';
 import { ProxyUdpServer  } from './net-util/proxy-udp';
 import { ProxyBasic } from './proxy-basic';
 
 class TcpConnection extends ProxyBasic{
-  private socketMap: Set = new Map();
   private serverProxySocket: ProxyEventEmitter = new ProxyEventEmitter(null);
 
   constructor() {
     super();
-    this.createUdpSocket(6900, 6800, 10);
+    this.createUdpSocket(6900, 6800, 1);
   }
 
   protected createUdpSocket(port: number, connectPort: number, count: number) {
@@ -22,7 +21,7 @@ class TcpConnection extends ProxyBasic{
     this.serverProxySocket.on('link', this.connectionListener());
   }
 
-  protected requestData = () => (buffer: buffer) => {
+  protected requestData = () => (buffer: Buffer) => {
     const { uid, data, cursor } = PackageUtil.packageSigout(buffer);
     const clientSocket = this.socketMap.get(uid);
 

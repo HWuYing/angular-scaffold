@@ -6,10 +6,9 @@ import { ProxyUdpServer  } from './net-util/proxy-udp';
 import { ProxyBasic } from './proxy-basic';
 
 class TcpConnection extends ProxyBasic{
-  private socketMap: Map =  new Map();
   constructor() {
     super();
-    this.createUdpSocket(6800, 6900, 10)
+    this.createUdpSocket(6800, 6900, 1)
   }
 
   responseData = () => (buffer: Buffer) => {

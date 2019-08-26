@@ -29,7 +29,7 @@ export class ProxyUdpSocket extends ProxyEventEmitter {
       if (error) {
         this.emitAsync('error', error);
         this.socket.close();
-        this.source = this.socket = createSocket();
+        this.source = this.socket = createSocket('udp4');
       }
     });
   }

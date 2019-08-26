@@ -28,7 +28,7 @@ export class PackageUtil {
     return Buffer.concat([title, _uid, buffer], size + _uid.length + buffer.length);
   }
 
-  static packageSigout(buffer): { uid: string, cursor: number, data: Buffer} {
+  static packageSigout(buffer: Buffer): { uid: string, cursor: number, data: Buffer} {
     const size = PackageUtil.UID_BYTE_SIZE + PackageUtil.CURSOR_SIZE;
     const title_size = size + buffer.readUInt8(0);
     const uid = buffer.slice(size, title_size).toString('utf-8');
@@ -60,6 +60,7 @@ export class PackageSeparation extends EventEmitter {
   private splitList: any[] = [];
   private splitPageSize: number;
   private mergeAll: number = 0;
+  private losePackageCount: number;
   private maxPackageCount: number;
 
   packing(type: number, uid: string, buffer: Buffer): Buffer {
@@ -90,8 +91,9 @@ export class PackageSeparation extends EventEmitter {
     this.mergeAll += buffer.length;
     while (this.mergeCache.length > globPackageSize) {
       const sendBuffer = this.mergeCache.slice(0, globPackageSize);
+      console.log(sendBuffer.length);
       this.mergeCache = this.mergeCache.slice(globPackageSize);
-      this.send(uid, sendBuffer)
+      this.send(uid, sendBuffer);
     }
 
     return packageBuffer;
@@ -104,7 +106,6 @@ export class PackageSeparation extends EventEmitter {
     const size = PackageUtil.TYPE_BYTE_SIZE + PackageUtil.UID_BYTE_SIZE + PackageUtil.PACKAGE_SIZE;
     const type = isEvent ? PackageUtil.unEventPackage(data) : void(0);
     splitList[cursor] = !isEvent ? data : this.packing(type, uid, Buffer.alloc(0));
-
     while (splitList[this.splitCursor]) {
       const splitCache = this.splitCache;
       const packageBuffer = splitList[this.splitCursor];
@@ -113,12 +114,11 @@ export class PackageSeparation extends EventEmitter {
       if (!this.splitPageSize && this.splitCache.length >= size) {
         this.splitPageSize = this.unpacking(this.splitCache).packageSize;
       }
-
       while (this.splitPageSize && this.splitPageSize <= this.splitCache.length) {
         const packageData = this.splitCache.slice(0, this.splitPageSize);
-        const { uid, type, buffer } = this.unpacking(packageData);
+        const { uid, type: packageType, buffer } = this.unpacking(packageData);
         this.splitCache = this.splitCache.slice(this.splitPageSize);
-        this.emitSync('separation', {  uid, type, data: buffer });
+        this.emitSync('separation', {  uid, type: packageType, data: buffer });
         this.splitPageSize = void(0);
         if (this.splitCache.length >= size) {
           this.splitPageSize = this.unpacking(this.splitCache).packageSize;
@@ -130,7 +130,7 @@ export class PackageSeparation extends EventEmitter {
     this.printLoseInfo(uid, cursor, type);
   }
 
-  send(uid, buffer: Buffer) {
+  send(uid: string, buffer: Buffer) {
     if (buffer.length !== 0) {
       const sendPackage = PackageUtil.packageSign(uid, this.mergeCursor, buffer);
       this.emitSync('send', sendPackage);
@@ -138,13 +138,14 @@ export class PackageSeparation extends EventEmitter {
     }
   }
 
-  eventPackage(uid, type) {
+  eventPackage(uid: string, type: number) {
+    console.log(type);
     this.immediatelySend(uid);
     this.send(uid, PackageUtil.eventPackage(type));
     this.mergeCache = Buffer.alloc(0);
   }
 
-  printLoseInfo(uid, cursor, type?: number) {
+  printLoseInfo(uid: string, cursor: number, type?: number) {
     if (type === 4 || this.maxPackageCount) {
       if (type === 4) {
         const length = this.splitList.filter((item) => !!item).length;
@@ -158,12 +159,12 @@ export class PackageSeparation extends EventEmitter {
     if (this.maxPackageCount && this.splitCursor  !== this.maxPackageCount) {
       console.log(`----------------${uid}-----------------`);
       console.log('maxPackageCount', cursor);
-      console.log('splitCursor', this.splitCursor - 1);
+      console.log('splitCursor', this.splitCursor > 0 ? this.splitCursor - 1 : 0);
       console.log('losePackage', this.losePackageCount);
     }
   }
 
-  immediatelySend(uid) {
+  immediatelySend(uid: string) {
     this.send(uid, this.mergeCache);
     this.mergeCache = Buffer.alloc(0);
   }

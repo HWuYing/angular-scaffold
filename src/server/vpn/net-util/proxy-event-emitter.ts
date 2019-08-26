@@ -2,7 +2,7 @@ import { Server, Socket } from 'net';
 import { EventEmitter, isArray} from '../util';
 
 export class ProxyEventEmitter extends EventEmitter {
-  constructor(public source: Socket | Server, protected mappingFnNames?: string[]) {
+  constructor(public source: any, protected mappingFnNames?: string[]) {
     super();
     this.mappingMethod();
   }
