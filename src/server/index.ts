@@ -2,7 +2,7 @@ import cluster from 'cluster';
 import { cpus } from 'os';
 
 if (cluster.isMaster) {
-  let workerLength = cpus().length;
+  let workerLength = 1; //cpus().length;
   
   while (workerLength > 0) {
     cluster.fork();
@@ -14,6 +14,7 @@ if (cluster.isMaster) {
     });
   }
   require('./service');
+  require('./vpn/master')
 } else {
-  require('./vpn/worker');
+  require('./vpn');
 }

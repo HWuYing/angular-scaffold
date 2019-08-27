@@ -1,6 +1,7 @@
 /**
  * Created by NX on 2019/8/25.
  */
+import { proxyProcess } from './proxy-process';
 import { Socket, createSocket, RemoteInfo } from 'dgram';
 import {ProxyEventEmitter} from "./proxy-event-emitter";
 
@@ -17,8 +18,9 @@ export class ProxyUdpServer extends ProxyEventEmitter {
   }
   private onInit() {
     this.udpServer.on('message', (msg: Buffer, rinfo: RemoteInfo) => {
-      this.emitSync('data', msg, rinfo);
+      proxyProcess.message(msg);
     });
+    
     this.on('error', (error: Error) => {
       this.udpServer.close();
     });
@@ -27,7 +29,7 @@ export class ProxyUdpServer extends ProxyEventEmitter {
   listen(port: number) {
     this.udpServer.bind(port);
     this.udpServer.on('listening', () => { 
-      console.info(`udp listening port ${port}`);
+      // console.info(`udp listening port ${port}`);
     });
   }
 }

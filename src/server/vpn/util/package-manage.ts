@@ -1,6 +1,7 @@
 /**
  * Created by NX on 2019/8/24.
  */
+import { proxyProcess } from '../net-util/proxy-process';
 import {PackageSeparation, PackageUtil, EVENT} from './package-separation';
 import { ProxySocket} from "../net-util/proxy-socket";
 
@@ -60,7 +61,8 @@ export class PackageManage {
     if (![EVENT.LINK, EVENT.DATA].includes(type)) {
       this.isEnd = true;
       console.log(`------${this.type} ${['link', 'data', 'close', 'error', 'end'][type]} ${uid}------`);
-      sourceMap.delete(uid);
+      proxyProcess.deleteUid(this.uid);
+      sourceMap.delete(this.uid);
     }
   };
 }
@@ -84,11 +86,12 @@ export class BrowserManage extends PackageManage{
   browserDataCall = () => (buffer: any) => {
     const { cursor, data, uid } = PackageUtil.packageSigout(buffer);
     console.log(`---cn length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
+    console.log(data.toString('utf-8'));
     this.packageSeparation.splitPackage(buffer);
   };
 
-  sendCall = (sendUdp: (buffer: Buffer[]) => void) => ( buffer: Buffer[]) => {
-    this.cursor === 0 ? this.notice(buffer) : sendUdp(buffer);
+  sendCall = (sendUdp: (buffer: Buffer[], uid?: string) => void) => ( buffer: Buffer[]) => {
+    this.cursor === 0 ? this.notice(buffer) : sendUdp(buffer, this.uid);
   };
 }
 
@@ -100,7 +103,6 @@ export class ServerManage extends PackageManage{
   serverLinkCall = () => (buffer: any) => {
     this.packageSeparation.mergePackage(EVENT.DATA, this.uid, buffer);
     this.packageSeparation.immediatelySend(this.uid);
-    
   };
 
   /**
@@ -113,7 +115,7 @@ export class ServerManage extends PackageManage{
     this.packageSeparation.immediatelySend(this.uid);
   };
 
-  sendCall = (sendUdp: (buffer: Buffer[]) => void) => ( buffer: Buffer[]) => {
-    sendUdp(buffer);
+  sendCall = (sendUdp: (buffer: Buffer[], uid?: string) => void) => ( buffer: Buffer[]) => {
+    sendUdp(buffer, this.uid);
   };
 }

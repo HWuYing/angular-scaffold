@@ -1,6 +1,6 @@
 import path from 'path';
 import express, { Request, Response, NextFunction} from 'express';
-import './vpn';
+// import './vpn';
 import { renderServer } from './render/renderApp';
 import serializationSource, { Source } from './render/serializationSource';
 
@@ -18,13 +18,13 @@ app.get('*', async (req: Request, res: Response, next: NextFunction): Promise<vo
   html.push(`<meta charset="utf-8">`);
   html.push(`<meta name="viewport" content="width=device-width, initial-scale=1">`);
   html.push(`<meta http-equiv="x-ua-compatible" content="ie=edge">`);
-  html.push(source.styleSheet.join(''));
+  // html.push(source.styleSheet.join(''));
   html.push(`</head><body>`);
   html.push(`<app-root></app-root>`);
-  html.push(source.javascript.join(''));
+  // html.push(source.javascript.join(''));
   html.push(`</body></html>`);
-  res.write(await renderServer(req, res, html.join(''), next));
-  // res.write(html.join(''));
+  // res.write(await renderServer(req, res, html.join(''), next));
+  res.write(html.join(''));
   res.end();
 });
 

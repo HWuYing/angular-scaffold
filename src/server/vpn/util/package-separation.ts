@@ -14,6 +14,20 @@ export class PackageUtil {
   static TYPE_BYTE_SIZE: number = 8;
   static PACKAGE_SIZE: number = 32;
 
+  static bindUid(uid: string, buffer: Buffer) {
+    const title = Buffer.alloc(PackageUtil.UID_BYTE_SIZE);
+    const uidBuf = Buffer.from(uid);
+    title.writeUInt8(uidBuf.length, 0);
+    return Buffer.concat([title, uidBuf, buffer], PackageUtil.UID_BYTE_SIZE + uidBuf.length + buffer.length);
+  }
+
+  static getUid(buffer: Buffer): { uid: string, buffer: Buffer} {
+    const size = PackageUtil.UID_BYTE_SIZE;
+    const titleSize = size + buffer.readUInt8(0);
+    const uid = buffer.slice(size, titleSize).toString('utf-8');
+    const packageBuf = buffer.slice(titleSize);
+    return { uid, buffer: packageBuf };
+  }
 
   static packing(type: number, uid: string, buffer: Buffer): Buffer {
     const size = PackageUtil.TYPE_BYTE_SIZE + PackageUtil.UID_BYTE_SIZE + PackageUtil.PACKAGE_SIZE;

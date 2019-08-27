@@ -23,15 +23,16 @@ export class ProxyBasic {
     });
   }
 
-  private write(buffer: Buffer, clientCursor: number) {
-    const { cursor, data, uid } = PackageUtil.packageSigout(buffer);
+  private write(buffer: Buffer, clientCursor: number, uid?: string) {
+    const { cursor, data } = PackageUtil.packageSigout(buffer);
     console.log(`---${this.serverName} length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
-    this.udpClientList[clientCursor].write(buffer);
+    console.log(data.toString('utf-8'));
+    this.udpClientList[clientCursor].write(buffer, uid);
   }
 
-  protected send = () => (data: Buffer | Buffer[]) => {
-    data.forEach((buffer: any, index: number) => {
-      this.write(buffer, this.getCursor());
+  protected send = (uid: string) => (data: Buffer | Buffer[]) => {
+    data.forEach((buffer: any) => {
+      this.write(buffer, this.getCursor(), uid);
     });
   };
 
