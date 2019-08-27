@@ -1,9 +1,12 @@
+import cluster from  'cluster';
 import { EventEmitter } from '../util/index';
 import { PackageUtil } from '../util/package-separation';
 
+
+
 export class WorkerManage extends EventEmitter {
   private uidSet: Set<string> = new Set();
-  constructor(private id: string, private worker: any) {
+  constructor(private worker: any) {
     super();
     this.onInit();
   }
@@ -16,30 +19,44 @@ export class WorkerManage extends EventEmitter {
     return this.uidSet.has(uid);
   }
 
-  private distributionWorker({ data }: any) {
-    const { uid, buffer } = PackageUtil.getUid(Buffer.from(data));
-    const runWorker = manageList.getWorker(uid);
-    // console.log('error--------->111');
-    // const { cursor, data: _data } = PackageUtil.packageSigout(buffer);
-    // console.log('cursor', cursor);
-    // console.log(PackageUtil.unpacking(_data));
+  private distributionResponseWorker(event: any) {
+    const { runWorker, buffer } = this.distributionWorker(event);
+    const { uid, cursor } = PackageUtil.packageSigout(buffer);
+    console.log(`------ master length: ${buffer.length} ${cursor} ${uid} -----`);
+    console.log(!!runWorker);
     if (runWorker) {
-      runWorker.send({ event: 'udp-message', data: buffer });
+      runWorker.send({ event: 'udp-response-message', data: buffer });
     } else {
       console.log('error--------->', runWorker);
     }
   }
 
+  private distributionRequestWorker(event: any) {
+    const { runWorker, buffer } = this.distributionWorker(event);
+    if (runWorker) {
+      runWorker.send({ event: 'udp-request-message', data: buffer });
+    } else {
+      console.log('error--------->', runWorker);
+    }
+  }
+
+  private distributionWorker({ data }: any) {
+    const { uid, buffer } = PackageUtil.getUid(Buffer.from(data));
+    const runWorker = manageList.getWorker(uid);
+    return { runWorker, buffer };
+  }
 
   private onInit() {
     this.worker.on('message', this.eventBus.bind(this));
+    this.worker.on('error', (error: Error) => console.log(error));
   }
 
-  private eventBus({ event, data }: any) {
+  eventBus({ event, data }: any) {
     switch(event) {
       case 'bind-uid': this.bindUid(data); break;
       case 'delete-uid': this.deleteUid(data); break;
-      case 'udp-message': this.distributionWorker(data);
+      case 'udp-request-message': this.distributionRequestWorker(data);break;
+      case 'udp-response-message': this.distributionResponseWorker(data);break;
     }
   }
 
@@ -49,18 +66,21 @@ export class WorkerManage extends EventEmitter {
 
   private bindUid(uid: string) {
     this.uidSet.add(uid);
+    console.log(this.uidSet);
   }
 }
 
 class ManageList {
-  private workers: WorkerManage[];
+  private workers: WorkerManage[] = [];
   constructor() {
     this.onInit();
   }
 
   onInit() {
-    const workers = (process as any).getMasterWorkers();
-    this.workers = Object.keys(workers).map((id: string) => new WorkerManage(id, workers[id]));
+    cluster.on('online', (worker) => {
+      const workerManage = new WorkerManage(worker);
+      this.workers.push(workerManage);
+    });
   }
 
   getWorker(uid: string): WorkerManage {

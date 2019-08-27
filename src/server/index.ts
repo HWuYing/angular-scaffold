@@ -2,8 +2,7 @@ import cluster from 'cluster';
 import { cpus } from 'os';
 
 if (cluster.isMaster) {
-  let workerLength = 1; //cpus().length;
-  
+  let workerLength = cpus().length;
   while (workerLength > 0) {
     cluster.fork();
     workerLength--;

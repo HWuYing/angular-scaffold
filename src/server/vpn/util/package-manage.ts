@@ -42,10 +42,10 @@ export class PackageManage {
    * socket error事件注册
    * @param uid
    */
-  errorCall = () => () => {
+  errorCall = (sourceMap: Map<string, ProxySocket>) => () => {
     console.log(`------${this.type} error listening ${this.uid}------`);
     if (!this.isEnd) {
-      this.packageSeparation.sendEventPackage(this.uid, EVENT.ERROR);
+      this.packageSeparation.sendEventPackage(this.uid, EVENT.END);
     }
   };
 
@@ -62,7 +62,7 @@ export class PackageManage {
       this.isEnd = true;
       console.log(`------${this.type} ${['link', 'data', 'close', 'error', 'end'][type]} ${uid}------`);
       proxyProcess.deleteUid(this.uid);
-      sourceMap.delete(this.uid);
+      // sourceMap.delete(this.uid);
     }
   };
 }
@@ -85,7 +85,7 @@ export class BrowserManage extends PackageManage{
    */
   browserDataCall = () => (buffer: any) => {
     const { cursor, data, uid } = PackageUtil.packageSigout(buffer);
-    console.log(`---cn length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
+    // console.log(`---cn length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
     this.packageSeparation.splitPackage(buffer);
   };
 
