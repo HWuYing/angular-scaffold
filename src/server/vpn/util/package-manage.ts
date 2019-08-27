@@ -20,7 +20,7 @@ export class PackageManage {
    * @param uid
    */
   endCall = (sourceMap: Map<string, ProxySocket>) => () => {
-    // console.log(`------${this.type} end listening ${this.uid}------`);
+    console.log(`------${this.type} end listening ${this.uid}------`);
     if (!this.isEnd) {
       // this.packageSeparation.mergePackage(EVENT.END, uid, Buffer.alloc(0));
       // this.packageSeparation.immediatelySend(this.uid);
@@ -33,7 +33,7 @@ export class PackageManage {
    * @param uid
    */
   closeCall = (sourceMap: Map<string, ProxySocket>) => () => {
-    // console.log(`------${this.type} close ${this.uid}------`);
+    console.log(`------${this.type} close listening ${this.uid}------`);
     // this.packageSeparation.linkTitle(EVENT.CLOSE, uid, Buffer.alloc(0));
     sourceMap.delete(this.uid);
   };
@@ -43,7 +43,7 @@ export class PackageManage {
    * @param uid
    */
   errorCall = () => () => {
-    // console.log(`------${this.type} error ${this.uid}------`);
+    console.log(`------${this.type} error listening ${this.uid}------`);
     if (!this.isEnd) {
       this.packageSeparation.sendEventPackage(this.uid, EVENT.ERROR);
     }
@@ -86,7 +86,6 @@ export class BrowserManage extends PackageManage{
   browserDataCall = () => (buffer: any) => {
     const { cursor, data, uid } = PackageUtil.packageSigout(buffer);
     console.log(`---cn length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
-    console.log(data.toString('utf-8'));
     this.packageSeparation.splitPackage(buffer);
   };
 

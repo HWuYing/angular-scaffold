@@ -151,6 +151,7 @@ export class PackageSeparation extends EventEmitter {
   send(uid: string, buffer: Buffer | Buffer[], isEvent?: boolean) {
     const bufferList = (Array.isArray(buffer) ? buffer : [buffer]).filter(_buffer => _buffer.length !== 0).map((_buffer) => {
       const sendPackage = PackageUtil.packageSign(uid, this.mergeCursor, _buffer);
+      console.log(`${uid}`, this.mergeCursor);
       this.mergeCursor++;
       return sendPackage;
     });

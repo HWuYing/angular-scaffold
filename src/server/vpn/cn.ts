@@ -29,6 +29,7 @@ class TcpConnection extends ProxyBasic {
     const { uid } = PackageUtil.packageSigout(buffer[0]);
     console.log(`--------client connection ${ uid }----------`);
     console.log(buffer.length);
+    console.log(tcpEvent.source.connecting);
     tcpEvent.write(buffer[0]);
   };
 
@@ -47,6 +48,8 @@ class TcpConnection extends ProxyBasic {
     const packageManage = new BrowserManage(uid, packageSeparation, this.requestEvent(tcpEvent));
     this.socketMap.set(uid, serverProxySocket);
     proxyProcess.bindUid(uid);
+    console.log(uid);
+    console.log(this.socketMap.size);
 
     packageSeparation.on('send', packageManage.sendCall(this.send(uid)));
     packageSeparation.on('separation', packageManage.distributeCall(serverProxySocket, this.socketMap));

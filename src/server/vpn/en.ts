@@ -43,6 +43,7 @@ class TcpConnection extends ProxyBasic {
   };
 
   private connectionListener = () => (tcpEvent: ProxySocket, uid: string, data: Buffer) => {
+    console.log('========>', uid);
     const packageSeparation = new PackageSeparation();
     const packageManage = new ServerManage(uid, packageSeparation, this.responseEvent(tcpEvent));
     const clientProxySocket = ProxySocket.createSocketClient('127.0.0.1', 3000);

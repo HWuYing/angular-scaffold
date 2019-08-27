@@ -17,7 +17,9 @@ export class ProxyTcp extends ProxyEventEmitter {
   }
 
   private onInit() {
-    this.on('connection', (socket: Socket) => this.connectListener(new ProxySocket(socket)));
+    this.on('connection', (socket: Socket) => {
+      this.connectListener(new ProxySocket(socket));
+    });
   }
 
   listen(port: number) {
