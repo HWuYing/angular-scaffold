@@ -4,7 +4,7 @@
 import { EventEmitter} from './index';
 
 export const globTitleSize: number = 80;
-export const globPackageSize: number = 12000 - globTitleSize;
+export const globPackageSize: number = 4000 - globTitleSize;
 
 export const EVENT = { LINK:0, DATA: 1, CLOSE: 2, ERROR: 3, END: 4 };
 
@@ -134,19 +134,20 @@ export class PackageSeparation extends EventEmitter {
     this.printLoseInfo(uid, cursor, type);
   }
 
-  send(uid: string, buffer: Buffer | Buffer[]) {
+  send(uid: string, buffer: Buffer | Buffer[], isEvent?: boolean) {
     const bufferList = (Array.isArray(buffer) ? buffer : [buffer]).filter(_buffer => _buffer.length !== 0).map((_buffer) => {
       const sendPackage = PackageUtil.packageSign(uid, this.mergeCursor, _buffer);
-      // this.emitSync('send', sendPackage);
       this.mergeCursor++;
       return sendPackage;
     });
-    this.emitSync('send', bufferList);
+    if (bufferList.length) {
+      isEvent ? this.emitAsync('event', bufferList) : this.emitSync('send', bufferList);
+    }
   }
 
-  eventPackage(uid: string, type: number) {
+  sendEventPackage(uid: string, type: number) {
     this.immediatelySend(uid);
-    this.send(uid, PackageUtil.eventPackage(type));
+    this.send(uid, PackageUtil.eventPackage(type), true);
     this.mergeCache = Buffer.alloc(0);
   }
 

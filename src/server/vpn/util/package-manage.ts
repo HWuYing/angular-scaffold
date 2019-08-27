@@ -10,7 +10,7 @@ export class PackageManage {
   constructor(
     protected uid: string,
     protected packageSeparation: PackageSeparation,
-    protected notice: (buffer: Buffer) => void,
+    protected notice: (buffer: Buffer[]) => void,
     protected type?: string
   ) { }
 
@@ -23,7 +23,7 @@ export class PackageManage {
     if (!this.isEnd) {
       // this.packageSeparation.mergePackage(EVENT.END, uid, Buffer.alloc(0));
       // this.packageSeparation.immediatelySend(this.uid);
-      this.packageSeparation.eventPackage(this.uid, EVENT.END);
+      this.packageSeparation.sendEventPackage(this.uid, EVENT.END);
     }
   };
 
@@ -44,7 +44,7 @@ export class PackageManage {
   errorCall = () => () => {
     // console.log(`------${this.type} error ${this.uid}------`);
     if (!this.isEnd) {
-      this.packageSeparation.eventPackage(this.uid, EVENT.ERROR);
+      this.packageSeparation.sendEventPackage(this.uid, EVENT.ERROR);
     }
   };
 
@@ -66,7 +66,7 @@ export class PackageManage {
 }
 
 export class BrowserManage extends PackageManage{
-  constructor(uid: string, packageSeparation: PackageSeparation, notice: (buffer: Buffer) => void) {
+  constructor(uid: string, packageSeparation: PackageSeparation, notice: (buffer: Buffer[]) => void) {
     super(uid, packageSeparation, notice, 'browser');
   }
 
@@ -83,17 +83,17 @@ export class BrowserManage extends PackageManage{
    */
   browserDataCall = () => (buffer: any) => {
     const { cursor, data, uid } = PackageUtil.packageSigout(buffer);
-    // console.log(`---cn length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
+    console.log(`---cn length: ${data.length}  cursor: ${cursor} uid: ${uid}---`);
     this.packageSeparation.splitPackage(buffer);
   };
 
-  sendCall = (sendUdp: (buffer: Buffer) => void) => ( buffer: Buffer) => {
+  sendCall = (sendUdp: (buffer: Buffer[]) => void) => ( buffer: Buffer[]) => {
     this.cursor === 0 ? this.notice(buffer) : sendUdp(buffer);
   };
 }
 
 export class ServerManage extends PackageManage{
-  constructor(uid: string,packageSeparation: PackageSeparation, notice: (buffer: Buffer) => void) {
+  constructor(uid: string,packageSeparation: PackageSeparation, notice: (buffer: Buffer[]) => void) {
     super(uid, packageSeparation, notice, 'server ');
   }
 
